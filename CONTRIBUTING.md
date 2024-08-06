@@ -1,69 +1,72 @@
 # Contributing
 
-## Overview
+To make contributions to this charm, you'll need a working Juju development setup.
 
-This document explains the processes and practices recommended for contributing enhancements to
-this operator.
+## Prerequisites
 
-<!-- TEMPLATE-TODO: Update the URL for issue creation -->
+Install Charmcraft and LXD:
 
-- Generally, before developing enhancements to this charm, you should consider [opening an issue
-  ](https://github.com/canonical/operator-template/issues) explaining your use case.
-- If you would like to chat with us about your use-cases or proposed implementation, you can reach
-  us at [Canonical Mattermost public channel](https://chat.charmhub.io/charmhub/channels/charm-dev)
-  or [Discourse](https://discourse.charmhub.io/).
-- Familiarising yourself with the [Charmed Operator Framework](https://juju.is/docs/sdk) library
-  will help you a lot when working on new features or bug fixes.
-- All enhancements require review before being merged. Code review typically examines
-  - code quality
-  - test coverage
-  - user experience for Juju administrators of this charm.
-- Please help us out in ensuring easy to review branches by rebasing your pull request branch onto
-  the `main` branch. This also avoids merge commits and creates a linear Git commit history.
+```shell
+sudo snap install --classic charmcraft
+sudo snap install lxd
+sudo adduser $USER lxd
+newgrp lxd
+lxd init --auto
+```
 
-## Developing
+Install MicroK8s:
 
-You can use the environments created by `tox` for development:
+```shell
+sudo snap install microk8s --channel=1.29-strict/stable
+sudo usermod -a -G snap_microk8s $USER
+newgrp snap_microk8s
+sudo microk8s enable hostpath-storage
+```
+
+Install Juju and bootstrap a controller on the MicroK8S instance:
+
+```shell
+sudo snap install juju --channel=3.1/stable
+juju bootstrap microk8s
+```
+
+Install `pip` and `tox`:
+
+```shell
+sudo apt install python3-pip
+python3 -m pip install "tox>=4.0.0"
+```
+
+## Development
+
+Activate the virtual environment created by `tox` for development:
 
 ```shell
 tox --notest -e unit
 source .tox/unit/bin/activate
 ```
 
-### Testing
+## Testing
+
+This project uses `tox` for managing test environments.
+
+There are some pre-configured environments that can be used for linting and formatting code when you're preparing contributions to the charm:
 
 ```shell
-tox -e fmt           # update your code according to linting rules
-tox -e lint          # code style
-tox -e unit          # unit tests
-tox -e integration   # integration tests
-tox                  # runs 'lint' and 'unit' environments
+tox -e lint                                             # code style
+tox -e static                                           # static analysis
+tox -e unit                                             # unit tests
+tox -e integration -- --charm_path=PATH_TO_BUILD_CHARM  # integration tests
 ```
 
-## Build charm
-
-Build the charm in this git repository using:
-
-```shell
-charmcraft pack
+```note
+Integration tests require the charm to be built with `charmcraft pack` first.
 ```
 
-### Deploy
+## Build
 
-<!-- TEMPLATE-TODO: Update the deploy command for name of charm-->
+Go to the charm directory and run:
 
 ```bash
-# Create a model
-juju add-model dev
-# Enable DEBUG logging
-juju model-config logging-config="<root>=INFO;unit=DEBUG"
-# Deploy the charm
-juju deploy ./template-operator_ubuntu-20.04-amd64.charm \
-    --resource httpbin-image=kennethreitz/httpbin \
+charmcraft pack
 ```
-
-## Canonical Contributor Agreement
-
-<!-- TEMPLATE-TODO: Update the description with the name of charm-->
-
-Canonical welcomes contributions to the Charmed Template Operator. Please check out our [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.
