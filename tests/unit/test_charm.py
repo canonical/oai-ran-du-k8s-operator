@@ -146,7 +146,7 @@ class TestCharm:
             "Waiting for statefulset to be patched"
         )
 
-    def test_give_storage_is_not_attached_when_config_changed_then_status_is_waiting(self):
+    def test_given_storage_is_not_attached_when_config_changed_then_status_is_waiting(self):
         test_statefulset = StatefulSet(
             spec=StatefulSetSpec(
                 selector=LabelSelector(),
