@@ -82,6 +82,10 @@ class OAIRANDUOperator(CharmBase):
         except CharmConfigInvalidError as exc:
             event.add_status(BlockedStatus(exc.msg))
             return
+        if not self._k8s_privileged.is_patched(container_name=self._container_name):
+            event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
+            logger.info("Waiting for statefulset to be patched")
+            return
         if not self._relation_created(F1_RELATION_NAME):
             event.add_status(BlockedStatus("Waiting for F1 relation to be created"))
             logger.info("Waiting for F1 relation to be created")
@@ -93,10 +97,6 @@ class OAIRANDUOperator(CharmBase):
         if not _get_pod_ip():
             event.add_status(WaitingStatus("Waiting for Pod IP address to be available"))
             logger.info("Waiting for Pod IP address to be available")
-            return
-        if not self._k8s_privileged.is_patched(container_name=self._container_name):
-            event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
-            logger.info("Waiting for statefulset to be patched")
             return
         self.unit.set_workload_version(self._get_workload_version())
         if not self._container.exists(path=BASE_CONFIG_PATH):
