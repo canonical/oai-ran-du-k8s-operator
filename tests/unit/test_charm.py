@@ -20,6 +20,22 @@ from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 
 NAMESPACE = "whatever"
 WORKLOAD_CONTAINER_NAME = "du"
+PRIVILEGED_STATEFULSET = StatefulSet(
+    spec=StatefulSetSpec(
+        selector=LabelSelector(),
+        serviceName="whatever",
+        template=PodTemplateSpec(
+            spec=PodSpec(
+                containers=[
+                    Container(
+                        name=WORKLOAD_CONTAINER_NAME,
+                        securityContext=SecurityContext(privileged=True),
+                    )
+                ]
+            )
+        ),
+    )
+)
 
 
 class TestCharm:
@@ -83,6 +99,7 @@ class TestCharm:
         )
 
     def test_given_f1_relation_not_created_when_config_changed_then_status_is_blocked(self):
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.harness.set_leader(is_leader=True)
 
         self.harness.update_config(key_values={})
@@ -95,6 +112,7 @@ class TestCharm:
     def test_given_workload_container_cant_be_connected_to_when_config_changed_then_status_is_waiting(  # noqa: E501
         self,
     ):
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.create_f1_relation()
         self.harness.set_can_connect(container=WORKLOAD_CONTAINER_NAME, val=False)
 
@@ -106,6 +124,7 @@ class TestCharm:
     def test_given_pod_ip_is_not_available_when_config_changed_then_status_is_waiting(  # noqa: E501
         self,
     ):
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.mock_check_output.return_value = b""
         self.create_f1_relation()
 
@@ -147,23 +166,7 @@ class TestCharm:
         )
 
     def test_given_storage_is_not_attached_when_config_changed_then_status_is_waiting(self):
-        test_statefulset = StatefulSet(
-            spec=StatefulSetSpec(
-                selector=LabelSelector(),
-                serviceName="whatever",
-                template=PodTemplateSpec(
-                    spec=PodSpec(
-                        containers=[
-                            Container(
-                                name=WORKLOAD_CONTAINER_NAME,
-                                securityContext=SecurityContext(privileged=True),
-                            )
-                        ]
-                    )
-                ),
-            )
-        )
-        self.mock_lightkube_client_get.return_value = test_statefulset
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.mock_check_output.return_value = b"1.1.1.1"
         self.create_f1_relation()
 
@@ -177,23 +180,7 @@ class TestCharm:
     def test_given_f1_information_is_not_available_when_config_changed_then_status_is_waiting(
         self,
     ):
-        test_statefulset = StatefulSet(
-            spec=StatefulSetSpec(
-                selector=LabelSelector(),
-                serviceName="whatever",
-                template=PodTemplateSpec(
-                    spec=PodSpec(
-                        containers=[
-                            Container(
-                                name=WORKLOAD_CONTAINER_NAME,
-                                securityContext=SecurityContext(privileged=True),
-                            )
-                        ]
-                    )
-                ),
-            )
-        )
-        self.mock_lightkube_client_get.return_value = test_statefulset
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.mock_check_output.return_value = b"1.1.1.1"
         self.harness.add_storage("config", attach=True)
         self.create_f1_relation()
@@ -204,23 +191,7 @@ class TestCharm:
         assert self.harness.charm.unit.status == WaitingStatus("Waiting for F1 information")
 
     def test_given_all_status_check_are_ok_when_config_changed_then_status_is_active(self):
-        test_statefulset = StatefulSet(
-            spec=StatefulSetSpec(
-                selector=LabelSelector(),
-                serviceName="whatever",
-                template=PodTemplateSpec(
-                    spec=PodSpec(
-                        containers=[
-                            Container(
-                                name=WORKLOAD_CONTAINER_NAME,
-                                securityContext=SecurityContext(privileged=True),
-                            )
-                        ]
-                    )
-                ),
-            )
-        )
-        self.mock_lightkube_client_get.return_value = test_statefulset
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.mock_check_output.return_value = b"1.1.1.1"
         self.harness.add_storage("config", attach=True)
         self.set_f1_relation_data()
@@ -249,22 +220,6 @@ class TestCharm:
                 ),
             )
         )
-        expected_statefulset = StatefulSet(
-            spec=StatefulSetSpec(
-                selector=LabelSelector(),
-                serviceName="whatever",
-                template=PodTemplateSpec(
-                    spec=PodSpec(
-                        containers=[
-                            Container(
-                                name=WORKLOAD_CONTAINER_NAME,
-                                securityContext=SecurityContext(privileged=True),
-                            )
-                        ]
-                    )
-                ),
-            )
-        )
         self.mock_lightkube_client_get.return_value = test_statefulset
         self.mock_check_output.return_value = b"1.1.1.1"
         self.harness.add_storage("config", attach=True)
@@ -273,7 +228,7 @@ class TestCharm:
         self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
-        self.mock_lightkube_client_replace.assert_called_once_with(obj=expected_statefulset)
+        self.mock_lightkube_client_replace.assert_called_once_with(obj=PRIVILEGED_STATEFULSET)
 
     def test_given_statefulset_is_patched_when_config_changed_then_statefulset_is_not_patched(
         self,
@@ -365,23 +320,7 @@ class TestCharm:
         return fiveg_f1_relation_id
 
     def prepare_workload_for_configuration(self):
-        test_statefulset = StatefulSet(
-            spec=StatefulSetSpec(
-                selector=LabelSelector(),
-                serviceName="whatever",
-                template=PodTemplateSpec(
-                    spec=PodSpec(
-                        containers=[
-                            Container(
-                                name=WORKLOAD_CONTAINER_NAME,
-                                securityContext=SecurityContext(privileged=True),
-                            )
-                        ]
-                    )
-                ),
-            )
-        )
-        self.mock_lightkube_client_get.return_value = test_statefulset
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.mock_check_output.return_value = b"1.2.3.4"
         self.harness.add_storage("config", attach=True)
         self.set_f1_relation_data()
