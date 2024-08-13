@@ -174,7 +174,7 @@ class TestCharm:
             "Waiting for storage to be attached"
         )
 
-    def test_given_amf_n2_information_is_not_available_when_config_changed_then_status_is_waiting(
+    def test_given_f1_information_is_not_available_when_config_changed_then_status_is_waiting(
         self,
     ):
         test_statefulset = StatefulSet(
