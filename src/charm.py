@@ -168,14 +168,9 @@ class OAIRANDUOperator(CharmBase):
         Returns:
             True if config update is required else False
         """
-        if not self._config_file_is_written() or not self._config_file_content_matches(
-                content=content
-        ):
+        if not self._config_file_content_matches(content=content):
             return True
         return False
-
-    def _config_file_is_written(self) -> bool:
-        return bool(self._container.exists(f"{BASE_CONFIG_PATH}/{CONFIG_FILE_NAME}"))
 
     def _config_file_content_matches(self, content: str) -> bool:
         if not self._container.exists(path=f"{BASE_CONFIG_PATH}/{CONFIG_FILE_NAME}"):
