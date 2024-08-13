@@ -114,6 +114,8 @@ class OAIRANDUOperator(CharmBase):
             self._charm_config: CharmConfig = CharmConfig.from_charm(charm=self)  # type: ignore[no-redef]  # noqa: E501
         except CharmConfigInvalidError:
             return
+        if not self._k8s_privileged.is_patched(container_name=self._container_name):
+            self._k8s_privileged.patch_statefulset(container_name=self._container_name)
         if not self._relation_created(F1_RELATION_NAME):
             return
         if not self._container.can_connect():
@@ -125,8 +127,6 @@ class OAIRANDUOperator(CharmBase):
         if not self._f1_requirer.f1_ip_address or not self._f1_requirer.f1_port:
             return
 
-        if not self._k8s_privileged.is_patched(container_name=self._container_name):
-            self._k8s_privileged.patch_statefulset(container_name=self._container_name)
         du_config = self._generate_du_config()
         if service_restart_required := self._is_du_config_up_to_date(du_config):
             self._write_config_file(content=du_config)

@@ -68,6 +68,7 @@ class TestCharm:
         request.addfinalizer(self.tearDown)
 
     def test_given_unit_is_not_leader_when_config_changed_then_status_is_blocked(self):
+        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.harness.set_leader(is_leader=False)
 
         self.harness.update_config(key_values={})
@@ -155,10 +156,7 @@ class TestCharm:
             )
         )
         self.mock_lightkube_client_get.return_value = test_statefulset
-        self.mock_check_output.return_value = b"1.1.1.1"
-        self.create_f1_relation()
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == WaitingStatus(
