@@ -128,9 +128,8 @@ class OAIRANDUOperator(CharmBase):
         if not self._k8s_privileged.is_patched(container_name=self._container_name):
             self._k8s_privileged.patch_statefulset(container_name=self._container_name)
         du_config = self._generate_du_config()
-        if config_update_required := self._is_du_config_up_to_date(du_config):
+        if service_restart_required := self._is_du_config_up_to_date(du_config):
             self._write_config_file(content=du_config)
-        service_restart_required = config_update_required
         self._configure_pebble(restart=service_restart_required)
 
         self._update_fiveg_f1_relation_data()
