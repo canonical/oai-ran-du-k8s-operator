@@ -1,11 +1,76 @@
-# Copyright 2022 Canonical Ltd.
-# See LICENSE file for licensing details.
-
 type: charm
+name: oai-ran-du-k8s
+summary: Charmed Operator for the OAI RAN Distributed Unit (DU).
+description: Charmed Operator for the OAI RAN Distributed Unit (DU).
 bases:
   - build-on:
-      - name: "ubuntu"
-        channel: "20.04"
+      - name: ubuntu
+        channel: "22.04"
     run-on:
-      - name: "ubuntu"
-        channel: "20.04"
+      - name: ubuntu
+        channel: "22.04"
+links:
+  website:
+    - https://charmhub.io/oai-ran-du-k8s
+  source:
+    - https://github.com/canonical/oai-ran-du-k8s-operator
+  issues:
+    - https://github.com/canonical/oai-ran-du-k8s-operator/issues
+
+containers:
+  du:
+    resource: du-image
+    mounts:
+      - storage: config
+        location: /tmp/conf/
+
+storage:
+  config:
+    type: filesystem
+    minimum-size: 1M
+
+resources:
+  du-image:
+    type: oci-image
+    description: Container image for the OAI RAN Distributed Unit (DU).
+    upstream-source: ghcr.io/canonical/oai-ran-du:2.1.1
+
+requires:
+  fiveg_f1:
+    interface: fiveg_f1
+
+config:
+  options:
+    f1-interface-name:
+      type: string
+      default: "eth0"
+      description: Name of the network interface handling communication over the F1 interface.
+    f1-port:
+      type: int
+      default: 2153
+      description: Number of the port handling communication over the F1 interface.
+    mcc:
+      type: string
+      default: "001"
+      description: Mobile Country Code
+    mnc:
+      type: string
+      default: "01"
+      description: Mobile Network code
+    sst:
+      type: int
+      default: 1
+      description: Slice Service Type
+    tac:
+      type: int
+      default: 1
+      description: Tracking Area Code
+
+parts:
+  charm:
+    build-packages:
+      - cargo
+      - libffi-dev
+      - libssl-dev
+      - pkg-config
+      - rustc
