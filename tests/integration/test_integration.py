@@ -44,14 +44,14 @@ async def test_relate_and_wait_for_active_status(
 ):
     assert ops_test.model
     await ops_test.model.integrate(relation1=f"{APP_NAME}:fiveg_f1", relation2=CU_CHARM_NAME)
+    await ops_test.model.integrate(
+        relation1=f"{APP_NAME}:logging", relation2=GRAFANA_AGENT_CHARM_NAME
+    )
     await ops_test.model.wait_for_idle(
         apps=[APP_NAME],
         raise_on_error=False,
         status="active",
         timeout=TIMEOUT,
-    )
-    await ops_test.model.integrate(
-        relation1=f"{APP_NAME}:logging", relation2=GRAFANA_AGENT_CHARM_NAME
     )
 
 
