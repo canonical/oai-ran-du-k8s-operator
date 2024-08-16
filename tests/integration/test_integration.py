@@ -14,6 +14,7 @@ AMF_CHARM_NAME = "sdcore-amf-k8s"
 AMF_CHARM_CHANNEL = "1.5/edge"
 DB_CHARM_NAME = "mongodb-k8s"
 DB_CHARM_CHANNEL = "6/edge"
+GRAFANA_AGENT_CHARM_NAME = "grafana-agent-k8s"
 NRF_CHARM_NAME = "sdcore-nrf-k8s"
 NRF_CHARM_CHANNEL = "1.5/edge"
 CU_CHARM_NAME = "oai-ran-cu-k8s"
@@ -48,6 +49,9 @@ async def test_relate_and_wait_for_active_status(
         raise_on_error=False,
         status="active",
         timeout=TIMEOUT,
+    )
+    await ops_test.model.integrate(
+        relation1=f"{APP_NAME}:logging", relation2=GRAFANA_AGENT_CHARM_NAME
     )
 
 
@@ -97,6 +101,7 @@ async def deploy_dependencies(ops_test: OpsTest):
     await _deploy_webui(ops_test)
     await _deploy_nrf(ops_test)
     await _deploy_amf(ops_test)
+    await _deploy_grafana_agent(ops_test)
     await _deploy_cu(ops_test)
 
 
@@ -112,6 +117,15 @@ async def _deploy_amf(ops_test: OpsTest):
     await ops_test.model.integrate(relation1=AMF_CHARM_NAME, relation2=NMS_CHARM_NAME)
     await ops_test.model.integrate(relation1=AMF_CHARM_NAME, relation2=DB_CHARM_NAME)
     await ops_test.model.integrate(relation1=AMF_CHARM_NAME, relation2=TLS_CHARM_NAME)
+
+
+async def _deploy_grafana_agent(ops_test: OpsTest):
+    assert ops_test.model
+    await ops_test.model.deploy(
+        GRAFANA_AGENT_CHARM_NAME,
+        application_name=GRAFANA_AGENT_CHARM_NAME,
+        channel="stable",
+    )
 
 
 async def _deploy_mongodb(ops_test: OpsTest):
