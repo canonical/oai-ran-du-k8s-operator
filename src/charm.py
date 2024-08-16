@@ -10,7 +10,7 @@ from subprocess import check_output
 from typing import Optional
 
 from charm_config import CharmConfig, CharmConfigInvalidError
-from charms.loki_k8s.v1.loki_push_api import LogForwarder
+from charms.loki_k8s.v1.loki_push_api import LogForwarder  # type: ignore[import]
 from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires  # type: ignore[import]
 from charms.observability_libs.v1.kubernetes_service_patch import (  # type: ignore[import]
     KubernetesServicePatch,
