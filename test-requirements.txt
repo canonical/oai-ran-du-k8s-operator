@@ -146,7 +146,7 @@ requests-oauthlib==2.0.0
     # via kubernetes
 rsa==4.9
     # via google-auth
-ruff==0.5.7
+ruff==0.6.1
     # via -r test-requirements.in
 six==1.16.0
     # via
@@ -171,7 +171,7 @@ traitlets==5.14.3
     #   matplotlib-inline
 types-pyyaml==6.0.12.20240808
     # via -r test-requirements.in
-types-setuptools==71.1.0.20240813
+types-setuptools==71.1.0.20240818
     # via -r test-requirements.in
 types-toml==0.10.8.20240310
     # via -r test-requirements.in
