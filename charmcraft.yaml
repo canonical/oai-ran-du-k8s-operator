@@ -38,6 +38,8 @@ resources:
 requires:
   fiveg_f1:
     interface: fiveg_f1
+  logging:
+    interface: loki_push_api
 
 config:
   options:
