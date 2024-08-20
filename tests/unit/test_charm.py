@@ -250,7 +250,6 @@ class TestCharm:
         self.mock_lightkube_client_get.return_value = test_statefulset
 
         self.harness.update_config(key_values={})
-        self.harness.evaluate_status()
 
         assert len(self.mock_lightkube_client_replace.mock_calls) == 2
 
@@ -260,7 +259,6 @@ class TestCharm:
         self.prepare_workload_for_configuration()
 
         self.harness.update_config(key_values={})
-        self.harness.evaluate_status()
 
         self.mock_lightkube_client_replace.assert_not_called()
 
