@@ -9,9 +9,12 @@ from charm import OAIRANDUOperator
 from lightkube.models.apps_v1 import StatefulSetSpec
 from lightkube.models.core_v1 import (
     Container,
+    HostPathVolumeSource,
     PodSpec,
     PodTemplateSpec,
     SecurityContext,
+    Volume,
+    VolumeMount,
 )
 from lightkube.models.meta_v1 import LabelSelector
 from lightkube.resources.apps_v1 import StatefulSet
@@ -30,6 +33,29 @@ PRIVILEGED_STATEFULSET = StatefulSet(
                     Container(
                         name=WORKLOAD_CONTAINER_NAME,
                         securityContext=SecurityContext(privileged=True),
+                    )
+                ]
+            )
+        ),
+    )
+)
+STATEFULSET_WITH_USB = StatefulSet(
+    spec=StatefulSetSpec(
+        selector=LabelSelector(),
+        serviceName="whatever",
+        template=PodTemplateSpec(
+            spec=PodSpec(
+                containers=[
+                    Container(
+                        name=WORKLOAD_CONTAINER_NAME,
+                        securityContext=SecurityContext(privileged=True),
+                        volumeMounts=[VolumeMount(name="usb", mountPath="/dev/bus/usb")]
+                    )
+                ],
+                volumes=[
+                    Volume(
+                        name="usb",
+                        hostPath=HostPathVolumeSource(path="/dev/bus/usb",type=""),
                     )
                 ]
             )
@@ -67,11 +93,10 @@ class TestCharm:
         self.harness.cleanup()
         request.addfinalizer(self.tearDown)
 
-    def test_given_unit_is_not_leader_when_config_changed_then_status_is_blocked(self):
+    def test_given_unit_is_not_leader_when_evaluate_status_then_status_is_blocked(self):
         self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.harness.set_leader(is_leader=False)
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == BlockedStatus(
@@ -99,44 +124,51 @@ class TestCharm:
             f"The following configurations are not valid: ['{config_param}']"
         )
 
-    def test_given_f1_relation_not_created_when_config_changed_then_status_is_blocked(self):
+    def test_given_usb_volume_not_mounted_when_evaluate_status_then_status_is_waiting(self):
         self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
         self.harness.set_leader(is_leader=True)
 
-        self.harness.update_config(key_values={})
+        self.harness.evaluate_status()
+
+        assert self.harness.charm.unit.status == WaitingStatus(
+            "Waiting for USB device to be mounted"
+        )
+
+    def test_given_f1_relation_not_created_when_evaluate_status_then_status_is_blocked(self):
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
+        self.harness.set_leader(is_leader=True)
+
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == BlockedStatus(
             "Waiting for F1 relation to be created"
         )
 
-    def test_given_workload_container_cant_be_connected_to_when_config_changed_then_status_is_waiting(  # noqa: E501
+    def test_given_workload_container_cant_be_connected_to_when_evaluate_status_then_status_is_waiting(  # noqa: E501
         self,
     ):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.create_f1_relation()
         self.harness.set_can_connect(container=WORKLOAD_CONTAINER_NAME, val=False)
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == WaitingStatus("Waiting for container to be ready")
 
-    def test_given_pod_ip_is_not_available_when_config_changed_then_status_is_waiting(  # noqa: E501
+    def test_given_pod_ip_is_not_available_when_evaluate_status_then_status_is_waiting(  # noqa: E501
         self,
     ):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.mock_check_output.return_value = b""
         self.create_f1_relation()
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == WaitingStatus(
             "Waiting for Pod IP address to be available"
         )
 
-    def test_given_charm_statefulset_is_not_patched_when_config_changed_then_status_is_waiting(
+    def test_given_charm_statefulset_is_not_patched_when_evaluate_status_then_status_is_waiting(
         self,
     ):
         test_statefulset = StatefulSet(
@@ -163,43 +195,40 @@ class TestCharm:
             "Waiting for statefulset to be patched"
         )
 
-    def test_given_storage_is_not_attached_when_config_changed_then_status_is_waiting(self):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+    def test_given_storage_is_not_attached_when_evaluate_status_then_status_is_waiting(self):
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.mock_check_output.return_value = b"1.1.1.1"
         self.create_f1_relation()
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == WaitingStatus(
             "Waiting for storage to be attached"
         )
 
-    def test_given_f1_information_is_not_available_when_config_changed_then_status_is_waiting(
+    def test_given_f1_information_is_not_available_when_evaluate_status_then_status_is_waiting(
         self,
     ):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.mock_check_output.return_value = b"1.1.1.1"
         self.harness.add_storage("config", attach=True)
         self.create_f1_relation()
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == WaitingStatus("Waiting for F1 information")
 
-    def test_given_all_status_check_are_ok_when_config_changed_then_status_is_active(self):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+    def test_given_all_status_check_are_ok_when_evaluate_status_then_status_is_active(self):
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.mock_check_output.return_value = b"1.1.1.1"
         self.harness.add_storage("config", attach=True)
         self.set_f1_relation_data()
 
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
         assert self.harness.charm.unit.status == ActiveStatus()
 
-    def test_given_statefulset_is_not_patched_when_config_changed_then_statefulset_is_patched(
+    def test_given_statefulset_is_not_patched_when_config_changed_then_usb_is_mounted_and_privileged_context_is_set(  # noqa: E501
         self,
     ):
         test_statefulset = StatefulSet(
@@ -219,16 +248,13 @@ class TestCharm:
             )
         )
         self.mock_lightkube_client_get.return_value = test_statefulset
-        self.mock_check_output.return_value = b"1.1.1.1"
-        self.harness.add_storage("config", attach=True)
-        self.set_f1_relation_data()
 
         self.harness.update_config(key_values={})
         self.harness.evaluate_status()
 
-        self.mock_lightkube_client_replace.assert_called_once_with(obj=PRIVILEGED_STATEFULSET)
+        assert len(self.mock_lightkube_client_replace.mock_calls) == 2
 
-    def test_given_statefulset_is_patched_when_config_changed_then_statefulset_is_not_patched(
+    def test_given_statefulset_is_patched_when_config_changed_then_usb_is_not_mounted_and_privileged_context_is_not_set(  # noqa: E501
         self,
     ):
         self.prepare_workload_for_configuration()
@@ -318,7 +344,7 @@ class TestCharm:
         return fiveg_f1_relation_id
 
     def prepare_workload_for_configuration(self):
-        self.mock_lightkube_client_get.return_value = PRIVILEGED_STATEFULSET
+        self.mock_lightkube_client_get.return_value = STATEFULSET_WITH_USB
         self.mock_check_output.return_value = b"1.2.3.4"
         self.harness.add_storage("config", attach=True)
         self.set_f1_relation_data()
