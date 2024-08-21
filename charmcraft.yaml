@@ -47,6 +47,10 @@ config:
       type: string
       default: "eth0"
       description: Name of the network interface handling communication over the F1 interface.
+    f1-ip-address:
+      type: string
+      default: "eth0"
+      description: Name of the network interface handling communication over the F1 interface.
     f1-port:
       type: int
       default: 2153
