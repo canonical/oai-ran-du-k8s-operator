@@ -214,7 +214,7 @@ class OAIRANDUOperator(CharmBase):
         return _render_config_file(
             gnb_name=self._gnb_name,
             du_f1_interface_name=self._charm_config.f1_interface_name,
-            du_f1_ip_address=self._charm_config.f1_ip_address,  # type: ignore[arg-type]
+            du_f1_ip_address=str(self._charm_config.f1_ip_address).split("/")[0],  # type: ignore[arg-type]
             du_f1_port=self._charm_config.f1_port,
             cu_f1_ip_address=self._f1_requirer.f1_ip_address,
             cu_f1_port=self._f1_requirer.f1_port,
