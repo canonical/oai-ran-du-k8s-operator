@@ -16,8 +16,8 @@ from charms.observability_libs.v1.kubernetes_service_patch import (  # type: ign
     KubernetesServicePatch,
 )
 from jinja2 import Environment, FileSystemLoader
-from k8s_privileged import K8sPrivileged
 from lightkube.models.core_v1 import ServicePort
+from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 from ops import ActiveStatus, BlockedStatus, CollectStatusEvent, WaitingStatus
 from ops.charm import CharmBase
 from ops.main import main
@@ -44,8 +44,16 @@ class OAIRANDUOperator(CharmBase):
         self._container = self.unit.get_container(self._container_name)
         self._f1_requirer = F1Requires(self, F1_RELATION_NAME)
         self._logging = LogForwarder(charm=self, relation_name=LOGGING_RELATION_NAME)
-        self._k8s_privileged = K8sPrivileged(
-            namespace=self.model.name, statefulset_name=self.app.name
+        self._du_security_context = DUSecurityContext(
+            namespace=self.model.name,
+            statefulset_name=self.app.name,
+            container_name=self._container_name,
+        )
+        self._usb_volume = DUUSBVolume(
+            namespace=self.model.name,
+            statefulset_name=self.app.name,
+            unit_name=self.unit.name,
+            container_name=self._container_name,
         )
         try:
             self._charm_config: CharmConfig = CharmConfig.from_charm(charm=self)
@@ -85,9 +93,13 @@ class OAIRANDUOperator(CharmBase):
         except CharmConfigInvalidError as exc:
             event.add_status(BlockedStatus(exc.msg))
             return
-        if not self._k8s_privileged.is_patched(container_name=self._container_name):
+        if not self._du_security_context.is_privileged():
             event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
             logger.info("Waiting for statefulset to be patched")
+            return
+        if not self._usb_volume.is_mounted():
+            event.add_status(WaitingStatus("Waiting for USB device to be mounted"))
+            logger.info("Waiting for USB device to be mounted")
             return
         if not self._relation_created(F1_RELATION_NAME):
             event.add_status(BlockedStatus("Waiting for F1 relation to be created"))
@@ -117,8 +129,10 @@ class OAIRANDUOperator(CharmBase):
             self._charm_config: CharmConfig = CharmConfig.from_charm(charm=self)  # type: ignore[no-redef]  # noqa: E501
         except CharmConfigInvalidError:
             return
-        if not self._k8s_privileged.is_patched(container_name=self._container_name):
-            self._k8s_privileged.patch_statefulset(container_name=self._container_name)
+        if not self._du_security_context.is_privileged():
+            self._du_security_context.set_privileged()
+        if not self._usb_volume.is_mounted():
+            self._usb_volume.mount()
         if not self._relation_created(F1_RELATION_NAME):
             return
         if not self._container.can_connect():
