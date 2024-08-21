@@ -3,9 +3,10 @@
 # See LICENSE file for licensing details.
 
 """Config of the Charm."""
-
 import dataclasses
 import logging
+from enum import Enum
+from ipaddress import ip_network
 
 import ops
 from pydantic import (  # pylint: disable=no-name-in-module,import-error
@@ -13,7 +14,9 @@ from pydantic import (  # pylint: disable=no-name-in-module,import-error
     Field,
     StrictStr,
     ValidationError,
+    field_validator,
 )
+from pydantic_core.core_schema import ValidationInfo
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +33,13 @@ class CharmConfigInvalidError(Exception):
         self.msg = msg
 
 
+class CNIType(str, Enum):
+    """Class to define available CNI types for CU operator."""
+
+    bridge = "bridge"
+    macvlan = "macvlan"
+
+
 def to_kebab(name: str) -> str:
     """Convert a snake_case string to kebab-case."""
     return name.replace("_", "-")
@@ -42,8 +52,9 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
         """Represent config for Pydantic model."""
 
         alias_generator = to_kebab
-
-    f1_interface_name: StrictStr = Field(min_length=1)
+    cni_type: CNIType = CNIType.bridge
+    f1_interface_name: StrictStr = Field(default="f1", min_length=1)
+    f1_ip_address: str = Field(default="192.168.251.5/24")
     f1_port: int = Field(ge=1, le=65535)
     mcc: StrictStr = Field(pattern=r"^\d{3}$")
     mnc: StrictStr = Field(pattern=r"^\d{2}$")
@@ -51,13 +62,22 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     tac: int = Field(ge=1, le=16777215)
     simulation_mode: bool = False
 
+    @field_validator("f1_ip_address", mode="before")
+    @classmethod
+    def validate_ip_network_address(cls, value: str, info: ValidationInfo) -> str:
+        """Validate that IP network address is valid."""
+        ip_network(value, strict=False)
+        return value
+
 
 @dataclasses.dataclass
 class CharmConfig:
     """Represents the state of the OAI RAN DU operator charm.
 
     Attributes:
+        cni_type: Multus CNI plugin to use for the interfaces.
         f1_interface_name: Name of the network interface used for F1 traffic
+        f1_ip_address: IP address used by f1 interface
         f1_port: Number of the port used for F1 traffic
         mcc: Mobile Country Code
         mnc: Mobile Network code
@@ -65,8 +85,9 @@ class CharmConfig:
         tac: Tracking Area Code
         simulation_mode: Run DU in simulation mode
     """
-
+    cni_type: CNIType
     f1_interface_name: StrictStr
+    f1_ip_address: str
     f1_port: int
     mcc: StrictStr
     mnc: StrictStr
@@ -80,7 +101,9 @@ class CharmConfig:
         Args:
             du_config: OAI RAN DU operator configuration.
         """
+        self.cni_type = du_config.cni_type
         self.f1_interface_name = du_config.f1_interface_name
+        self.f1_ip_address = du_config.f1_ip_address
         self.f1_port = du_config.f1_port
         self.mcc = du_config.mcc
         self.mnc = du_config.mnc

@@ -43,14 +43,20 @@ requires:
 
 config:
   options:
+    cni-type:
+      type: string
+      default: bridge
+      description: |
+        Multus CNI plugin to use for the interfaces.
+        Allowed values are `bridge`, `macvlan`.
     f1-interface-name:
       type: string
-      default: "eth0"
+      default: "f1"
       description: Name of the network interface handling communication over the F1 interface.
     f1-ip-address:
       type: string
-      default: "eth0"
-      description: Name of the network interface handling communication over the F1 interface.
+      default: "192.168.251.5/24"
+      description: DU F1 interface IP Address in CIDR format
     f1-port:
       type: int
       default: 2153
