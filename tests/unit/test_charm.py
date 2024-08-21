@@ -118,12 +118,20 @@ class TestCharm:
         self,
     ):
         self.harness.disable_hooks()
-        self.harness.update_config(key_values={})
         self.harness.evaluate_status()
         nad = self.harness.charm._network_attachment_definitions_from_config()
         assert nad[0].spec
         config_f1 = json.loads(nad[0].spec["config"])
         assert config_f1["type"] == "bridge"
+
+    def test_given_default_config_when_network_attachment_definitions_from_config_is_called_then_nad_created_for_the_provided_interface(  # noqa: E501
+        self,
+    ):
+        self.harness.disable_hooks()
+        self.harness.update_config(key_values={"f1-interface-name": "dummy"})
+        self.harness.evaluate_status()
+        nad = self.harness.charm._network_attachment_definitions_from_config()
+        assert nad[0].metadata.name == "dummy-du-net"
 
     def test_given_multus_disabled_when_collect_status_then_status_is_blocked(self):
         self.prepare_workload_for_configuration()
