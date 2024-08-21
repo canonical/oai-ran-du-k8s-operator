@@ -83,6 +83,7 @@ async def deploy_charm_under_test(ops_test: OpsTest, request):
     resources = {
         "du-image": METADATA["resources"]["du-image"]["upstream-source"],
     }
+    await ops_test.model.set_config({"update-status-hook-interval": "1m"})
     await ops_test.model.deploy(
         charm,
         resources=resources,

@@ -233,7 +233,7 @@ class OAIRANDUOperator(CharmBase):
         """
         return [
             NetworkAnnotation(
-                name="f1-net",
+                name=f"{self._charm_config.f1_interface_name}-du-net",
                 interface=self._charm_config.f1_interface_name,
             ),
         ]
