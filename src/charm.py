@@ -10,7 +10,7 @@ from subprocess import check_output
 from typing import List, Optional
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
-from charms.kubernetes_charm_libraries.v0.multus import (
+from charms.kubernetes_charm_libraries.v0.multus import (  # type: ignore[import]
     KubernetesMultusCharmLib,
     NetworkAnnotation,
     NetworkAttachmentDefinition,
