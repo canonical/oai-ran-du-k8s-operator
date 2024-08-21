@@ -348,7 +348,7 @@ class TestCharm:
         updated_plan = self.harness.get_container_pebble_plan(WORKLOAD_CONTAINER_NAME).to_dict()
         assert expected_pebble_plan == updated_plan
 
-    def test_given_charm_configuration_is_done_when_simulation_mode_config_changed_to_true_then_service_startup_command_container_rfsim_flag(
+    def test_given_charm_configuration_is_done_when_simulation_mode_config_changed_to_true_then_service_startup_command_container_rfsim_flag(  # noqa: E501
         self,
     ):
         expected_pebble_plan = {
