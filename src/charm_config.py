@@ -49,6 +49,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     mnc: StrictStr = Field(pattern=r"^\d{2}$")
     sst: int = Field(ge=1, le=4)
     tac: int = Field(ge=1, le=16777215)
+    simulation_mode: bool = False
 
 
 @dataclasses.dataclass
@@ -62,6 +63,7 @@ class CharmConfig:
         mnc: Mobile Network code
         sst: Slice Service Type
         tac: Tracking Area Code
+        simulation_mode: Run DU in simulation mode
     """
 
     f1_interface_name: StrictStr
@@ -70,6 +72,7 @@ class CharmConfig:
     mnc: StrictStr
     sst: int
     tac: int
+    simulation_mode: bool
 
     def __init__(self, *, du_config: DUConfig):
         """Initialize a new instance of the CharmConfig class.
@@ -83,6 +86,7 @@ class CharmConfig:
         self.mnc = du_config.mnc
         self.sst = du_config.sst
         self.tac = du_config.tac
+        self.simulation_mode = du_config.simulation_mode
 
     @classmethod
     def from_charm(

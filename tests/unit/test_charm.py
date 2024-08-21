@@ -255,6 +255,25 @@ class TestCharm:
         self.mock_security_context.set_privileged.assert_called_once()
         self.mock_du_usb_volume.mount.assert_called_once()
 
+    def test_given_statefulset_is_not_patched_when_simulation_mode_config_changed_to_true_then_privileged_context_is_set_but_usb_is_not_mounted(  # noqa: E501
+        self,
+    ):
+        self.mock_du_usb_volume.configure_mock(
+            **{
+                "is_mounted.return_value": False,
+            },
+        )
+        self.mock_security_context.configure_mock(
+            **{
+                "is_privileged.return_value": False,
+            },
+        )
+
+        self.harness.update_config(key_values={"simulation-mode": True})
+
+        self.mock_security_context.set_privileged.assert_called_once()
+        self.mock_du_usb_volume.mount.assert_not_called()
+
     def test_given_statefulset_is_patched_when_config_changed_then_usb_is_not_mounted_and_privileged_context_is_not_set(  # noqa: E501
         self,
     ):
@@ -274,6 +293,18 @@ class TestCharm:
         self.harness.update_config(key_values={})
 
         with open("tests/unit/resources/expected_config.conf") as expected_config_file:
+            expected_config = expected_config_file.read()
+        assert (root / "tmp/conf/du.conf").read_text() == expected_config.strip()
+
+    def test_given_workload_is_ready_to_be_configured_when_simulation_mode_config_changed_to_true_then_cu_config_file_contains_rfsimulator_config(  # noqa: E501
+        self,
+    ):
+        root = self.harness.get_filesystem_root(WORKLOAD_CONTAINER_NAME)
+        self.prepare_workload_for_configuration()
+
+        self.harness.update_config(key_values={"simulation-mode": True})
+
+        with open("tests/unit/resources/expected_rfsim_mode_config.conf") as expected_config_file:
             expected_config = expected_config_file.read()
         assert (root / "tmp/conf/du.conf").read_text() == expected_config.strip()
 
@@ -299,7 +330,7 @@ class TestCharm:
                 "du": {
                     "override": "replace",
                     "startup": "enabled",
-                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --sa",
+                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --sa ",
                     "environment": {
                         "TZ": "UTC",
                     },
@@ -313,6 +344,32 @@ class TestCharm:
         )
 
         self.harness.update_config(key_values={})
+
+        updated_plan = self.harness.get_container_pebble_plan(WORKLOAD_CONTAINER_NAME).to_dict()
+        assert expected_pebble_plan == updated_plan
+
+    def test_given_charm_configuration_is_done_when_simulation_mode_config_changed_to_true_then_service_startup_command_container_rfsim_flag(
+        self,
+    ):
+        expected_pebble_plan = {
+            "services": {
+                "du": {
+                    "override": "replace",
+                    "startup": "enabled",
+                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --sa --rfsim",
+                    "environment": {
+                        "TZ": "UTC",
+                    },
+                },
+            },
+        }
+        self.prepare_workload_for_configuration()
+        root = self.harness.get_filesystem_root(WORKLOAD_CONTAINER_NAME)
+        (root / "tmp/conf/du.conf").write_text(
+            self._read_file("tests/unit/resources/expected_config.conf").strip()
+        )
+
+        self.harness.update_config(key_values={"simulation-mode": True})
 
         updated_plan = self.harness.get_container_pebble_plan(WORKLOAD_CONTAINER_NAME).to_dict()
         assert expected_pebble_plan == updated_plan

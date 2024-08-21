@@ -142,14 +142,6 @@ THREAD_STRUCT =
     }
 );
 
-rfsimulator: {
-    serveraddr = "server";
-    serverport = 4043;
-    options    = ();
-    modelname  = "AWGN";
-    IQfile     = "/tmp/rfsimulator.iqs"
-}
-
 log_config: {
     global_log_options = "level,nocolor,time";
     global_log_level   = "info";
@@ -159,3 +151,12 @@ log_config: {
     rlc_log_level      = "info";
     f1ap_log_level     = "info";
 };
+{% if simulation_mode %}
+rfsimulator: {
+    serveraddr = "server";
+    serverport = 4043;
+    options    = ();
+    modelname  = "AWGN";
+    IQfile     = "/tmp/rfsimulator.iqs"
+};
+{% endif %}

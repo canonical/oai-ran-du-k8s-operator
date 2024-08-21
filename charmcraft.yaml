@@ -67,6 +67,10 @@ config:
       type: int
       default: 1
       description: Tracking Area Code
+    simulation-mode:
+      type: boolean
+      default: false
+      description: Run DU in simulation mode
 
 parts:
   charm:
