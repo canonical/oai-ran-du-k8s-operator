@@ -265,7 +265,6 @@ class OAIRANDUOperator(CharmBase):
 
     def _network_attachment_definitions_from_config(self) -> list[NetworkAttachmentDefinition]:
         """Return list of Multus NetworkAttachmentDefinitions to be created based on config."""
-        # Get f1 NAD config
         f1_nad_config = self._get_f1_nad_config()
         return [
             NetworkAttachmentDefinition(
