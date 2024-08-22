@@ -97,7 +97,7 @@ class OAIRANDUOperator(CharmBase):
             event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
             logger.info("Waiting for statefulset to be patched")
             return
-        if not self._usb_volume.is_mounted():
+        if not self._charm_config.simulation_mode and not self._usb_volume.is_mounted():
             event.add_status(WaitingStatus("Waiting for USB device to be mounted"))
             logger.info("Waiting for USB device to be mounted")
             return
@@ -131,7 +131,7 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._du_security_context.is_privileged():
             self._du_security_context.set_privileged()
-        if not self._usb_volume.is_mounted():
+        if not self._charm_config.simulation_mode and not self._usb_volume.is_mounted():
             self._usb_volume.mount()
         if not self._relation_created(F1_RELATION_NAME):
             return
@@ -174,7 +174,8 @@ class OAIRANDUOperator(CharmBase):
             mnc=self._charm_config.mnc,
             sst=self._charm_config.sst,
             tac=self._charm_config.tac,
-        )
+            simulation_mode=self._charm_config.simulation_mode,
+        ).rstrip()
 
     def _is_du_config_up_to_date(self, content: str) -> bool:
         """Decide whether config update is required by checking existence and config content.
@@ -250,12 +251,19 @@ class OAIRANDUOperator(CharmBase):
                     self._service_name: {
                         "override": "replace",
                         "startup": "enabled",
-                        "command": f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} --sa",  # noqa: E501
+                        "command": self._du_startup_command,
                         "environment": self._du_environment_variables,
                     },
                 },
             }
         )
+
+    @property
+    def _du_startup_command(self) -> str:
+        rfsim_switch = ""
+        if self._charm_config.simulation_mode:
+            rfsim_switch = "--rfsim"
+        return f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} --sa {rfsim_switch}"  # noqa: E501
 
     @property
     def _du_environment_variables(self) -> dict:
@@ -291,6 +299,7 @@ def _render_config_file(
     mnc: str,
     sst: int,
     tac: int,
+    simulation_mode: bool,
 ) -> str:
     """Render DU config file based on parameters.
 
@@ -305,6 +314,7 @@ def _render_config_file(
         mnc: Mobile Network Code
         sst: Slice Selection Type
         tac: Tracking Area Code
+        simulation_mode: Run DU in simulation mode
 
     Returns:
         str: Rendered DU configuration file
@@ -322,6 +332,7 @@ def _render_config_file(
         mnc=mnc,
         sst=sst,
         tac=tac,
+        simulation_mode=simulation_mode,
     )
 
 

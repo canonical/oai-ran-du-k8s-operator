@@ -67,6 +67,12 @@ config:
       type: int
       default: 1
       description: Tracking Area Code
+    simulation-mode:
+      type: boolean
+      default: false
+      description: |
+        Run DU in simulation mode.
+        In the simulation mode, the DU emulates the Radio Unit (RU) which, in real deployment, would have been a physical device connected to the DU. Simulation mode has been designed to work with the OAI RAN NR UE (a simulated 5G User Equipment).
 
 parts:
   charm:
