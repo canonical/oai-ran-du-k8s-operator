@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-
-from unittest.mock import patch
+import json
+from unittest.mock import call, patch
 
 import pytest
 from charm import OAIRANDUOperator
 from ops import testing
 from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 
+MULTUS_LIB = "charms.kubernetes_charm_libraries.v0.multus.KubernetesMultusCharmLib"
+MULTUS_K8S_CLIENT = "charms.kubernetes_charm_libraries.v0.multus.KubernetesClient"
+F1_LIB = "charms.oai_ran_cu_k8s.v0.fiveg_f1.F1Requires"
 NAMESPACE = "whatever"
 WORKLOAD_CONTAINER_NAME = "du"
 
@@ -18,6 +21,11 @@ class TestCharm:
     patcher_check_output = patch("charm.check_output")
     patcher_security_context = patch("charm.DUSecurityContext")
     patcher_du_usb_volume = patch("charm.DUUSBVolume")
+    patcher_multus_ready = patch(f"{MULTUS_LIB}.is_ready")
+    patcher_multus_available = patch(f"{MULTUS_LIB}.multus_is_available")
+    patcher_f1_set_information = patch(f"{F1_LIB}.set_f1_information")
+    patcher_multus_statefulset_patch = patch(f"{MULTUS_K8S_CLIENT}.statefulset_is_patched")
+    patcher_lightkube_client = patch("lightkube.core.client.GenericSyncClient")
 
     @pytest.fixture()
     def setUp(self):
@@ -25,12 +33,19 @@ class TestCharm:
         self.mock_check_output = TestCharm.patcher_check_output.start()
         self.mock_security_context = TestCharm.patcher_security_context.start().return_value
         self.mock_du_usb_volume = TestCharm.patcher_du_usb_volume.start().return_value
+        self.mock_multus_ready = TestCharm.patcher_multus_ready.start()
+        self.mock_multus_available = TestCharm.patcher_multus_available.start()
+        self.mock_multus_statefulset_patch = TestCharm.patcher_multus_statefulset_patch.start()
+        self.mock_f1_set_information = TestCharm.patcher_f1_set_information.start()
+        self.mock_lightkube_client = TestCharm.patcher_lightkube_client.start()
 
     def tearDown(self) -> None:
         patch.stopall()
 
     @pytest.fixture(autouse=True)
     def harness(self, setUp, request):
+        self.mock_multus_ready.return_value = True
+        self.mock_multus_available.return_value = True
         self.harness = testing.Harness(OAIRANDUOperator)
         self.harness.set_model_name(name=NAMESPACE)
         self.harness.set_leader(is_leader=True)
@@ -64,6 +79,8 @@ class TestCharm:
         "config_param,value",
         [
             pytest.param("f1-interface-name", "", id="empty_f1_interface_name"),
+            pytest.param("f1-ip-address", "", id="empty_f1_ip-address"),
+            pytest.param("f1-ip-address", "5.5.5/3", id="invalid_f1_ip-address"),
             pytest.param("f1-port", int(), id="empty_f1_port"),
             pytest.param("mcc", "", id="empty_mcc"),
             pytest.param("mnc", "", id="empty_mnc"),
@@ -79,6 +96,104 @@ class TestCharm:
 
         assert self.harness.charm.unit.status == BlockedStatus(
             f"The following configurations are not valid: ['{config_param}']"
+        )
+
+    def test_given_macvlan_cni_type_when_network_attachment_definitions_from_config_is_called_then_interface_type_is_macvlan(  # noqa: E501
+        self,
+    ):
+        self.harness.disable_hooks()
+        self.harness.update_config(
+            key_values={
+                "cni-type": "macvlan",
+                "f1-interface-name": "du-f1",
+            }
+        )
+        self.harness.evaluate_status()
+        nad = self.harness.charm._network_attachment_definitions_from_config()
+        config_f1 = json.loads(nad[0].spec["config"])  # type: ignore
+        assert config_f1["type"] == "macvlan"
+        assert config_f1["master"] == "du-f1"
+
+    def test_given_default_config_when_network_attachment_definitions_from_config_is_called_then_interfaces_type_is_bridge(  # noqa: E501
+        self,
+    ):
+        self.harness.disable_hooks()
+        self.harness.evaluate_status()
+        nad = self.harness.charm._network_attachment_definitions_from_config()
+        assert nad[0].spec
+        config_f1 = json.loads(nad[0].spec["config"])
+        assert config_f1["type"] == "bridge"
+
+    def test_given_default_config_when_network_attachment_definitions_from_config_is_called_then_nad_created_for_the_provided_interface(  # noqa: E501
+        self,
+    ):
+        self.harness.disable_hooks()
+        self.harness.update_config(key_values={"f1-interface-name": "dummy"})
+        self.harness.evaluate_status()
+        nad = self.harness.charm._network_attachment_definitions_from_config()
+        assert nad[0].metadata.name == "dummy-du-net"
+
+    def test_given_multus_disabled_when_collect_status_then_status_is_blocked(self):
+        self.prepare_workload_for_configuration()
+        self.mock_multus_available.return_value = False
+        self.harness.evaluate_status()
+
+        assert self.harness.model.unit.status == BlockedStatus(
+            "Multus is not installed or enabled"
+        )
+
+    def test_given_multus_not_configured_when_collect_status_then_status_is_waiting(
+        self,
+    ):
+        self.prepare_workload_for_configuration()
+        self.mock_multus_ready.return_value = False
+        self.harness.evaluate_status()
+
+        assert self.harness.model.unit.status == WaitingStatus("Waiting for Multus to be ready")
+
+    def test_given_charm_is_configured_and_running_when_f1_relation_is_added_then_f1_port_is_published(  # noqa: E501
+        self,
+    ):
+        self.mock_du_usb_volume.configure_mock(
+            **{
+                "is_mounted.return_value": True,
+            },
+        )
+        self.mock_security_context.configure_mock(
+            **{
+                "is_privileged.return_value": True,
+            },
+        )
+        self.mock_check_output.return_value = b"1.1.1.1"
+        self.harness.add_storage("config", attach=True)
+        self.set_f1_relation_data()
+        self.mock_f1_set_information.assert_called_once_with(
+            port=2153,
+        )
+
+    def test_given_charm_is_active_when_config_changed_then_updated_f1_port_is_published(  # noqa: E501
+        self,
+    ):
+        self.mock_du_usb_volume.configure_mock(
+            **{
+                "is_mounted.return_value": True,
+            },
+        )
+        self.mock_security_context.configure_mock(
+            **{
+                "is_privileged.return_value": True,
+            },
+        )
+        self.mock_check_output.return_value = b"1.1.1.1"
+        self.harness.add_storage("config", attach=True)
+        self.set_f1_relation_data()
+        self.harness.update_config(key_values={"f1-port": 3522})
+        self.harness.evaluate_status()
+        self.mock_f1_set_information.assert_has_calls(
+            [
+                call(port=2153),
+                call(port=3522),
+            ]
         )
 
     def test_given_usb_volume_not_mounted_when_evaluate_status_then_status_is_waiting(self):
