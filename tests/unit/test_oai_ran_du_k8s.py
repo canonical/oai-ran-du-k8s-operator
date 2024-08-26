@@ -17,6 +17,7 @@ from lightkube.models.core_v1 import (
 )
 from lightkube.models.meta_v1 import LabelSelector
 from lightkube.resources.apps_v1 import StatefulSet
+
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 
 WORKLOAD_CONTAINER_NAME = "du"

@@ -134,6 +134,7 @@ class OAIRANDUOperator(CharmBase):
         if not self._kubernetes_multus.is_ready():
             event.add_status(WaitingStatus("Waiting for Multus to be ready"))
             logger.info("Waiting for Multus to be ready")
+            return
         if not self._du_security_context.is_privileged():
             event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
             logger.info("Waiting for statefulset to be patched")
