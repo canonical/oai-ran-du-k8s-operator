@@ -107,7 +107,7 @@ class DUUSBVolume:
         self.k8s_client = Client()
         self.usb_volume = Volume(
             name="usb",
-            hostPath=HostPathVolumeSource(path=self.USB_MOUNT_PATH,type=""),
+            hostPath=HostPathVolumeSource(path=self.USB_MOUNT_PATH, type=""),
         )
         self.usb_volumemount = VolumeMount(
             name=self.usb_volume.name,
@@ -151,19 +151,18 @@ class DUUSBVolume:
             if e.status.reason == "Unauthorized":
                 logger.debug("kube-apiserver not ready yet")
             else:
-                raise OAIDUK8sError(
-                    f"Could not get statefulset `{self.statefulset_name}`"
-                )
+                raise OAIDUK8sError(f"Could not get statefulset `{self.statefulset_name}`")
             logger.info("Statefulset `%s` not found", self.statefulset_name)
             return False
 
-        statefulset_has_usb_volume =  self._statefulset_has_usb_volume(
+        statefulset_has_usb_volume = self._statefulset_has_usb_volume(
             statefulset_spec=statefulset.spec,  # type: ignore[arg-type]
             usb_volume=self.usb_volume,
         )
         logger.info(
             "Statefulset `%s` has USB volume: %s",
-            self.statefulset_name, statefulset_has_usb_volume,
+            self.statefulset_name,
+            statefulset_has_usb_volume,
         )
         return statefulset_has_usb_volume
 
@@ -220,7 +219,5 @@ class DUUSBVolume:
         try:
             self.k8s_client.replace(obj=statefulset)
         except ApiError:
-            raise OAIDUK8sError(
-                f"Could not replace statefulset `{self.statefulset_name}`"
-            )
+            raise OAIDUK8sError(f"Could not replace statefulset `{self.statefulset_name}`")
         logger.info("Replaced `%s` statefulset", self.statefulset_name)

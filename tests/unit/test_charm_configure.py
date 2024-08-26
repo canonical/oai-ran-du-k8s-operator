@@ -6,10 +6,9 @@
 import os
 import tempfile
 
-import scenario
+import scenario  # type: ignore[import-untyped]
+from fixtures import DUFixtures
 from ops.pebble import Layer
-
-from tests.unit.fixtures import DUFixtures
 
 
 class TestCharmConfigure(DUFixtures):
