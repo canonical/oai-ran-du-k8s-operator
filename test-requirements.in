@@ -9,3 +9,4 @@ ruff
 types-PyYAML
 types-setuptools
 types-toml
+ops-scenario
