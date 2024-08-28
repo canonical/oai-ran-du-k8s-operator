@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 
 """Config of the Charm."""
+
 import dataclasses
 import logging
 from enum import Enum
@@ -52,6 +53,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
         """Represent config for Pydantic model."""
 
         alias_generator = to_kebab
+
     cni_type: CNIType = CNIType.bridge
     f1_interface_name: StrictStr = Field(default="f1", min_length=1)
     f1_ip_address: str = Field(default="192.168.251.5/24")
@@ -85,6 +87,7 @@ class CharmConfig:
         tac: Tracking Area Code
         simulation_mode: Run DU in simulation mode
     """
+
     cni_type: CNIType
     f1_interface_name: StrictStr
     f1_ip_address: str

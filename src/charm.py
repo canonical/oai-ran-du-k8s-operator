@@ -3,13 +3,13 @@
 # See LICENSE file for licensing details.
 
 """Charmed operator for the OAI RAN Distributed Unit (DU) for K8s."""
+
 import json
 import logging
 from ipaddress import IPv4Address
 from subprocess import check_output
 from typing import List, Optional
 
-from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
 from charms.kubernetes_charm_libraries.v0.multus import (  # type: ignore[import]
     KubernetesMultusCharmLib,
     NetworkAnnotation,
@@ -23,7 +23,6 @@ from charms.observability_libs.v1.kubernetes_service_patch import (  # type: ign
 from jinja2 import Environment, FileSystemLoader
 from lightkube.models.core_v1 import ServicePort
 from lightkube.models.meta_v1 import ObjectMeta
-from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 from ops import (
     ActiveStatus,
     BlockedStatus,
@@ -35,6 +34,9 @@ from ops import (
 from ops.charm import CharmBase, CharmEvents
 from ops.main import main
 from ops.pebble import Layer
+
+from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
+from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +136,7 @@ class OAIRANDUOperator(CharmBase):
         if not self._kubernetes_multus.is_ready():
             event.add_status(WaitingStatus("Waiting for Multus to be ready"))
             logger.info("Waiting for Multus to be ready")
+            return
         if not self._du_security_context.is_privileged():
             event.add_status(WaitingStatus("Waiting for statefulset to be patched"))
             logger.info("Waiting for statefulset to be patched")
