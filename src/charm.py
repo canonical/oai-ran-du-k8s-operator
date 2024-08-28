@@ -10,14 +10,14 @@ from ipaddress import IPv4Address
 from subprocess import check_output
 from typing import List, Optional
 
-from charms.kubernetes_charm_libraries.v0.multus import (  # type: ignore[import]
+from charms.kubernetes_charm_libraries.v0.multus import (
     KubernetesMultusCharmLib,
     NetworkAnnotation,
     NetworkAttachmentDefinition,
 )
-from charms.loki_k8s.v1.loki_push_api import LogForwarder  # type: ignore[import]
-from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires  # type: ignore[import]
-from charms.observability_libs.v1.kubernetes_service_patch import (  # type: ignore[import]
+from charms.loki_k8s.v1.loki_push_api import LogForwarder
+from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires
+from charms.observability_libs.v1.kubernetes_service_patch import (
     KubernetesServicePatch,
 )
 from jinja2 import Environment, FileSystemLoader
@@ -214,6 +214,12 @@ class OAIRANDUOperator(CharmBase):
         return bool(self.model.relations.get(relation_name))
 
     def _generate_du_config(self) -> str:
+        if not self._f1_requirer.f1_ip_address:
+            logger.warning("F1 IP address is not available")
+            return ""
+        if not self._f1_requirer.f1_port:
+            logger.warning("F1 port is not available")
+            return ""
         return _render_config_file(
             gnb_name=self._gnb_name,
             du_f1_interface_name=self._charm_config.f1_interface_name,
