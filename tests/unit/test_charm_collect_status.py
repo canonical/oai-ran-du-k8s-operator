@@ -5,9 +5,10 @@
 import tempfile
 
 import pytest
-import scenario  # type: ignore[import-untyped]
-from fixtures import DUFixtures
+import scenario
 from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
+
+from tests.unit.fixtures import DUFixtures
 
 
 class TestCharmCollectStatus(DUFixtures):
