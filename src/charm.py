@@ -368,7 +368,7 @@ class OAIRANDUOperator(CharmBase):
         rfsim_switch = ""
         if self._charm_config.simulation_mode:
             rfsim_switch = "--rfsim"
-        return f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} --sa {rfsim_switch}"  # noqa: E501
+        return f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} -E --sa {rfsim_switch}"  # noqa: E501
 
     @property
     def _du_environment_variables(self) -> dict:
