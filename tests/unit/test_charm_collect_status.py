@@ -17,7 +17,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=False,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == BlockedStatus("Scaling is not implemented for this charm")
 
@@ -42,7 +42,7 @@ class TestCharmCollectStatus(DUFixtures):
             config={config_param: value},
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == BlockedStatus(
             f"The following configurations are not valid: ['{config_param}']"
@@ -54,7 +54,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == BlockedStatus("Multus is not installed or enabled")
 
@@ -67,7 +67,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for Multus to be ready")
 
@@ -79,7 +79,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for statefulset to be patched")
 
@@ -92,7 +92,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for USB device to be mounted")
 
@@ -105,7 +105,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == BlockedStatus("Waiting for F1 relation to be created")
 
@@ -124,11 +124,11 @@ class TestCharmCollectStatus(DUFixtures):
         )
         state_in = scenario.State(
             leader=True,
-            relations=[f1_relation],
-            containers=[container],
+            relations={f1_relation},
+            containers={container},
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for container to be ready")
 
@@ -148,11 +148,11 @@ class TestCharmCollectStatus(DUFixtures):
         )
         state_in = scenario.State(
             leader=True,
-            relations=[f1_relation],
-            containers=[container],
+            relations={f1_relation},
+            containers={container},
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for Pod IP address to be available")
 
@@ -172,11 +172,11 @@ class TestCharmCollectStatus(DUFixtures):
         )
         state_in = scenario.State(
             leader=True,
-            relations=[f1_relation],
-            containers=[container],
+            relations={f1_relation},
+            containers={container},
         )
 
-        state_out = self.ctx.run("collect_unit_status", state_in)
+        state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
         assert state_out.unit_status == WaitingStatus("Waiting for storage to be attached")
 
@@ -194,7 +194,7 @@ class TestCharmCollectStatus(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -206,11 +206,11 @@ class TestCharmCollectStatus(DUFixtures):
             )
             state_in = scenario.State(
                 leader=True,
-                relations=[f1_relation],
-                containers=[container],
+                relations={f1_relation},
+                containers={container},
             )
 
-            state_out = self.ctx.run("collect_unit_status", state_in)
+            state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
             assert state_out.unit_status == WaitingStatus("Waiting for F1 information")
 
@@ -228,7 +228,7 @@ class TestCharmCollectStatus(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -240,10 +240,10 @@ class TestCharmCollectStatus(DUFixtures):
             )
             state_in = scenario.State(
                 leader=True,
-                relations=[f1_relation],
-                containers=[container],
+                relations={f1_relation},
+                containers={container},
             )
 
-            state_out = self.ctx.run("collect_unit_status", state_in)
+            state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
 
             assert state_out.unit_status == ActiveStatus()
