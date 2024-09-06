@@ -100,6 +100,7 @@ class OAIRANDUOperator(CharmBase):
             ports=[
                 ServicePort(name="f1c", port=38472, protocol="SCTP"),
                 ServicePort(name="f1u", port=self._charm_config.f1_port, protocol="UDP"),
+                ServicePort(name="rfsim", port=4043, protocol="TCP"),
             ],
         )
 
