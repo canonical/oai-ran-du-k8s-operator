@@ -27,11 +27,9 @@ from ops import (
     ActiveStatus,
     BlockedStatus,
     CollectStatusEvent,
-    EventBase,
-    EventSource,
     WaitingStatus,
 )
-from ops.charm import CharmBase, CharmEvents
+from ops.charm import CharmBase
 from ops.main import main
 from ops.pebble import Layer
 
@@ -47,20 +45,8 @@ LOGGING_RELATION_NAME = "logging"
 WORKLOAD_VERSION_FILE_NAME = "/etc/workload-version"
 
 
-class NadConfigChangedEvent(EventBase):
-    """Event triggered when an existing network attachment definition is changed."""
-
-
-class KubernetesMultusCharmEvents(CharmEvents):
-    """Kubernetes Multus Charm Events."""
-
-    nad_config_changed = EventSource(NadConfigChangedEvent)
-
-
 class OAIRANDUOperator(CharmBase):
     """Main class to describe Juju event handling for the OAI RAN DU operator for K8s."""
-
-    on = KubernetesMultusCharmEvents()  # type: ignore
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -87,12 +73,13 @@ class OAIRANDUOperator(CharmBase):
         except CharmConfigInvalidError:
             return
         self._kubernetes_multus = KubernetesMultusCharmLib(
-            charm=self,
+            namespace=self.model.name,
+            statefulset_name=self.model.app.name,
+            pod_name="-".join(self.model.unit.name.rsplit("/", 1)),
             container_name=self._container_name,
             cap_net_admin=True,
-            network_annotations_func=self._generate_network_annotations,
-            network_attachment_definitions_func=self._network_attachment_definitions_from_config,
-            refresh_event=self.on.nad_config_changed,
+            network_annotations=self._generate_network_annotations(),
+            network_attachment_definitions=self._network_attachment_definitions_from_config(),
             privileged=True,
         )
         self._service_patcher = KubernetesServicePatch(
@@ -108,6 +95,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self._f1_requirer.on.fiveg_f1_provider_available, self._configure)
+        self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901
         """Check the unit status and set to Unit when CollectStatusEvent is fired.
@@ -178,7 +166,7 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._kubernetes_multus.multus_is_available():
             return
-        self.on.nad_config_changed.emit()
+        self._kubernetes_multus.configure()
         if not self._kubernetes_multus.is_ready():
             return
         if not self._du_security_context.is_privileged():
@@ -202,6 +190,12 @@ class OAIRANDUOperator(CharmBase):
         self._configure_pebble(restart=service_restart_required)
 
         self._update_fiveg_f1_relation_data()
+
+    def _on_remove(self, _) -> None:
+        """Handle the remove event."""
+        if not self.unit.is_leader():
+            return
+        self._kubernetes_multus.remove()
 
     def _relation_created(self, relation_name: str) -> bool:
         """Return whether a given Juju relation was created.

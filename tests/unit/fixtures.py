@@ -5,7 +5,7 @@
 from unittest.mock import PropertyMock, patch
 
 import pytest
-import scenario  # type: ignore[import-untyped]
+import scenario
 
 from charm import OAIRANDUOperator
 
