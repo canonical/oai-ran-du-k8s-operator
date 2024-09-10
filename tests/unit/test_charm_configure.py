@@ -508,3 +508,50 @@ class TestCharmConfigure(DUFixtures):
             self.ctx.run(container.pebble_ready_event, state_in)
 
             mock_exec.assert_not_called()
+
+    def test_given_charm_is_configured_and_running_when_rfsim_relation_is_joined_then_rfsim_information_is_published(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
+            self.mock_f1_requires_f1_port.return_value = 2153
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = scenario.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            rfsim_relation = scenario.Relation(
+                endpoint="fiveg_rfsim",
+                interface="fiveg_rfsim",
+            )
+            config_mount = scenario.Mount(
+                src=temp_dir,
+                location="/tmp/conf",
+            )
+            container = scenario.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+                exec_mock={
+                    ("ip", "route", "show"): scenario.ExecOutput(
+                        return_code=0,
+                        stdout="192.168.251.0/24 dev f1 scope link",
+                        stderr="",
+                    ),
+                },
+            )
+            state_in = scenario.State(
+                leader=True,
+                relations=[f1_relation, rfsim_relation],
+                containers=[container],
+                model=scenario.Model(name="whatever"),
+                config={"simulation-mode": True},
+            )
+
+            self.ctx.run(container.pebble_ready_event, state_in)
+
+            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4:4043")

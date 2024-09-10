@@ -35,6 +35,10 @@ resources:
     description: Container image for the OAI RAN Distributed Unit (DU).
     upstream-source: ghcr.io/canonical/oai-ran-du:2.1.1
 
+provides:
+  fiveg_rfsim:
+    interface: fiveg_rfsim
+
 requires:
   fiveg_f1:
     interface: fiveg_f1

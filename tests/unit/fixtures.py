@@ -21,6 +21,9 @@ class DUFixtures:
     )
     patcher_f1_requires_f1_port = patch("charm.F1Requires.f1_port", new_callable=PropertyMock)
     patcher_f1_requires_set_f1_information = patch("charm.F1Requires.set_f1_information")
+    patcher_rfsim_provides_set_rfsim_information = patch(
+        "charm.RFSIMProvides.set_rfsim_information"
+    )
 
     @pytest.fixture(autouse=True)
     def setUp(self, request):
@@ -32,6 +35,9 @@ class DUFixtures:
         self.mock_f1_requires_f1_ip_address = DUFixtures.patcher_f1_requires_f1_ip_address.start()
         self.mock_f1_requires_f1_port = DUFixtures.patcher_f1_requires_f1_port.start()
         self.mock_f1_set_information = DUFixtures.patcher_f1_requires_set_f1_information.start()
+        self.mock_rfsim_set_information = (
+            DUFixtures.patcher_rfsim_provides_set_rfsim_information.start()
+        )
         yield
         request.addfinalizer(self.tearDown)
 
