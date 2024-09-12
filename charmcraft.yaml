@@ -59,7 +59,7 @@ config:
       description: DU F1 interface IP Address in CIDR format
     f1-port:
       type: int
-      default: 2153
+      default: 2152
       description: Number of the port handling communication over the F1 interface.
     mcc:
       type: string

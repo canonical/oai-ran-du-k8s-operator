@@ -6,9 +6,9 @@
 
 import json
 import logging
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address, ip_network
 from subprocess import check_output
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from charms.kubernetes_charm_libraries.v0.multus import (
     KubernetesMultusCharmLib,
@@ -31,7 +31,7 @@ from ops import (
 )
 from ops.charm import CharmBase
 from ops.main import main
-from ops.pebble import Layer
+from ops.pebble import ExecError, Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
@@ -87,7 +87,6 @@ class OAIRANDUOperator(CharmBase):
             ports=[
                 ServicePort(name="f1c", port=38472, protocol="SCTP"),
                 ServicePort(name="f1u", port=self._charm_config.f1_port, protocol="UDP"),
-                ServicePort(name="rfsim", port=4043, protocol="TCP"),
             ],
         )
 
@@ -155,6 +154,10 @@ class OAIRANDUOperator(CharmBase):
             event.add_status(WaitingStatus("Waiting for F1 information"))
             logger.info("Waiting for F1 information")
             return
+        if self._charm_config.cni_type == CNIType.bridge and not self._f1_route_exists():
+            event.add_status(WaitingStatus("Waiting for the F1 route to be created"))
+            logger.info("Waiting for the F1 route to be created")
+            return
         event.add_status(ActiveStatus())
 
     def _configure(self, _) -> None:  # noqa C901
@@ -183,6 +186,8 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._f1_requirer.f1_ip_address or not self._f1_requirer.f1_port:
             return
+        if self._charm_config.cni_type == CNIType.bridge and not self._f1_route_exists():
+            self._create_f1_route()
 
         du_config = self._generate_du_config()
         if service_restart_required := self._is_du_config_up_to_date(du_config):
@@ -196,6 +201,31 @@ class OAIRANDUOperator(CharmBase):
         if not self.unit.is_leader():
             return
         self._kubernetes_multus.remove()
+
+    def _f1_route_exists(self) -> bool:
+        """Return whether the specified route exist."""
+        try:
+            stdout, stderr = self._exec_command_in_workload_container(command="ip route show")
+        except ExecError as e:
+            logger.error("Failed retrieving routes: %s", e.stderr)
+            return False
+        f1_subnet = ip_network(self._charm_config.f1_ip_address, strict=False)
+        for line in stdout.splitlines():
+            if f"{f1_subnet} dev {self._charm_config.f1_interface_name}" in line:
+                return True
+        return False
+
+    def _create_f1_route(self) -> None:
+        """Create ip route for the F1 connectivity."""
+        try:
+            f1_subnet = ip_network(self._charm_config.f1_ip_address, strict=False)
+            self._exec_command_in_workload_container(
+                command=f"ip route replace {f1_subnet} dev {self._charm_config.f1_interface_name}"
+            )
+        except ExecError as e:
+            logger.error("Failed to create F1 route: %s", e.stderr)
+            return
+        logger.info("F1 route created")
 
     def _relation_created(self, relation_name: str) -> bool:
         """Return whether a given Juju relation was created.
@@ -328,6 +358,23 @@ class OAIRANDUOperator(CharmBase):
             logger.info("No %s relations found.", F1_RELATION_NAME)
             return
         self._f1_requirer.set_f1_information(port=self._charm_config.f1_port)
+
+    def _exec_command_in_workload_container(
+        self, command: str, timeout: Optional[int] = 30, environment: Optional[dict] = None
+    ) -> Tuple[str, str | None]:
+        """Execute command in the workload container.
+
+        Args:
+            command: Command to execute
+            timeout: Timeout in seconds
+            environment: Environment Variables
+        """
+        process = self._container.exec(
+            command=command.split(),
+            timeout=timeout,
+            environment=environment,
+        )
+        return process.wait_output()
 
     @property
     def _gnb_name(self) -> str:
