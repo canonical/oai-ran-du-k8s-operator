@@ -46,7 +46,6 @@ F1_RELATION_NAME = "fiveg_f1"
 RFSIM_RELATION_NAME = "fiveg_rfsim"
 LOGGING_RELATION_NAME = "logging"
 WORKLOAD_VERSION_FILE_NAME = "/etc/workload-version"
-RFSIM_PORT = 4043
 
 
 class OAIRANDUOperator(CharmBase):
@@ -262,11 +261,11 @@ class OAIRANDUOperator(CharmBase):
         """Return the RFSIM service address.
 
         Returns:
-            str/None: Pod ip address together with RFSIM service port
+            str/None: DU Pod ip address
             if pod is running else None
         """
         if _get_pod_ip():
-            return f"{_get_pod_ip()}:{RFSIM_PORT}"
+            return str(_get_pod_ip())
         return ""
 
     def _du_service_is_running(self) -> bool:

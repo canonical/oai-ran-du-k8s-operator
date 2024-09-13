@@ -41,7 +41,7 @@ class TestFivegRFSIMRequires:
             endpoint="fiveg_rfsim",
             interface="fiveg_rfsim",
             remote_app_data={
-                "rfsim_address": "192.168.70.130:4043",
+                "rfsim_address": "192.168.70.130",
             },
         )
         state_in = scenario.State(
@@ -53,7 +53,7 @@ class TestFivegRFSIMRequires:
 
         assert len(self.ctx.emitted_events) == 2
         assert isinstance(self.ctx.emitted_events[1], FivegRFSIMInformationAvailableEvent)
-        assert self.ctx.emitted_events[1].rfsim_address == "192.168.70.130:4043"
+        assert self.ctx.emitted_events[1].rfsim_address == "192.168.70.130"
 
     def test_given_rfsim_information_not_in_relation_data_when_relation_changed_then_rfsim_information_available_event_is_not_emitted(  # noqa: E501
         self,
@@ -78,7 +78,7 @@ class TestFivegRFSIMRequires:
             endpoint="fiveg_rfsim",
             interface="fiveg_rfsim",
             remote_app_data={
-                "rfsim_address": "192.168.70.130:4043",
+                "rfsim_address": "192.168.70.130",
             },
         )
         state_in = scenario.State(
@@ -93,4 +93,4 @@ class TestFivegRFSIMRequires:
 
         assert action_output.success is True
         assert action_output.results
-        assert action_output.results == {"rfsim-address": "192.168.70.130:4043"}
+        assert action_output.results == {"rfsim-address": "192.168.70.130"}

@@ -44,7 +44,7 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
             fiveg_rfsim_relation = scenario.Relation(
                 endpoint="fiveg_rfsim",
                 interface="fiveg_rfsim",
-                local_app_data={"rfsim_address": "1.2.3.4:4043"},
+                local_app_data={"rfsim_address": "1.2.3.4"},
             )
             config_mount = scenario.Mount(
                 src=temp_dir,
@@ -87,8 +87,8 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                 model=scenario.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
-            self.mock_rfsim_set_information.return_value = "1.2.3.4:4043"
+            self.mock_rfsim_set_information.return_value = "1.2.3.4"
 
             state_out = self.ctx.run(fiveg_rfsim_relation.joined_event, state_in)
 
-            assert state_out.relations[1].local_app_data == {"rfsim_address": "1.2.3.4:4043"}
+            assert state_out.relations[1].local_app_data == {"rfsim_address": "1.2.3.4"}
