@@ -98,6 +98,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.update_status, self._configure)
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
+        self.framework.observe(self._f1_requirer.on.fiveg_f1_provider_available, self._configure)
         self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
@@ -251,8 +252,6 @@ class OAIRANDUOperator(CharmBase):
         if not self._relation_created(RFSIM_RELATION_NAME):
             return
         if not self._du_service_is_running():
-            return
-        if not _get_pod_ip():
             return
         if not self._get_rfsim_address():
             return
