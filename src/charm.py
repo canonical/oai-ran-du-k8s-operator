@@ -17,6 +17,7 @@ from charms.kubernetes_charm_libraries.v0.multus import (
 )
 from charms.loki_k8s.v1.loki_push_api import LogForwarder
 from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires
+from charms.oai_ran_du_k8s.v0.fiveg_rfsim import RFSIMProvides
 from charms.observability_libs.v1.kubernetes_service_patch import (
     KubernetesServicePatch,
 )
@@ -27,6 +28,7 @@ from ops import (
     ActiveStatus,
     BlockedStatus,
     CollectStatusEvent,
+    ModelError,
     WaitingStatus,
 )
 from ops.charm import CharmBase
@@ -41,8 +43,10 @@ logger = logging.getLogger(__name__)
 BASE_CONFIG_PATH = "/tmp/conf"
 CONFIG_FILE_NAME = "du.conf"
 F1_RELATION_NAME = "fiveg_f1"
+RFSIM_RELATION_NAME = "fiveg_rfsim"
 LOGGING_RELATION_NAME = "logging"
 WORKLOAD_VERSION_FILE_NAME = "/etc/workload-version"
+RFSIM_PORT = 4043
 
 
 class OAIRANDUOperator(CharmBase):
@@ -56,6 +60,7 @@ class OAIRANDUOperator(CharmBase):
         self._container_name = self._service_name = "du"
         self._container = self.unit.get_container(self._container_name)
         self._f1_requirer = F1Requires(self, F1_RELATION_NAME)
+        self.rfsim_provider = RFSIMProvides(self, RFSIM_RELATION_NAME)
         self._logging = LogForwarder(charm=self, relation_name=LOGGING_RELATION_NAME)
         self._du_security_context = DUSecurityContext(
             namespace=self.model.name,
@@ -94,6 +99,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self._f1_requirer.on.fiveg_f1_provider_available, self._configure)
+        self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901
@@ -195,6 +201,7 @@ class OAIRANDUOperator(CharmBase):
         self._configure_pebble(restart=service_restart_required)
 
         self._update_fiveg_f1_relation_data()
+        self._set_fiveg_rfsim_relation_data()
 
     def _on_remove(self, _) -> None:
         """Handle the remove event."""
@@ -237,6 +244,44 @@ class OAIRANDUOperator(CharmBase):
             bool: Whether the relation was created.
         """
         return bool(self.model.relations.get(relation_name))
+
+    def _set_fiveg_rfsim_relation_data(self) -> None:
+        """Set rfsim information for the fiveg_rfsim relation."""
+        if not self.unit.is_leader():
+            return
+        if not self._relation_created(RFSIM_RELATION_NAME):
+            return
+        if not self._du_service_is_running():
+            return
+        if not self._get_rfsim_address():
+            return
+        self.rfsim_provider.set_rfsim_information(self._get_rfsim_address())
+
+    @staticmethod
+    def _get_rfsim_address() -> str:
+        """Return the RFSIM service address.
+
+        Returns:
+            str/None: Pod ip address together with RFSIM service port
+            if pod is running else None
+        """
+        if _get_pod_ip():
+            return f"{_get_pod_ip()}:{RFSIM_PORT}"
+        return ""
+
+    def _du_service_is_running(self) -> bool:
+        """Return whether the DU service is running.
+
+        Returns:
+            bool: Whether the DU service is running.
+        """
+        if not self._container.can_connect():
+            return False
+        try:
+            service = self._container.get_service(self._service_name)
+        except ModelError:
+            return False
+        return service.is_running()
 
     def _generate_du_config(self) -> str:
         if not self._f1_requirer.f1_ip_address:
