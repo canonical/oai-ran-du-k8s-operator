@@ -48,12 +48,12 @@ class TestFivegRFSIMProvides:
         action = scenario.Action(
             name="set-rfsim-information",
             params={
-                "rfsim_address": "1.2.3.4:4043",
+                "rfsim_address": "1.2.3.4",
             },
         )
         action_output = self.ctx.run_action(action, state_in)
 
-        assert action_output.state.relations[0].local_app_data["rfsim_address"] == "1.2.3.4:4043"
+        assert action_output.state.relations[0].local_app_data["rfsim_address"] == "1.2.3.4"
 
     def test_given_invalid_rfsim_address_when_set_rfsim_information_then_error_is_raised(self):
         fiveg_rfsim_relation = scenario.Relation(
@@ -92,7 +92,7 @@ class TestFivegRFSIMProvides:
         action = scenario.Action(
             name="set-rfsim-information",
             params={
-                "rfsim_address": "1.2.3.4:4043",
+                "rfsim_address": "1.2.3.4",
             },
         )
 
