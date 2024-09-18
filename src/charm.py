@@ -6,9 +6,9 @@
 
 import json
 import logging
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address, ip_network
 from subprocess import check_output
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from charms.kubernetes_charm_libraries.v0.multus import (
     KubernetesMultusCharmLib,
@@ -17,6 +17,7 @@ from charms.kubernetes_charm_libraries.v0.multus import (
 )
 from charms.loki_k8s.v1.loki_push_api import LogForwarder
 from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires
+from charms.oai_ran_du_k8s.v0.fiveg_rfsim import RFSIMProvides
 from charms.observability_libs.v1.kubernetes_service_patch import (
     KubernetesServicePatch,
 )
@@ -27,13 +28,12 @@ from ops import (
     ActiveStatus,
     BlockedStatus,
     CollectStatusEvent,
-    EventBase,
-    EventSource,
+    ModelError,
     WaitingStatus,
 )
-from ops.charm import CharmBase, CharmEvents
+from ops.charm import CharmBase
 from ops.main import main
-from ops.pebble import Layer
+from ops.pebble import ExecError, Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
@@ -43,24 +43,13 @@ logger = logging.getLogger(__name__)
 BASE_CONFIG_PATH = "/tmp/conf"
 CONFIG_FILE_NAME = "du.conf"
 F1_RELATION_NAME = "fiveg_f1"
+RFSIM_RELATION_NAME = "fiveg_rfsim"
 LOGGING_RELATION_NAME = "logging"
 WORKLOAD_VERSION_FILE_NAME = "/etc/workload-version"
 
 
-class NadConfigChangedEvent(EventBase):
-    """Event triggered when an existing network attachment definition is changed."""
-
-
-class KubernetesMultusCharmEvents(CharmEvents):
-    """Kubernetes Multus Charm Events."""
-
-    nad_config_changed = EventSource(NadConfigChangedEvent)
-
-
 class OAIRANDUOperator(CharmBase):
     """Main class to describe Juju event handling for the OAI RAN DU operator for K8s."""
-
-    on = KubernetesMultusCharmEvents()  # type: ignore
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -70,6 +59,7 @@ class OAIRANDUOperator(CharmBase):
         self._container_name = self._service_name = "du"
         self._container = self.unit.get_container(self._container_name)
         self._f1_requirer = F1Requires(self, F1_RELATION_NAME)
+        self.rfsim_provider = RFSIMProvides(self, RFSIM_RELATION_NAME)
         self._logging = LogForwarder(charm=self, relation_name=LOGGING_RELATION_NAME)
         self._du_security_context = DUSecurityContext(
             namespace=self.model.name,
@@ -87,12 +77,13 @@ class OAIRANDUOperator(CharmBase):
         except CharmConfigInvalidError:
             return
         self._kubernetes_multus = KubernetesMultusCharmLib(
-            charm=self,
+            namespace=self.model.name,
+            statefulset_name=self.model.app.name,
+            pod_name="-".join(self.model.unit.name.rsplit("/", 1)),
             container_name=self._container_name,
             cap_net_admin=True,
-            network_annotations_func=self._generate_network_annotations,
-            network_attachment_definitions_func=self._network_attachment_definitions_from_config,
-            refresh_event=self.on.nad_config_changed,
+            network_annotations=self._generate_network_annotations(),
+            network_attachment_definitions=self._network_attachment_definitions_from_config(),
             privileged=True,
         )
         self._service_patcher = KubernetesServicePatch(
@@ -107,6 +98,8 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self._f1_requirer.on.fiveg_f1_provider_available, self._configure)
+        self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
+        self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901
         """Check the unit status and set to Unit when CollectStatusEvent is fired.
@@ -166,6 +159,10 @@ class OAIRANDUOperator(CharmBase):
             event.add_status(WaitingStatus("Waiting for F1 information"))
             logger.info("Waiting for F1 information")
             return
+        if self._charm_config.cni_type == CNIType.bridge and not self._f1_route_exists():
+            event.add_status(WaitingStatus("Waiting for the F1 route to be created"))
+            logger.info("Waiting for the F1 route to be created")
+            return
         event.add_status(ActiveStatus())
 
     def _configure(self, _) -> None:  # noqa C901
@@ -177,7 +174,7 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._kubernetes_multus.multus_is_available():
             return
-        self.on.nad_config_changed.emit()
+        self._kubernetes_multus.configure()
         if not self._kubernetes_multus.is_ready():
             return
         if not self._du_security_context.is_privileged():
@@ -194,6 +191,8 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._f1_requirer.f1_ip_address or not self._f1_requirer.f1_port:
             return
+        if self._charm_config.cni_type == CNIType.bridge and not self._f1_route_exists():
+            self._create_f1_route()
 
         du_config = self._generate_du_config()
         if service_restart_required := self._is_du_config_up_to_date(du_config):
@@ -201,6 +200,38 @@ class OAIRANDUOperator(CharmBase):
         self._configure_pebble(restart=service_restart_required)
 
         self._update_fiveg_f1_relation_data()
+        self._set_fiveg_rfsim_relation_data()
+
+    def _on_remove(self, _) -> None:
+        """Handle the remove event."""
+        if not self.unit.is_leader():
+            return
+        self._kubernetes_multus.remove()
+
+    def _f1_route_exists(self) -> bool:
+        """Return whether the specified route exist."""
+        try:
+            stdout, stderr = self._exec_command_in_workload_container(command="ip route show")
+        except ExecError as e:
+            logger.error("Failed retrieving routes: %s", e.stderr)
+            return False
+        f1_subnet = ip_network(self._charm_config.f1_ip_address, strict=False)
+        for line in stdout.splitlines():
+            if f"{f1_subnet} dev {self._charm_config.f1_interface_name}" in line:
+                return True
+        return False
+
+    def _create_f1_route(self) -> None:
+        """Create ip route for the F1 connectivity."""
+        try:
+            f1_subnet = ip_network(self._charm_config.f1_ip_address, strict=False)
+            self._exec_command_in_workload_container(
+                command=f"ip route replace {f1_subnet} dev {self._charm_config.f1_interface_name}"
+            )
+        except ExecError as e:
+            logger.error("Failed to create F1 route: %s", e.stderr)
+            return
+        logger.info("F1 route created")
 
     def _relation_created(self, relation_name: str) -> bool:
         """Return whether a given Juju relation was created.
@@ -212,6 +243,44 @@ class OAIRANDUOperator(CharmBase):
             bool: Whether the relation was created.
         """
         return bool(self.model.relations.get(relation_name))
+
+    def _set_fiveg_rfsim_relation_data(self) -> None:
+        """Set rfsim information for the fiveg_rfsim relation."""
+        if not self.unit.is_leader():
+            return
+        if not self._relation_created(RFSIM_RELATION_NAME):
+            return
+        if not self._du_service_is_running():
+            return
+        if not self._get_rfsim_address():
+            return
+        self.rfsim_provider.set_rfsim_information(self._get_rfsim_address())
+
+    @staticmethod
+    def _get_rfsim_address() -> str:
+        """Return the RFSIM service address.
+
+        Returns:
+            str/None: DU Pod ip address
+            if pod is running else None
+        """
+        if _get_pod_ip():
+            return str(_get_pod_ip())
+        return ""
+
+    def _du_service_is_running(self) -> bool:
+        """Return whether the DU service is running.
+
+        Returns:
+            bool: Whether the DU service is running.
+        """
+        if not self._container.can_connect():
+            return False
+        try:
+            service = self._container.get_service(self._service_name)
+        except ModelError:
+            return False
+        return service.is_running()
 
     def _generate_du_config(self) -> str:
         if not self._f1_requirer.f1_ip_address:
@@ -333,6 +402,23 @@ class OAIRANDUOperator(CharmBase):
             logger.info("No %s relations found.", F1_RELATION_NAME)
             return
         self._f1_requirer.set_f1_information(port=self._charm_config.f1_port)
+
+    def _exec_command_in_workload_container(
+        self, command: str, timeout: Optional[int] = 30, environment: Optional[dict] = None
+    ) -> Tuple[str, str | None]:
+        """Execute command in the workload container.
+
+        Args:
+            command: Command to execute
+            timeout: Timeout in seconds
+            environment: Environment Variables
+        """
+        process = self._container.exec(
+            command=command.split(),
+            timeout=timeout,
+            environment=environment,
+        )
+        return process.wait_output()
 
     @property
     def _gnb_name(self) -> str:
