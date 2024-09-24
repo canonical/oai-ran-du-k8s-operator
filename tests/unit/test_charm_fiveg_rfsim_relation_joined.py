@@ -72,13 +72,6 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                 mounts={
                     "config": config_mount,
                 },
-                exec_mock={
-                    ("ip", "route", "show"): scenario.ExecOutput(
-                        return_code=0,
-                        stdout="192.168.251.0/24 dev f1 scope link",
-                        stderr="",
-                    ),
-                },
             )
             state_in = scenario.State(
                 leader=True,
