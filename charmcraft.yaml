@@ -59,7 +59,7 @@ config:
       description: Name of the network interface handling communication over the F1 interface.
     f1-ip-address:
       type: string
-      default: "192.168.251.5/24"
+      default: "192.168.254.5/24"
       description: DU F1 interface IP Address in CIDR format
     f1-port:
       type: int

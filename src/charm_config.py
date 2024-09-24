@@ -56,7 +56,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
 
     cni_type: CNIType = CNIType.bridge
     f1_interface_name: StrictStr = Field(default="f1", min_length=1)
-    f1_ip_address: str = Field(default="192.168.251.5/24")
+    f1_ip_address: str = Field(default="192.168.254.5/24")
     f1_port: int = Field(ge=1, le=65535)
     mcc: StrictStr = Field(pattern=r"^\d{3}$")
     mnc: StrictStr = Field(pattern=r"^\d{2}$")
