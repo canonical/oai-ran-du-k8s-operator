@@ -16,7 +16,7 @@ variable "app_name" {
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "latest/edge"
+  default     = "2.1/edge"
 }
 
 variable "config" {
