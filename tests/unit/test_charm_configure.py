@@ -187,7 +187,7 @@ class TestCharmConfigure(DUFixtures):
                 model=scenario.Model(name="whatever"),
             )
             with open("tests/unit/resources/expected_config.conf") as expected_config_file:
-                expected_config = expected_config_file.read()
+                expected_config = expected_config_file.read().strip()
             with open(f"{temp_dir}/du.conf", "w") as generated_config_file:
                 generated_config_file.write(expected_config)
             config_modification_time = os.stat(temp_dir + "/du.conf").st_mtime
@@ -236,7 +236,7 @@ class TestCharmConfigure(DUFixtures):
                             "du": {
                                 "startup": "enabled",
                                 "override": "replace",
-                                "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --sa ",  # noqa: E501
+                                "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E ",  # noqa: E501
                                 "environment": {"TZ": "UTC"},
                             }
                         }
@@ -285,7 +285,7 @@ class TestCharmConfigure(DUFixtures):
                             "du": {
                                 "startup": "enabled",
                                 "override": "replace",
-                                "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --sa --rfsim",  # noqa: E501
+                                "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --rfsim",  # noqa: E501
                                 "environment": {"TZ": "UTC"},
                             }
                         }
