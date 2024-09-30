@@ -49,7 +49,7 @@ class TestFivegRFSIMRequires:
             leader=True,
         )
 
-        self.ctx.run(fiveg_rfsim_relation.changed_event, state_in)
+        self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
 
         assert len(self.ctx.emitted_events) == 2
         assert isinstance(self.ctx.emitted_events[1], FivegRFSIMInformationAvailableEvent)
@@ -67,7 +67,7 @@ class TestFivegRFSIMRequires:
             relations=[fiveg_rfsim_relation],
         )
 
-        self.ctx.run(fiveg_rfsim_relation.changed_event, state_in)
+        self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
 
         assert len(self.ctx.emitted_events) == 1
 
@@ -85,12 +85,8 @@ class TestFivegRFSIMRequires:
             leader=True,
             relations=[fiveg_rfsim_relation],
         )
-        action = scenario.Action(
-            name="get-rfsim-information",
-        )
 
-        action_output = self.ctx.run_action(action, state_in)
+        self.ctx.run(self.ctx.on.action("get-rfsim-information"), state_in)
 
-        assert action_output.success is True
-        assert action_output.results
-        assert action_output.results == {"rfsim-address": "192.168.70.130"}
+        assert self.ctx.action_results
+        assert self.ctx.action_results == {"rfsim-address": "192.168.70.130"}

@@ -44,16 +44,16 @@ class TestFivegRFSIMProvides:
             relations=[fiveg_rfsim_relation],
             leader=True,
         )
+        params = {
+            "rfsim_address": "1.2.3.4",
+        }
 
-        action = scenario.Action(
-            name="set-rfsim-information",
-            params={
-                "rfsim_address": "1.2.3.4",
-            },
+        state_out = self.ctx.run(
+            self.ctx.on.action("set-rfsim-information", params=params), state_in
         )
-        action_output = self.ctx.run_action(action, state_in)
 
-        assert action_output.state.relations[0].local_app_data["rfsim_address"] == "1.2.3.4"
+        relation = state_out.get_relation(fiveg_rfsim_relation.id)
+        assert relation.local_app_data == {"rfsim_address": "1.2.3.4"}
 
     def test_given_invalid_rfsim_address_when_set_rfsim_information_then_error_is_raised(self):
         fiveg_rfsim_relation = scenario.Relation(
@@ -64,16 +64,12 @@ class TestFivegRFSIMProvides:
             relations=[fiveg_rfsim_relation],
             leader=True,
         )
-
-        action = scenario.Action(
-            name="set-rfsim-information",
-            params={
-                "rfsim_address": 1111,
-            },
-        )
+        params = {
+            "rfsim_address": 1111,
+        }
 
         with pytest.raises(Exception) as e:
-            self.ctx.run_action(action, state_in)
+            self.ctx.run(self.ctx.on.action("set-rfsim-information", params=params), state_in)
 
         assert "Inconsistent scenario" in str(e.value)
 
@@ -88,15 +84,11 @@ class TestFivegRFSIMProvides:
             leader=False,
             relations=[fiveg_rfsim_relation],
         )
-
-        action = scenario.Action(
-            name="set-rfsim-information",
-            params={
-                "rfsim_address": "1.2.3.4",
-            },
-        )
+        params = {
+            "rfsim_address": "1.2.3.4",
+        }
 
         with pytest.raises(Exception) as e:
-            self.ctx.run_action(action, state_in)
+            self.ctx.run(self.ctx.on.action("set-rfsim-information", params=params), state_in)
 
         assert "Unit must be leader" in str(e.value)
