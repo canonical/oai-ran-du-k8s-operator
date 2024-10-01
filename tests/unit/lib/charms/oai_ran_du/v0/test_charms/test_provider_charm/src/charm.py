@@ -22,7 +22,6 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
         )
 
     def _on_set_rfsim_information_action(self, event: ActionEvent):
-        print(123)
         rfsim_address = event.params.get("rfsim_address", "")
         self.rfsim_provider.set_rfsim_information(
             rfsim_address=rfsim_address,
