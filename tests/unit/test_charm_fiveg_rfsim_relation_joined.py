@@ -24,9 +24,10 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
         self.mock_check_output.return_value = b"1.2.3.4"
         self.mock_k8s_service_patch.get_ip.return_value = "1.2.3.4"
 
-        state_out = self.ctx.run(fiveg_rfsim_relation.joined_event, state_in)
+        state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
 
-        assert state_out.relations[0].local_app_data == {}
+        relation = state_out.get_relation(fiveg_rfsim_relation.id)
+        assert relation.local_app_data == {}
 
     def test_given_given_service_is_running_when_fiveg_rfsim_relation_joined_then_rfsim_information_is_in_relation_databag(  # noqa: E501
         self,
@@ -47,7 +48,7 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                 local_app_data={"rfsim_address": "1.2.3.4"},
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -61,14 +62,13 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                                     "startup": "enabled",
                                     "override": "replace",
                                     "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --sa ",  # noqa: E501
-                                    # noqa: E501
                                     "environment": {"TZ": "UTC"},
                                 }
                             }
                         }
                     )
                 },
-                service_status={"du": ServiceStatus.ACTIVE},
+                service_statuses={"du": ServiceStatus.ACTIVE},
                 mounts={
                     "config": config_mount,
                 },
@@ -82,6 +82,7 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
             )
             self.mock_rfsim_set_information.return_value = "1.2.3.4"
 
-            state_out = self.ctx.run(fiveg_rfsim_relation.joined_event, state_in)
+            state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
 
-            assert state_out.relations[1].local_app_data == {"rfsim_address": "1.2.3.4"}
+            relation = state_out.get_relation(fiveg_rfsim_relation.id)
+            assert relation.local_app_data == {"rfsim_address": "1.2.3.4"}

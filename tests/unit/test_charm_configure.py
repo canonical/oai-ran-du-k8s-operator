@@ -27,7 +27,7 @@ class TestCharmConfigure(DUFixtures):
             containers=[container],
         )
 
-        self.ctx.run(container.pebble_ready_event, state_in)
+        self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
         self.mock_du_security_context.set_privileged.assert_called_once()
         self.mock_du_usb_volume.mount.assert_called_once()
@@ -47,7 +47,7 @@ class TestCharmConfigure(DUFixtures):
             config={"simulation-mode": True},
         )
 
-        self.ctx.run(container.pebble_ready_event, state_in)
+        self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
         self.mock_du_security_context.set_privileged.assert_called_once()
         self.mock_du_usb_volume.mount.assert_not_called()
@@ -66,7 +66,7 @@ class TestCharmConfigure(DUFixtures):
             containers=[container],
         )
 
-        self.ctx.run(container.pebble_ready_event, state_in)
+        self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
         self.mock_du_security_context.set_privileged.assert_not_called()
         self.mock_du_usb_volume.mount.assert_not_called()
@@ -85,7 +85,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -102,7 +102,7 @@ class TestCharmConfigure(DUFixtures):
                 model=scenario.Model(name="whatever"),
             )
 
-            self.ctx.run(container.pebble_ready_event, state_in)
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             with open("tests/unit/resources/expected_config.conf") as expected_config_file:
                 expected_config = expected_config_file.read()
@@ -126,7 +126,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -144,7 +144,7 @@ class TestCharmConfigure(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            self.ctx.run(container.pebble_ready_event, state_in)
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             with open(
                 "tests/unit/resources/expected_rfsim_mode_config.conf"
@@ -170,7 +170,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -192,7 +192,7 @@ class TestCharmConfigure(DUFixtures):
                 generated_config_file.write(expected_config)
             config_modification_time = os.stat(temp_dir + "/du.conf").st_mtime
 
-            self.ctx.run(container.pebble_ready_event, state_in)
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             assert os.stat(temp_dir + "/du.conf").st_mtime == config_modification_time
 
@@ -210,7 +210,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -227,9 +227,10 @@ class TestCharmConfigure(DUFixtures):
                 model=scenario.Model(name="whatever"),
             )
 
-            state_out = self.ctx.run(container.pebble_ready_event, state_in)
+            state_out = self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            assert state_out.containers[0].layers == {
+            container = state_out.get_container("du")
+            assert container.layers == {
                 "du": Layer(
                     {
                         "services": {
@@ -258,7 +259,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -276,9 +277,10 @@ class TestCharmConfigure(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            state_out = self.ctx.run(container.pebble_ready_event, state_in)
+            state_out = self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            assert state_out.containers[0].layers == {
+            container = state_out.get_container("du")
+            assert container.layers == {
                 "du": Layer(
                     {
                         "services": {
@@ -307,7 +309,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_f1",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -325,7 +327,7 @@ class TestCharmConfigure(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            self.ctx.run(container.pebble_ready_event, state_in)
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             self.mock_f1_set_information.assert_called_once_with(port=2152)
 
@@ -347,7 +349,7 @@ class TestCharmConfigure(DUFixtures):
                 interface="fiveg_rfsim",
             )
             config_mount = scenario.Mount(
-                src=temp_dir,
+                source=temp_dir,
                 location="/tmp/conf",
             )
             container = scenario.Container(
@@ -365,6 +367,6 @@ class TestCharmConfigure(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            self.ctx.run(container.pebble_ready_event, state_in)
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4")
