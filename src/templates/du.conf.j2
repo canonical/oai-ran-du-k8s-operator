@@ -30,11 +30,19 @@ gNBs =
     {
       physCellId                                                    = 0;
       #frequencyInfoDL
-      # this is 3300.30 MHz + (19 PRBs + 10 SCs)@30kHz SCS (GSCN: 7715)
-      absoluteFrequencySSB                                             = 620736;
-      dl_frequencyBand                                                 = 78;
-      # this is 3300.30 MHz
-      dl_absoluteFrequencyPointA                                       = 620020;
+
+      # this is 3924.48 MHz (GSCN: 8141)
+      absoluteFrequencySSB                                             = 661632;
+      dl_frequencyBand                                                 = 77;
+
+      # Absolute Frequency of Point A was calculated like this:
+      # center_frequency - (bandwidth / 2)
+      # the bandwidth in this case is 20 MHz, based on numerology 1
+      # and 51 PRBs.
+      # In this case:
+      # 3925 - (20 / 2)
+      # this is 3915 MHz
+      dl_absoluteFrequencyPointA                                       = 661000;
       #scs-SpecificCarrierList
       dl_offstToCarrier                                              = 0;
       # subcarrierSpacing
@@ -54,7 +62,7 @@ gNBs =
 
       #uplinkConfigCommon
       #frequencyInfoUL
-      ul_frequencyBand                                              = 78;
+      ul_frequencyBand                                              = 77;
       #scs-SpecificCarrierList
       ul_offstToCarrier                                             = 0;
       # subcarrierSpacing
@@ -116,7 +124,6 @@ gNBs =
       p0_nominal                                                  = -90;
       # ssb_PositionsInBurs_BitmapPR
       # 1=short, 2=medium, 3=long
-      ssb_PositionsInBurst_PR                                       = 2;
       ssb_PositionsInBurst_Bitmap                                   = 1;
 
       # ssb_periodicityServingCell
@@ -197,7 +204,7 @@ RUs =
         nb_rx                         = 1
         att_tx                        = 0
         att_rx                        = 0;
-        bands                         = [78];
+        bands                         = [77];
         max_pdschReferenceSignalPower = -27;
         max_rxgain                    = 114;
         eNB_instances                 = [0];
