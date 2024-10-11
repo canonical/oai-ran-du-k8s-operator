@@ -71,7 +71,7 @@ class TestFivegRFSIMProvides:
         with pytest.raises(Exception) as e:
             self.ctx.run(self.ctx.on.action("set-rfsim-information", params=params), state_in)
 
-        assert "Inconsistent testing" in str(e.value)
+        assert "Inconsistent scenario" in str(e.value)
 
     def test_given_unit_is_not_leader_when_fiveg_rfsim_relation_joined_then_data_is_not_in_application_databag(  # noqa: E501
         self,
