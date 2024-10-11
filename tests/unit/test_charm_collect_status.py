@@ -5,7 +5,7 @@
 import tempfile
 
 import pytest
-import scenario
+from ops import testing
 from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 
 from tests.unit.fixtures import DUFixtures
@@ -13,7 +13,7 @@ from tests.unit.fixtures import DUFixtures
 
 class TestCharmCollectStatus(DUFixtures):
     def test_given_unit_is_not_leader_when_collect_status_then_status_is_blocked(self):
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=False,
         )
 
@@ -37,7 +37,7 @@ class TestCharmCollectStatus(DUFixtures):
     def test_given_invalid_config_when_collect_status_then_status_is_blocked(
         self, config_param, value
     ):
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             config={config_param: value},
         )
@@ -50,7 +50,7 @@ class TestCharmCollectStatus(DUFixtures):
 
     def test_given_multus_not_available_when_collect_status_then_status_is_blocked(self):
         self.mock_k8s_multus.multus_is_available.return_value = False
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
         )
 
@@ -63,7 +63,7 @@ class TestCharmCollectStatus(DUFixtures):
     ):
         self.mock_k8s_multus.multus_is_available.return_value = True
         self.mock_k8s_multus.is_ready.return_value = False
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
         )
 
@@ -75,7 +75,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.multus_is_available.return_value = True
         self.mock_k8s_multus.is_ready.return_value = True
         self.mock_du_security_context.is_privileged.return_value = False
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
         )
 
@@ -88,7 +88,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.is_ready.return_value = True
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = False
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
         )
 
@@ -101,7 +101,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.is_ready.return_value = True
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = True
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
         )
 
@@ -114,15 +114,15 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.is_ready.return_value = True
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = True
-        f1_relation = scenario.Relation(
+        f1_relation = testing.Relation(
             endpoint="fiveg_f1",
             interface="fiveg_f1",
         )
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=False,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             relations=[f1_relation],
             containers=[container],
@@ -138,15 +138,15 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = True
         self.mock_check_output.return_value = b""
-        f1_relation = scenario.Relation(
+        f1_relation = testing.Relation(
             endpoint="fiveg_f1",
             interface="fiveg_f1",
         )
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=True,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             relations=[f1_relation],
             containers=[container],
@@ -162,15 +162,15 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = True
         self.mock_check_output.return_value = b"1.2.3.4"
-        f1_relation = scenario.Relation(
+        f1_relation = testing.Relation(
             endpoint="fiveg_f1",
             interface="fiveg_f1",
         )
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=True,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             relations=[f1_relation],
             containers=[container],
@@ -189,22 +189,22 @@ class TestCharmCollectStatus(DUFixtures):
             self.mock_check_output.return_value = b"1.2.3.4"
             self.mock_f1_requires_f1_ip_address.return_value = None
             self.mock_f1_requires_f1_port.return_value = None
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
@@ -223,22 +223,22 @@ class TestCharmCollectStatus(DUFixtures):
             self.mock_check_output.return_value = b"1.2.3.4"
             self.mock_f1_requires_f1_ip_address.return_value = "1.1.1.1"
             self.mock_f1_requires_f1_port.return_value = 1234
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],

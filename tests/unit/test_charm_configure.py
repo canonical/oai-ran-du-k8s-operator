@@ -6,7 +6,7 @@
 import os
 import tempfile
 
-import scenario
+from ops import testing
 from ops.pebble import Layer
 
 from tests.unit.fixtures import DUFixtures
@@ -18,11 +18,11 @@ class TestCharmConfigure(DUFixtures):
     ):
         self.mock_du_security_context.is_privileged.return_value = False
         self.mock_du_usb_volume.is_mounted.return_value = False
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=True,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             containers=[container],
         )
@@ -37,11 +37,11 @@ class TestCharmConfigure(DUFixtures):
     ):
         self.mock_du_security_context.is_privileged.return_value = False
         self.mock_du_usb_volume.is_mounted.return_value = False
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=True,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             containers=[container],
             config={"simulation-mode": True},
@@ -57,11 +57,11 @@ class TestCharmConfigure(DUFixtures):
     ):
         self.mock_du_security_context.is_privileged.return_value = True
         self.mock_du_usb_volume.is_mounted.return_value = True
-        container = scenario.Container(
+        container = testing.Container(
             name="du",
             can_connect=True,
         )
-        state_in = scenario.State(
+        state_in = testing.State(
             leader=True,
             containers=[container],
         )
@@ -80,26 +80,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -121,26 +121,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
 
@@ -165,26 +165,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
             )
             with open("tests/unit/resources/expected_config.conf") as expected_config_file:
                 expected_config = expected_config_file.read().strip()
@@ -205,26 +205,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
             )
 
             state_out = self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -254,26 +254,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
 
@@ -304,26 +304,26 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2152
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
 
@@ -340,30 +340,30 @@ class TestCharmConfigure(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2153
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = scenario.Relation(
+            rfsim_relation = testing.Relation(
                 endpoint="fiveg_rfsim",
                 interface="fiveg_rfsim",
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 mounts={
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation, rfsim_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
 

@@ -4,7 +4,7 @@
 
 import tempfile
 
-import scenario
+from ops import testing
 from ops.pebble import Layer, ServiceStatus
 
 from tests.unit.fixtures import DUFixtures
@@ -14,9 +14,9 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
     def test_given_service_not_running_when_fiveg_rfsim_relation_joined_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
         self,
     ):
-        fiveg_rfsim_relation = scenario.Relation(endpoint="fiveg_rfsim", interface="fiveg_rfsim")
-        container = scenario.Container(name="du", can_connect=True)
-        state_in = scenario.State(
+        fiveg_rfsim_relation = testing.Relation(endpoint="fiveg_rfsim", interface="fiveg_rfsim")
+        container = testing.Container(name="du", can_connect=True)
+        state_in = testing.State(
             leader=True,
             containers=[container],
             relations=[fiveg_rfsim_relation],
@@ -38,20 +38,20 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
             self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
             self.mock_f1_requires_f1_port.return_value = 2153
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_relation = scenario.Relation(
+            f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            fiveg_rfsim_relation = scenario.Relation(
+            fiveg_rfsim_relation = testing.Relation(
                 endpoint="fiveg_rfsim",
                 interface="fiveg_rfsim",
                 local_app_data={"rfsim_address": "1.2.3.4"},
             )
-            config_mount = scenario.Mount(
+            config_mount = testing.Mount(
                 source=temp_dir,
                 location="/tmp/conf",
             )
-            container = scenario.Container(
+            container = testing.Container(
                 name="du",
                 can_connect=True,
                 layers={
@@ -73,11 +73,11 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                     "config": config_mount,
                 },
             )
-            state_in = scenario.State(
+            state_in = testing.State(
                 leader=True,
                 relations=[f1_relation, fiveg_rfsim_relation],
                 containers=[container],
-                model=scenario.Model(name="whatever"),
+                model=testing.Model(name="whatever"),
                 config={"simulation-mode": True},
             )
             self.mock_rfsim_set_information.return_value = "1.2.3.4"
