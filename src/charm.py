@@ -30,9 +30,9 @@ from ops import (
     CollectStatusEvent,
     ModelError,
     WaitingStatus,
+    main,
 )
 from ops.charm import CharmBase
-from ops.main import main
 from ops.pebble import Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
