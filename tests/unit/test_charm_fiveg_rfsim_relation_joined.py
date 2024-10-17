@@ -22,7 +22,6 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
             relations=[fiveg_rfsim_relation],
         )
         self.mock_check_output.return_value = b"1.2.3.4"
-        self.mock_k8s_service_patch.get_ip.return_value = "1.2.3.4"
 
         state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
 
