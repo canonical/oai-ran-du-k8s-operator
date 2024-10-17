@@ -11,7 +11,6 @@ from charm import OAIRANDUOperator
 
 
 class DUFixtures:
-    patcher_k8s_service_patch = patch("charm.KubernetesServicePatch")
     patcher_check_output = patch("charm.check_output")
     patcher_du_security_context = patch("charm.DUSecurityContext")
     patcher_du_usb_volume = patch("charm.DUUSBVolume")
@@ -27,7 +26,6 @@ class DUFixtures:
 
     @pytest.fixture(autouse=True)
     def setUp(self, request):
-        self.mock_k8s_service_patch = DUFixtures.patcher_k8s_service_patch.start()
         self.mock_check_output = DUFixtures.patcher_check_output.start()
         self.mock_du_security_context = DUFixtures.patcher_du_security_context.start().return_value
         self.mock_du_usb_volume = DUFixtures.patcher_du_usb_volume.start().return_value
