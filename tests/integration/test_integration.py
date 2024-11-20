@@ -173,6 +173,10 @@ async def _deploy_webui(ops_test: OpsTest):
     await ops_test.model.integrate(
         relation1=f"{NMS_CHARM_NAME}:auth_database", relation2=f"{DB_CHARM_NAME}"
     )
+    await ops_test.model.integrate(
+        relation1=f"{NMS_CHARM_NAME}:webui_database", relation2=DB_CHARM_NAME
+    )
+    await ops_test.model.integrate(relation1=NMS_CHARM_NAME, relation2=TLS_CHARM_NAME)
 
 
 async def _deploy_cu(ops_test: OpsTest):
