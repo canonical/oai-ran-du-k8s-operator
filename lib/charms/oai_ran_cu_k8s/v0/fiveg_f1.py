@@ -104,9 +104,9 @@ if __name__ == "__main__":
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, cast
 
-from interface_tester.schema_base import DataBagSchema  # type: ignore[import]
+from interface_tester.schema_base import DataBagSchema
 from ops.charm import CharmBase, CharmEvents, RelationChangedEvent, RelationJoinedEvent
 from ops.framework import EventBase, EventSource, Handle, Object
 from ops.model import Relation
@@ -120,7 +120,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 1
+LIBPATCH = 2
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ class ProviderAppData(BaseModel):
 class ProviderSchema(DataBagSchema):
     """Provider schema for fiveg_f1."""
 
-    app: ProviderAppData
+    app_data: ProviderAppData
 
 
 class RequirerAppData(BaseModel):
@@ -174,7 +174,7 @@ class RequirerAppData(BaseModel):
 class RequirerSchema(DataBagSchema):
     """Requirer schema for fiveg_f1."""
 
-    app: RequirerAppData
+    app_data: RequirerAppData
 
 
 def provider_data_is_valid(data: dict) -> bool:
@@ -187,7 +187,7 @@ def provider_data_is_valid(data: dict) -> bool:
         bool: True if data is valid, False otherwise.
     """
     try:
-        ProviderSchema(app=data)
+        ProviderSchema(app_data=ProviderAppData(**data))
         return True
     except ValidationError as e:
         logger.error("Invalid data: %s", e)
@@ -204,7 +204,7 @@ def requirer_data_is_valid(data: dict) -> bool:
         bool: True if data is valid, False otherwise.
     """
     try:
-        RequirerSchema(app=data)
+        RequirerSchema(app_data=RequirerAppData(**data))
         return True
     except ValidationError as e:
         logger.error("Invalid data: %s", e)
@@ -312,7 +312,7 @@ class FivegF1Error(Exception):
 class F1Provides(Object):
     """Class to be instantiated by the charm providing relation using the `fiveg_f1` interface."""
 
-    on = FivegF1ProviderCharmEvents()
+    on = FivegF1ProviderCharmEvents()  # type: ignore
 
     def __init__(self, charm: CharmBase, relation_name: str):
         """Init."""
@@ -369,7 +369,7 @@ class F1Provides(Object):
             int: Port number.
         """
         if remote_app_relation_data := self._get_remote_app_relation_data():
-            return int(remote_app_relation_data.get("f1_port"))  # type: ignore[arg-type]
+            return cast(Optional[int], remote_app_relation_data.get("f1_port"))
         return None
 
     def _get_remote_app_relation_data(
@@ -400,7 +400,7 @@ class F1Provides(Object):
 class F1Requires(Object):
     """Class to be instantiated by the charm requiring relation using the `fiveg_f1` interface."""
 
-    on = FivegF1RequirerCharmEvents()
+    on = FivegF1RequirerCharmEvents()  # type: ignore
 
     def __init__(self, charm: CharmBase, relation_name: str):
         """Init."""
@@ -456,7 +456,7 @@ class F1Requires(Object):
             int: Port number.
         """
         if remote_app_relation_data := self._get_remote_app_relation_data():
-            return int(remote_app_relation_data.get("f1_port"))  # type: ignore[arg-type]
+            return cast(Optional[int], remote_app_relation_data.get("f1_port"))
         return None
 
     def _get_remote_app_relation_data(
