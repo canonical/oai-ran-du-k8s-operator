@@ -2,12 +2,21 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+from ipaddress import IPv4Address
 from unittest.mock import patch
 
 import pytest
+from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 
 from charm import OAIRANDUOperator
+
+F1_PROVIDER_DATA = ProviderAppData(
+    f1_ip_address=IPv4Address("4.3.2.1"),
+    f1_port=2152,
+    tac=1,
+    plmns=[PLMNConfig(mcc="001", mnc="01", sst=1)],
+)
 
 
 class DUFixtures:

@@ -3,14 +3,12 @@
 # See LICENSE file for licensing details.
 
 import tempfile
-from ipaddress import IPv4Address
 
 import pytest
-from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 
-from tests.unit.fixtures import DUFixtures
+from tests.unit.fixtures import F1_PROVIDER_DATA, DUFixtures
 
 
 class TestCharmCollectStatus(DUFixtures):
@@ -218,13 +216,7 @@ class TestCharmCollectStatus(DUFixtures):
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
             self.mock_check_output.return_value = b"1.2.3.4"
-            f1_provider_data = ProviderAppData(
-                f1_ip_address=IPv4Address("1.1.1.1"),
-                f1_port=1234,
-                tac=12,
-                plmns=[PLMNConfig(mcc="123", mnc="12", sst=1, sd=12)],
-            )
-            self.mock_f1_get_remote_data.return_value = f1_provider_data
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
