@@ -24,7 +24,10 @@ F1_PROVIDER_DATA_MULTIPLE_PLMNS = ProviderAppData(
     f1_ip_address=IPv4Address("1.2.3.4"),
     f1_port=1234,
     tac=12,
-    plmns=[PLMNConfig(mcc="999", mnc="99", sst=12), PLMNConfig(mcc="001", mnc="01", sst=1, sd=164)],
+    plmns=[
+        PLMNConfig(mcc="999", mnc="99", sst=12),
+        PLMNConfig(mcc="001", mnc="01", sst=1, sd=164),
+    ],
 )
 
 

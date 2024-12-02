@@ -22,7 +22,7 @@ gNBs =
                     {
                         sst = {{ plmn.sst }};
                         {%- if plmn.sd is not none %}
-                        sd  = {{ plmn.sd }};
+                        sd  = 0x{{ "%06x" | format(plmn.sd) }};
                         {%- endif %}
                     }
                 );
