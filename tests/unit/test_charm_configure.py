@@ -388,3 +388,37 @@ class TestCharmConfigure(DUFixtures):
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
             self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4")
+
+    def test_given_f1_provider_information_is_no_available_when_pebble_ready_then_config_file_is_not_written(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = None
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            assert not os.path.exists(f"{temp_dir}/du.conf")
