@@ -464,6 +464,8 @@ def _render_config_file(
     """
     jinja2_env = Environment(loader=FileSystemLoader("src/templates"))
     template = jinja2_env.get_template(f"{CONFIG_FILE_NAME}.j2")
+    for plmn in plmns:
+        plmn.sd = hex(plmn.sd) if plmn.sd is not None else None
     return template.render(
         gnb_name=gnb_name,
         du_f1_interface_name=du_f1_interface_name,

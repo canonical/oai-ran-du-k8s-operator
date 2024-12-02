@@ -6,6 +6,7 @@ import os
 import tempfile
 from ipaddress import IPv4Address
 
+import pytest
 from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 from ops.pebble import Layer
@@ -17,6 +18,13 @@ F1_PROVIDER_DATA = ProviderAppData(
     f1_port=2152,
     tac=1,
     plmns=[PLMNConfig(mcc="001", mnc="01", sst=1)],
+)
+
+F1_PROVIDER_DATA_MULTIPLE_PLMNS = ProviderAppData(
+    f1_ip_address=IPv4Address("1.2.3.4"),
+    f1_port=1234,
+    tac=12,
+    plmns=[PLMNConfig(mcc="999", mnc="99", sst=12), PLMNConfig(mcc="001", mnc="01", sst=1, sd=164)],
 )
 
 
@@ -79,13 +87,26 @@ class TestCharmConfigure(DUFixtures):
         self.mock_du_security_context.set_privileged.assert_not_called()
         self.mock_du_usb_volume.mount.assert_not_called()
 
+    @pytest.mark.parametrize(
+        "f1_provider_data,config_file",
+        [
+            pytest.param(
+                F1_PROVIDER_DATA, "tests/unit/resources/expected_config.conf", id="single_plmn"
+            ),
+            pytest.param(
+                F1_PROVIDER_DATA_MULTIPLE_PLMNS,
+                "tests/unit/resources/expected_multiple_plmns_config.conf",
+                id="two_plmns",
+            ),
+        ],
+    )
     def test_given_workload_is_ready_to_be_configured_when_configure_then_cu_config_file_is_generated_and_pushed_to_the_workload_container(  # noqa: E501
-        self,
+        self, f1_provider_data, config_file
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
+            self.mock_f1_get_remote_data.return_value = f1_provider_data
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -111,7 +132,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            with open("tests/unit/resources/expected_config.conf") as expected_config_file:
+            with open(config_file) as expected_config_file:
                 expected_config = expected_config_file.read()
 
             with open(f"{temp_dir}/du.conf") as generated_config_file:

@@ -17,9 +17,18 @@ gNBs =
                 mcc        = {{ plmn.mcc }};
                 mnc        = {{ plmn.mnc }};
                 mnc_length = 2;
-                snssaiList = ({ sst = {{ plmn.sst }} })
+                snssaiList =
+                (
+                    {
+                        sst = {{ plmn.sst }};
+                        {%- if plmn.sd is not none %}
+                        sd  = {{ plmn.sd }};
+                        {%- endif %}
+                    }
+                );
             }
-            {%- if not loop.last -%},{%- endif %}
+            {%- if not loop.last %},
+            {% endif %}
             {%- endfor %}
         );
         nr_cellid        = 12345678L;
