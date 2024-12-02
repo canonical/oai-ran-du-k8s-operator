@@ -3,7 +3,9 @@
 
 
 import tempfile
+from ipaddress import IPv4Address
 
+from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 from ops.pebble import Layer, ServiceStatus
 
@@ -34,8 +36,13 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2153
+            f1_provider_data = ProviderAppData(
+                f1_ip_address=IPv4Address("4.3.2.1"),
+                f1_port=2153,
+                tac=12,
+                plmns=[PLMNConfig(mcc="123", mnc="12", sst=1, sd=12)],
+            )
+            self.mock_f1_get_remote_data.return_value = f1_provider_data
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",

@@ -2,14 +2,22 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-
 import os
 import tempfile
+from ipaddress import IPv4Address
 
+from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 from ops.pebble import Layer
 
 from tests.unit.fixtures import DUFixtures
+
+F1_PROVIDER_DATA = ProviderAppData(
+    f1_ip_address=IPv4Address("4.3.2.1"),
+    f1_port=2152,
+    tac=1,
+    plmns=[PLMNConfig(mcc="001", mnc="01", sst=1)],
+)
 
 
 class TestCharmConfigure(DUFixtures):
@@ -77,8 +85,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -118,8 +125,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -162,8 +168,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -202,8 +207,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -251,8 +255,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -301,8 +304,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2152
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -337,8 +339,7 @@ class TestCharmConfigure(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2153
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
