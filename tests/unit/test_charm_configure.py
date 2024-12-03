@@ -369,4 +369,4 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4")
+            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4", 1, None)
