@@ -88,7 +88,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_created, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_changed, self._configure)
-        self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
+        self.framework.observe(self.on[RFSIM_RELATION_NAME].relation_joined, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901
@@ -211,7 +211,13 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._get_rfsim_address():
             return
-        self.rfsim_provider.set_rfsim_information(self._get_rfsim_address())
+        if not self._get_sst():
+            return
+        self.rfsim_provider.set_rfsim_information(
+            self._get_rfsim_address(),
+            self._get_sst(),
+            self._get_sd(),
+        )
 
     @staticmethod
     def _get_rfsim_address() -> str:
@@ -224,6 +230,26 @@ class OAIRANDUOperator(CharmBase):
         if _get_pod_ip():
             return str(_get_pod_ip())
         return ""
+
+    @staticmethod
+    def _get_sst() -> int:
+        """Return the Network Slice SST if sst exists.
+
+        Returns:
+            int/None: If fiveg_f1 relation is created and sst exists else None
+        """
+        # TODO Implement after fiveg_f1 relation is implemented
+        return 1
+
+    @staticmethod
+    def _get_sd() -> Optional[int]:
+        """Return the Network Slice Differentiator if fiveg_f1 relation is set up and sd exits.
+
+        Returns:
+            int/None: If fiveg_f1 relation is created and sd exists else None
+        """
+        # TODO Implement after fiveg_f1 relation is implemented
+        return None
 
     def _du_service_is_running(self) -> bool:
         """Return whether the DU service is running.
