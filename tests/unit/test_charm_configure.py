@@ -387,7 +387,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4")
+            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4", 1, None)
 
     def test_given_f1_provider_information_is_no_available_when_pebble_ready_then_config_file_is_not_written(  # noqa: E501
         self,
