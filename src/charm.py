@@ -86,6 +86,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.update_status, self._configure)
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
+        self.framework.observe(self.on[F1_RELATION_NAME].relation_created, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_changed, self._configure)
         self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
@@ -174,15 +175,13 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._container.exists(path=BASE_CONFIG_PATH):
             return
+        self._update_fiveg_f1_relation_data()
         if not self._f1_requirer.get_provider_f1_information():
             return
-
         du_config = self._generate_du_config()
         if service_restart_required := self._is_du_config_up_to_date(du_config):
             self._write_config_file(content=du_config)
         self._configure_pebble(restart=service_restart_required)
-
-        self._update_fiveg_f1_relation_data()
         self._set_fiveg_rfsim_relation_data()
 
     def _on_remove(self, _) -> None:
