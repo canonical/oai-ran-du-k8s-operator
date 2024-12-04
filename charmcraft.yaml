@@ -65,22 +65,6 @@ config:
       type: int
       default: 2152
       description: Number of the port handling communication over the F1 interface.
-    mcc:
-      type: string
-      default: "001"
-      description: Mobile Country Code
-    mnc:
-      type: string
-      default: "01"
-      description: Mobile Network code
-    sst:
-      type: int
-      default: 1
-      description: Slice Service Type
-    tac:
-      type: int
-      default: 1
-      description: Tracking Area Code
     simulation-mode:
       type: boolean
       default: false

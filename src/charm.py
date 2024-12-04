@@ -16,7 +16,7 @@ from charms.kubernetes_charm_libraries.v0.multus import (
     NetworkAttachmentDefinition,
 )
 from charms.loki_k8s.v1.loki_push_api import LogForwarder
-from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires
+from charms.oai_ran_cu_k8s.v0.fiveg_f1 import F1Requires, PLMNConfig
 from charms.oai_ran_du_k8s.v0.fiveg_rfsim import RFSIMProvides
 from jinja2 import Environment, FileSystemLoader
 from lightkube.models.meta_v1 import ObjectMeta
@@ -86,7 +86,8 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.update_status, self._configure)
         self.framework.observe(self.on.config_changed, self._configure)
         self.framework.observe(self.on.du_pebble_ready, self._configure)
-        self.framework.observe(self._f1_requirer.on.fiveg_f1_provider_available, self._configure)
+        self.framework.observe(self.on[F1_RELATION_NAME].relation_created, self._configure)
+        self.framework.observe(self.on[F1_RELATION_NAME].relation_changed, self._configure)
         self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
@@ -144,7 +145,7 @@ class OAIRANDUOperator(CharmBase):
             event.add_status(WaitingStatus("Waiting for storage to be attached"))
             logger.info("Waiting for storage to be attached")
             return
-        if not self._f1_requirer.f1_ip_address or not self._f1_requirer.f1_port:
+        if not self._f1_requirer.get_provider_f1_information():
             event.add_status(WaitingStatus("Waiting for F1 information"))
             logger.info("Waiting for F1 information")
             return
@@ -174,15 +175,13 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._container.exists(path=BASE_CONFIG_PATH):
             return
-        if not self._f1_requirer.f1_ip_address or not self._f1_requirer.f1_port:
+        self._update_fiveg_f1_relation_data()
+        if not self._f1_requirer.get_provider_f1_information():
             return
-
         du_config = self._generate_du_config()
         if service_restart_required := self._is_du_config_up_to_date(du_config):
             self._write_config_file(content=du_config)
         self._configure_pebble(restart=service_restart_required)
-
-        self._update_fiveg_f1_relation_data()
         self._set_fiveg_rfsim_relation_data()
 
     def _on_remove(self, _) -> None:
@@ -241,23 +240,19 @@ class OAIRANDUOperator(CharmBase):
         return service.is_running()
 
     def _generate_du_config(self) -> str:
-        if not self._f1_requirer.f1_ip_address:
-            logger.warning("F1 IP address is not available")
-            return ""
-        if not self._f1_requirer.f1_port:
-            logger.warning("F1 port is not available")
+        remote_network_config = self._f1_requirer.get_provider_f1_information()
+        if not remote_network_config:
+            logger.warning("F1 network configuration is not available")
             return ""
         return _render_config_file(
             gnb_name=self._gnb_name,
             du_f1_interface_name=self._charm_config.f1_interface_name,
             du_f1_ip_address=str(self._charm_config.f1_ip_address).split("/")[0],
             du_f1_port=self._charm_config.f1_port,
-            cu_f1_ip_address=self._f1_requirer.f1_ip_address,
-            cu_f1_port=self._f1_requirer.f1_port,
-            mcc=self._charm_config.mcc,
-            mnc=self._charm_config.mnc,
-            sst=self._charm_config.sst,
-            tac=self._charm_config.tac,
+            cu_f1_ip_address=str(remote_network_config.f1_ip_address),
+            cu_f1_port=remote_network_config.f1_port,
+            tac=remote_network_config.tac,
+            plmns=remote_network_config.plmns,
             simulation_mode=self._charm_config.simulation_mode,
         ).rstrip()
 
@@ -446,10 +441,8 @@ def _render_config_file(
     du_f1_port: int,
     cu_f1_ip_address: str,
     cu_f1_port: int,
-    mcc: str,
-    mnc: str,
-    sst: int,
     tac: int,
+    plmns: List[PLMNConfig],
     simulation_mode: bool,
 ) -> str:
     """Render DU config file based on parameters.
@@ -461,10 +454,8 @@ def _render_config_file(
         du_f1_port: Number of the port used by the DU for F1 traffic
         cu_f1_ip_address: IPv4 address of the CU's F1 interface
         cu_f1_port: Number of the port used by the CU for F1 traffic
-        mcc: Mobile Country Code
-        mnc: Mobile Network Code
-        sst: Slice Selection Type
         tac: Tracking Area Code
+        plmns: list of PLMN
         simulation_mode: Run DU in simulation mode
 
     Returns:
@@ -479,10 +470,8 @@ def _render_config_file(
         du_f1_port=du_f1_port,
         cu_f1_ip_address=cu_f1_ip_address,
         cu_f1_port=cu_f1_port,
-        mcc=mcc,
-        mnc=mnc,
-        sst=sst,
         tac=tac,
+        plmn_list=plmns,
         simulation_mode=simulation_mode,
     )
 

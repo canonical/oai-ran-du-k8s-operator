@@ -12,12 +12,24 @@ gNBs =
         tracking_area_code = {{ tac }};
         plmn_list =
         (
+            {% for plmn in plmn_list -%}
             {
-                mcc        = {{ mcc }};
-                mnc        = {{ mnc }};
+                mcc        = {{ plmn.mcc }};
+                mnc        = {{ plmn.mnc }};
                 mnc_length = 2;
-                snssaiList = ({ sst = {{ sst }} })
+                snssaiList =
+                (
+                    {
+                        sst = {{ plmn.sst }};
+                        {%- if plmn.sd is not none %}
+                        sd  = 0x{{ "%06x" | format(plmn.sd) }};
+                        {%- endif %}
+                    }
+                );
             }
+            {%- if not loop.last %},
+            {% endif %}
+            {%- endfor %}
         );
         nr_cellid        = 12345678L;
         min_rxtxtime     = 6;

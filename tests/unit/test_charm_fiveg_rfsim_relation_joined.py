@@ -7,7 +7,7 @@ import tempfile
 from ops import testing
 from ops.pebble import Layer, ServiceStatus
 
-from tests.unit.fixtures import DUFixtures
+from tests.unit.fixtures import F1_PROVIDER_DATA, DUFixtures
 
 
 class TestCharmFivegRFSIMRelationJoined(DUFixtures):
@@ -34,8 +34,7 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
-            self.mock_f1_requires_f1_ip_address.return_value = "4.3.2.1"
-            self.mock_f1_requires_f1_port.return_value = 2153
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",

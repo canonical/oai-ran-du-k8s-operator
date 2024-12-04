@@ -58,10 +58,6 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     f1_interface_name: StrictStr = Field(default="f1", min_length=1)
     f1_ip_address: str = Field(default="192.168.254.5/24")
     f1_port: int = Field(ge=1, le=65535)
-    mcc: StrictStr = Field(pattern=r"^\d{3}$")
-    mnc: StrictStr = Field(pattern=r"^\d{2}$")
-    sst: int = Field(ge=1, le=4)
-    tac: int = Field(ge=1, le=16777215)
     simulation_mode: bool = False
 
     @field_validator("f1_ip_address", mode="before")
@@ -81,10 +77,6 @@ class CharmConfig:
         f1_interface_name: Name of the network interface used for F1 traffic
         f1_ip_address: IP address used by f1 interface
         f1_port: Number of the port used for F1 traffic
-        mcc: Mobile Country Code
-        mnc: Mobile Network code
-        sst: Slice Service Type
-        tac: Tracking Area Code
         simulation_mode: Run DU in simulation mode
     """
 
@@ -92,10 +84,6 @@ class CharmConfig:
     f1_interface_name: StrictStr
     f1_ip_address: str
     f1_port: int
-    mcc: StrictStr
-    mnc: StrictStr
-    sst: int
-    tac: int
     simulation_mode: bool
 
     def __init__(self, *, du_config: DUConfig):
@@ -108,10 +96,6 @@ class CharmConfig:
         self.f1_interface_name = du_config.f1_interface_name
         self.f1_ip_address = du_config.f1_ip_address
         self.f1_port = du_config.f1_port
-        self.mcc = du_config.mcc
-        self.mnc = du_config.mnc
-        self.sst = du_config.sst
-        self.tac = du_config.tac
         self.simulation_mode = du_config.simulation_mode
 
     @classmethod
