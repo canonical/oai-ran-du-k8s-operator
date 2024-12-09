@@ -252,7 +252,7 @@ class RFSIMRequires(Object):
         return None
 
     @property
-    def sst(self) -> Optional[str]:
+    def sst(self) -> Optional[int]:
         """Return the Network Slice Service Type (SST).
 
         Returns:
@@ -263,7 +263,7 @@ class RFSIMRequires(Object):
         return None
 
     @property
-    def sd(self) -> Optional[str]:
+    def sd(self) -> Optional[int]:
         """Return the Network Slice Differentiator (SD).
 
         Returns:
