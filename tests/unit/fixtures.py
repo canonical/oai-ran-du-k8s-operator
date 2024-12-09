@@ -18,6 +18,13 @@ F1_PROVIDER_DATA = ProviderAppData(
     plmns=[PLMNConfig(mcc="001", mnc="01", sst=1)],
 )
 
+F1_PROVIDER_DATA_WITH_SD = ProviderAppData(
+    f1_ip_address=IPv4Address("4.3.2.1"),
+    f1_port=2152,
+    tac=1,
+    plmns=[PLMNConfig(mcc="001", mnc="01", sst=1, sd=1)],
+)
+
 
 class DUFixtures:
     patcher_check_output = patch("charm.check_output")

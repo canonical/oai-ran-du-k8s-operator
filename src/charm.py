@@ -211,12 +211,19 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._get_rfsim_address():
             return
-        if not self._get_sst():
+        if not self._relation_created(F1_RELATION_NAME):
+            return
+        if not (remote_network_information := self._f1_requirer.get_provider_f1_information()):
+            return
+        # There could be multiple PLMNs but UE simulator always publishes the first PLMN content
+        # according to Spec TE126. For real UE's, the device group of a slice includes IMSI
+        # which can be associated with a UE.
+        if not remote_network_information.plmns:
             return
         self.rfsim_provider.set_rfsim_information(
             self._get_rfsim_address(),
-            self._get_sst(),
-            self._get_sd(),
+            remote_network_information.plmns[0].sst,
+            remote_network_information.plmns[0].sd,
         )
 
     @staticmethod
@@ -230,26 +237,6 @@ class OAIRANDUOperator(CharmBase):
         if _get_pod_ip():
             return str(_get_pod_ip())
         return ""
-
-    @staticmethod
-    def _get_sst() -> int:
-        """Return the Network Slice SST if sst exists.
-
-        Returns:
-            int/None: If fiveg_f1 relation is created and sst exists else None
-        """
-        # TODO Implement after fiveg_f1 relation is implemented
-        return 1
-
-    @staticmethod
-    def _get_sd() -> Optional[int]:
-        """Return the Network Slice Differentiator if fiveg_f1 relation is set up and sd exits.
-
-        Returns:
-            int/None: If fiveg_f1 relation is created and sd exists else None
-        """
-        # TODO Implement after fiveg_f1 relation is implemented
-        return None
 
     def _du_service_is_running(self) -> bool:
         """Return whether the DU service is running.
