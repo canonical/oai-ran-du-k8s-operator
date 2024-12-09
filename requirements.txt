@@ -30,7 +30,7 @@ iniconfig==2.0.0
     # via pytest
 jinja2==3.1.4
     # via -r requirements.in
-lightkube==0.15.5
+lightkube==0.15.6
     # via
     #   -r requirements.in
     #   cosl
@@ -51,7 +51,7 @@ packaging==24.1
     # via pytest
 pluggy==1.5.0
     # via pytest
-pydantic==2.10.2
+pydantic==2.10.3
     # via
     #   -r requirements.in
     #   cosl
