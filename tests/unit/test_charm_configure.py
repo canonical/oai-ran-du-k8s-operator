@@ -11,7 +11,7 @@ from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
 from ops import testing
 from ops.pebble import Layer
 
-from tests.unit.fixtures import F1_PROVIDER_DATA, DUFixtures
+from tests.unit.fixtures import F1_PROVIDER_DATA, F1_PROVIDER_DATA_WITH_SD, DUFixtures
 
 F1_PROVIDER_DATA_MULTIPLE_PLMNS = ProviderAppData(
     f1_ip_address=IPv4Address("1.2.3.4"),
@@ -350,13 +350,52 @@ class TestCharmConfigure(DUFixtures):
 
             self.mock_f1_set_information.assert_called_once_with(port=2152)
 
-    def test_given_charm_is_configured_and_running_when_rfsim_relation_is_joined_then_rfsim_information_is_published(  # noqa: E501
+    def test_given_charm_is_configured_rfsim_address_is_not_available_and_f1_provider_data_is_available_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
             self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
+            self.mock_check_output.return_value = None
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            rfsim_relation = testing.Relation(
+                endpoint="fiveg_rfsim",
+                interface="fiveg_rfsim",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation, rfsim_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={"simulation-mode": True},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            self.mock_rfsim_set_information.assert_not_called()
+
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_not_available_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = None
             self.mock_check_output.return_value = b"1.2.3.4"
             f1_relation = testing.Relation(
                 endpoint="fiveg_f1",
@@ -387,7 +426,119 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4")
+            self.mock_rfsim_set_information.assert_not_called()
+
+    def test_given_charm_is_configured_running_and_f1_provider_data_includes_multiple_plmns_when_rfsim_relation_is_joined_then_rfsim_information_is_published_with_first_plmn_info(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA_MULTIPLE_PLMNS
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            rfsim_relation = testing.Relation(
+                endpoint="fiveg_rfsim",
+                interface="fiveg_rfsim",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation, rfsim_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={"simulation-mode": True},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4", 12, None)
+
+    def test_given_charm_is_configured_running_and_f1_relation_is_not_created_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_check_output.return_value = b"1.2.3.4"
+            rfsim_relation = testing.Relation(
+                endpoint="fiveg_rfsim",
+                interface="fiveg_rfsim",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[rfsim_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={"simulation-mode": True},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            self.mock_rfsim_set_information.assert_not_called()
+
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rfsim_relation_is_joined_then_rfsim_information_is_published_including_sd(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA_WITH_SD
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            rfsim_relation = testing.Relation(
+                endpoint="fiveg_rfsim",
+                interface="fiveg_rfsim",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation, rfsim_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={"simulation-mode": True},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            self.mock_rfsim_set_information.assert_called_once_with("1.2.3.4", 1, 1)
 
     def test_given_f1_provider_information_is_no_available_when_pebble_ready_then_config_file_is_not_written(  # noqa: E501
         self,

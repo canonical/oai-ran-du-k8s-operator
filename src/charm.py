@@ -88,7 +88,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_created, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_changed, self._configure)
-        self.framework.observe(self.on.fiveg_rfsim_relation_joined, self._configure)
+        self.framework.observe(self.on[RFSIM_RELATION_NAME].relation_changed, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901
@@ -211,7 +211,20 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._get_rfsim_address():
             return
-        self.rfsim_provider.set_rfsim_information(self._get_rfsim_address())
+        if not self._relation_created(F1_RELATION_NAME):
+            return
+        if not (remote_network_information := self._f1_requirer.get_provider_f1_information()):
+            return
+        # There could be multiple PLMNs but UE simulator always publishes the first PLMN content
+        # according to Spec TE126. For real UE's, the device group of a slice includes IMSI
+        # which can be associated with a UE.
+        if not remote_network_information.plmns:
+            return
+        self.rfsim_provider.set_rfsim_information(
+            self._get_rfsim_address(),
+            remote_network_information.plmns[0].sst,
+            remote_network_information.plmns[0].sd,
+        )
 
     @staticmethod
     def _get_rfsim_address() -> str:
