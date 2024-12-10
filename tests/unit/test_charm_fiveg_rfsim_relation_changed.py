@@ -10,8 +10,8 @@ from ops.pebble import Layer, ServiceStatus
 from tests.unit.fixtures import F1_PROVIDER_DATA_WITH_SD, DUFixtures
 
 
-class TestCharmFivegRFSIMRelationJoined(DUFixtures):
-    def test_given_f1_relation_exists_service_not_running_when_fiveg_rfsim_relation_joined_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
+class TestCharmFivegRFSIMRelationChanged(DUFixtures):
+    def test_given_f1_relation_exists_service_not_running_when_fiveg_rfsim_relation_chaned_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
         self,
     ):
         f1_relation = testing.Relation(endpoint="fiveg_f1", interface="fiveg_f1")
@@ -24,12 +24,12 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
         )
         self.mock_check_output.return_value = b"1.2.3.4"
 
-        state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
+        state_out = self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
 
         relation = state_out.get_relation(fiveg_rfsim_relation.id)
         assert relation.local_app_data == {}
 
-    def test_given_given_service_is_running_and_f1_relation_joined_and_remote_network_information_exists_when_fiveg_rfsim_relation_joined_then_rfsim_information_is_in_relation_databag(  # noqa: E501
+    def test_given_given_service_is_running_and_f1_relation_joined_and_remote_network_information_exists_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_in_relation_databag(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -80,11 +80,11 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
+            state_out = self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
             relation = state_out.get_relation(fiveg_rfsim_relation.id)
             assert relation.local_app_data == {"rfsim_address": "1.2.3.4", "sst": "1", "sd": "1"}
 
-    def test_given_given_service_is_running_and_f1_relation_does_not_exist_when_fiveg_rfsim_relation_joined_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
+    def test_given_given_service_is_running_and_f1_relation_does_not_exist_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -128,6 +128,6 @@ class TestCharmFivegRFSIMRelationJoined(DUFixtures):
                 config={"simulation-mode": True},
             )
 
-            state_out = self.ctx.run(self.ctx.on.relation_joined(fiveg_rfsim_relation), state_in)
+            state_out = self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
             relation = state_out.get_relation(fiveg_rfsim_relation.id)
             assert relation.local_app_data == {}
