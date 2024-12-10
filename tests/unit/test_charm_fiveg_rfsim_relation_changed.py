@@ -11,7 +11,7 @@ from tests.unit.fixtures import F1_PROVIDER_DATA_WITH_SD, DUFixtures
 
 
 class TestCharmFivegRFSIMRelationChanged(DUFixtures):
-    def test_given_f1_relation_exists_service_not_running_when_fiveg_rfsim_relation_chaned_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
+    def test_given_f1_relation_exists_service_not_running_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
         self,
     ):
         f1_relation = testing.Relation(endpoint="fiveg_f1", interface="fiveg_f1")
