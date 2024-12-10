@@ -420,9 +420,13 @@ class OAIRANDUOperator(CharmBase):
     @property
     def _du_startup_command(self) -> str:
         rfsim_switch = ""
+        three_quarter_sampling = ""
+        if self._charm_config.use_three_quarter_sampling:
+            three_quarter_sampling = "-E "
         if self._charm_config.simulation_mode:
             rfsim_switch = "--rfsim"
-        return f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} --continuous-tx {rfsim_switch}"  # noqa: E501
+
+        return f"/opt/oai-gnb/bin/nr-softmodem -O {BASE_CONFIG_PATH}/{CONFIG_FILE_NAME} {three_quarter_sampling}--continuous-tx {rfsim_switch}"  # noqa: E501
 
     @property
     def _du_environment_variables(self) -> dict:

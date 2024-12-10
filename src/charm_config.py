@@ -59,6 +59,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     f1_ip_address: str = Field(default="192.168.254.5/24")
     f1_port: int = Field(ge=1, le=65535)
     simulation_mode: bool = False
+    use_three_quarter_sampling: bool = False
 
     @field_validator("f1_ip_address", mode="before")
     @classmethod
@@ -78,6 +79,7 @@ class CharmConfig:
         f1_ip_address: IP address used by f1 interface
         f1_port: Number of the port used for F1 traffic
         simulation_mode: Run DU in simulation mode
+        use_three_quarter_sampling: Run DU with three-quarter sampling rate
     """
 
     cni_type: CNIType
@@ -85,6 +87,7 @@ class CharmConfig:
     f1_ip_address: str
     f1_port: int
     simulation_mode: bool
+    use_three_quarter_sampling: bool
 
     def __init__(self, *, du_config: DUConfig):
         """Initialize a new instance of the CharmConfig class.
@@ -97,6 +100,7 @@ class CharmConfig:
         self.f1_ip_address = du_config.f1_ip_address
         self.f1_port = du_config.f1_port
         self.simulation_mode = du_config.simulation_mode
+        self.use_three_quarter_sampling = du_config.use_three_quarter_sampling
 
     @classmethod
     def from_charm(
