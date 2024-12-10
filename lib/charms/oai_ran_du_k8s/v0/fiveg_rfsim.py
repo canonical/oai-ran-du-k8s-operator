@@ -241,7 +241,7 @@ class RFSIMRequires(Object):
         self.relation_name = relation_name
 
     @property
-    def rfsim_address(self) -> Optional[str]:
+    def rfsim_address(self) -> Optional[IPvAnyAddress]:
         """Return address of the RFSIM.
 
         Returns:
