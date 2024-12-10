@@ -245,7 +245,7 @@ class RFSIMRequires(Object):
         """Return address of the RFSIM.
 
         Returns:
-            str: rfsim address which is equal to DU pod ip.
+            Optional[IPvAnyAddress]: rfsim address which is equal to DU pod ip.
         """
         if remote_app_relation_data := self.get_provider_rfsim_information():
             return remote_app_relation_data.rfsim_address
@@ -256,7 +256,7 @@ class RFSIMRequires(Object):
         """Return the Network Slice Service Type (SST).
 
         Returns:
-            str: sst (Network Slice Service Type)
+            Optional[int]: sst (Network Slice Service Type)
         """
         if remote_app_relation_data := self.get_provider_rfsim_information():
             return remote_app_relation_data.sst
@@ -267,7 +267,7 @@ class RFSIMRequires(Object):
         """Return the Network Slice Differentiator (SD).
 
         Returns:
-            str: sd (Network Slice Differentiator)
+           Optional[int] : sd (Network Slice Differentiator)
         """
         if remote_app_relation_data := self.get_provider_rfsim_information():
             return remote_app_relation_data.sd
