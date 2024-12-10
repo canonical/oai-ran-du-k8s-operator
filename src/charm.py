@@ -88,7 +88,7 @@ class OAIRANDUOperator(CharmBase):
         self.framework.observe(self.on.du_pebble_ready, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_created, self._configure)
         self.framework.observe(self.on[F1_RELATION_NAME].relation_changed, self._configure)
-        self.framework.observe(self.on[RFSIM_RELATION_NAME].relation_joined, self._configure)
+        self.framework.observe(self.on[RFSIM_RELATION_NAME].relation_changed, self._configure)
         self.framework.observe(self.on.remove, self._on_remove)
 
     def _on_collect_unit_status(self, event: CollectStatusEvent):  # noqa C901

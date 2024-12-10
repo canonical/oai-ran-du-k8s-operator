@@ -28,7 +28,7 @@ Example:
 ```python
 
 from ops import main
-from ops.charm import CharmBase, RelationJoinedEvent
+from ops.charm import CharmBase, RelationChangedEvent
 
 from charms.oai_ran_du_k8s.v0.fiveg_rfsim import RFSIMProvides
 
@@ -43,10 +43,10 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
         super().__init__(*args)
         self.rfsim_provider = RFSIMProvides(self, "fiveg_rfsim")
         self.framework.observe(
-            self.on.fiveg_rfsim_relation_joined, self._on_fiveg_rfsim_relation_joined
+            self.on.fiveg_rfsim_relation_changed, self._on_fiveg_rfsim_relation_changed
         )
 
-    def _on_fiveg_rfsim_relation_joined(self, event: RelationJoinedEvent):
+    def _on_fiveg_rfsim_relation_changed(self, event: RelationChangedEvent):
         if self.unit.is_leader():
             self.rfsim_provider.set_rfsim_information(
                 rfsim_address=self.RFSIM_ADDRESS
