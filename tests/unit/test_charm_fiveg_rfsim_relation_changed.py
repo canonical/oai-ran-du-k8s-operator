@@ -60,7 +60,7 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
                                 "du": {
                                     "startup": "enabled",
                                     "override": "replace",
-                                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --sa ",  # noqa: E501
+                                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --continuous-tx ",  # noqa: E501
                                     "environment": {"TZ": "UTC"},
                                 }
                             }
@@ -108,7 +108,7 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
                                 "du": {
                                     "startup": "enabled",
                                     "override": "replace",
-                                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf -E --sa ",  # noqa: E501
+                                    "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --continuous-tx ",  # noqa: E501
                                     "environment": {"TZ": "UTC"},
                                 }
                             }

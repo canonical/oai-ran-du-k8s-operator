@@ -71,6 +71,11 @@ config:
       description: |
         Run DU in simulation mode.
         In the simulation mode, the DU emulates the Radio Unit (RU) which, in real deployment, would have been a physical device connected to the DU. Simulation mode has been designed to work with the OAI RAN NR UE (a simulated 5G User Equipment).
+    use-three-quarter-sampling:
+      type: boolean
+      default: false
+      description: |
+        This parameter enables three-quarter sampling on DU by adding -E flag to DU startup command. This flag might be required to split 8 sample rate to run DU connected to physical devices (such as USRP B210).
 
 parts:
   charm:

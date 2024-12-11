@@ -266,8 +266,22 @@ class TestCharmConfigure(DUFixtures):
                 )
             }
 
-    def test_given_simulation_mode_when_configure_then_service_startup_command_container_rfsim_flag(  # noqa: E501
-        self,
+    @pytest.mark.parametrize(
+        "simulation_mode,three_quarter_sampling,rfsim_flag,three_quarter_sampling_flag",
+        [
+            pytest.param(
+                True, False, "--rfsim", "", id="simulation mode without three quarter sampling"
+            ),
+            pytest.param(
+                False, True, "", "-E ", id="three quarter sampling enabled, simulation mode off"
+            ),
+            pytest.param(
+                True, True, "--rfsim", "-E ", id="simulation mode with three quarter sampling"
+            ),
+        ],
+    )
+    def test_given_simulation_mode_three_quarter_sampling_configurations_when_configure_then_service_startup_command_container_includes_correct_flags(  # noqa: E501
+        self, simulation_mode, three_quarter_sampling, rfsim_flag, three_quarter_sampling_flag
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
@@ -294,7 +308,10 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={
+                    "simulation-mode": simulation_mode,
+                    "use-three-quarter-sampling": three_quarter_sampling,
+                },
             )
 
             state_out = self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -307,7 +324,7 @@ class TestCharmConfigure(DUFixtures):
                             "du": {
                                 "startup": "enabled",
                                 "override": "replace",
-                                "command": "/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf --continuous-tx --rfsim",  # noqa: E501
+                                "command": f"/opt/oai-gnb/bin/nr-softmodem -O /tmp/conf/du.conf {three_quarter_sampling_flag}--continuous-tx {rfsim_flag}",  # noqa: E501
                                 "environment": {"TZ": "UTC"},
                             }
                         }
