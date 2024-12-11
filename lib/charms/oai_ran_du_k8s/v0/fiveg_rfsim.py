@@ -115,7 +115,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 3
+LIBPATCH = 4
 
 
 logger = logging.getLogger(__name__)
@@ -292,15 +292,23 @@ class RFSIMRequires(Object):
             logger.warning("No remote application in relation: %s", self.relation_name)
             return None
         remote_app_relation_data: Dict[str, Any] = dict(relation.data[relation.app])
+
         try:
-            remote_app_relation_data["sd"] = int(remote_app_relation_data.get("sd", ""))
             remote_app_relation_data["sst"] = int(remote_app_relation_data.get("sst", ""))
-        except ValueError:
-            logger.error("Invalid relation data: %s", remote_app_relation_data)
+        except ValueError as err:
+            logger.error("Invalid relation data: %s: %s", remote_app_relation_data, str(err))
             return None
+
+        try:
+            if sd := remote_app_relation_data.get("sd"):
+                remote_app_relation_data["sd"] = int(sd)
+        except ValueError as err:
+            logger.error("Invalid relation data: %s: %s", remote_app_relation_data, str(err))
+            return None
+
         try:
             provider_app_data = ProviderAppData(**remote_app_relation_data)
-        except ValidationError:
-            logger.error("Invalid relation data: %s", remote_app_relation_data)
+        except ValidationError as err:
+            logger.error("Invalid relation data: %s: %s", remote_app_relation_data, str(err))
             return None
         return provider_app_data
