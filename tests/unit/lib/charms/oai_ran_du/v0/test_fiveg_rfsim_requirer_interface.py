@@ -35,26 +35,48 @@ class TestFivegRFSIMRequires:
             },
         )
 
-    def test_given_rfsim_information_in_relation_data_when_get_rfsim_information_is_called_then_information_is_returned(  # noqa: E501
-        self,
+    @pytest.mark.parametrize(
+        "remote_data,expected_rfsim_address,expected_sst,expected_sd",
+        [
+            pytest.param(
+                {
+                    "rfsim_address": VALID_RFSIM_ADDRESS,
+                    "sst": VALID_SST,
+                    "sd": VALID_SD,
+                },
+                VALID_RFSIM_ADDRESS,
+                int(VALID_SST),
+                int(VALID_SD),
+                id="all_attributes_are_available",
+            ),
+            pytest.param(
+                {
+                    "rfsim_address": VALID_RFSIM_ADDRESS,
+                    "sst": VALID_SST,
+                },
+                VALID_RFSIM_ADDRESS,
+                int(VALID_SST),
+                int(),
+                id="empty_sd",
+            ),
+        ],
+    )
+    def test_given_valid_rfsim_information_in_relation_data_when_get_rfsim_information_is_called_then_information_is_returned(  # noqa: E501
+        self, remote_data, expected_rfsim_address, expected_sst, expected_sd
     ):
         fiveg_rfsim_relation = testing.Relation(
             endpoint="fiveg_rfsim",
             interface="fiveg_rfsim",
-            remote_app_data={
-                "rfsim_address": VALID_RFSIM_ADDRESS,
-                "sst": VALID_SST,
-                "sd": VALID_SD,
-            },
+            remote_app_data=remote_data,
         )
         state_in = testing.State(
             leader=True,
             relations=[fiveg_rfsim_relation],
         )
         params = {
-            "expected_rfsim_address": VALID_RFSIM_ADDRESS,
-            "expected_sst": int(VALID_SST),
-            "expected_sd": int(VALID_SD),
+            "expected_rfsim_address": expected_rfsim_address,
+            "expected_sst": expected_sst,
+            "expected_sd": expected_sd,
         }
         self.ctx.run(self.ctx.on.action("get-rfsim-information", params=params), state_in)
 

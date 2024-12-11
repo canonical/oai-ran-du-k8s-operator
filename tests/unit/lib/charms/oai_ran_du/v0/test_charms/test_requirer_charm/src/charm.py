@@ -29,8 +29,9 @@ class DummyFivegRFSIMRequires(CharmBase):
         data = {
             "rfsim_address": rfsim_address,
             "sst": int(sst),
-            "sd": int(sd),
         }
+        if sd:
+            data["sd"] = int(sd)
         provider_app_data = ProviderAppData(**data)
         assert provider_app_data == self.rfsim_requirer.get_provider_rfsim_information()
 
