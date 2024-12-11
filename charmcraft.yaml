@@ -75,8 +75,7 @@ config:
       type: boolean
       default: false
       description: |
-        This parameter enables three-quarter sampling on DU by adding -E flag to DU startup command. 
-        This flag might be required to split 8 sample rate to run DU connected to physical devices (such as USRP B210).
+        This parameter enables three-quarter sampling on DU by adding -E flag to DU startup command. This flag might be required to split 8 sample rate to run DU connected to physical devices (such as USRP B210).
 
 parts:
   charm:
