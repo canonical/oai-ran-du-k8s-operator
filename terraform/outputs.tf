@@ -1,4 +1,4 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 output "app_name" {
@@ -6,19 +6,15 @@ output "app_name" {
   value       = juju_application.du.name
 }
 
-# Required integration endpoints
-
-output "fiveg_f1_endpoint" {
-  description = "Name of the endpoint used to provide information about F1 interface."
-  value       = "fiveg_f1"
+output "provides" {
+  value = {
+    "fiveg_rfsim" = "fiveg_rfsim"
+  }
 }
 
-output "fiveg_rfsim_endpoint" {
-  description = "Name of the endpoint used to provide information about the rfsim interface."
-  value       = "fiveg_rfsim"
-}
-
-output "logging_endpoint" {
-  description = "Name of the endpoint used to integrate with the Logging provider."
-  value       = "logging"
+output "requires" {
+  value = {
+    "fiveg_f1" = "fiveg_f1"
+    "logging"  = "logging"
+  }
 }
