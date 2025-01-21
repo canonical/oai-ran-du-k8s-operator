@@ -19,11 +19,11 @@ sudo microk8s enable multus
 Deploy the charm.
 
 ```bash
-juju deploy oai-ran-du-k8s --trust --channel=2.1/edge
-juju deploy oai-ran-cu-k8s --trust --channel=2.1/edge
+juju deploy oai-ran-du-k8s --trust --channel=2.2/edge
+juju deploy oai-ran-cu-k8s --trust --channel=2.2/edge
 juju integrate oai-ran-du-k8s:fiveg_f1 oai-ran-cu-k8s:fiveg_f1
 ```
 
 ## Image
 
-- **oai-ran-du**: `ghcr.io/canonical/oai-ran-du:2.1.1`
+- **oai-ran-du**: `ghcr.io/canonical/oai-ran-du:2.2.0`
