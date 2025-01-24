@@ -30,12 +30,45 @@ class DetectFrequencyRange:
         raise ValueError(f"Frequency {self.frequency} is out of supported range.")
 
 
-class HighFrequency:
+class FrequencyMeta(type):
+    """Metaclass to define shared validation for frequency ranges."""
+
+    def __new__(cls, name, bases, class_dict):
+        """Add frequency property with validation."""
+
+        def freq_getter(self):
+            return self._frequency
+
+        def freq_setter(self, value):
+            if not (self.RANGE[0] <= value < self.RANGE[1]):
+                raise ValueError(
+                    f"Frequency {value} is out of the valid range for {self.__class__.__name__}."
+                )
+            self._frequency = value
+
+        class_dict["frequency"] = property(freq_getter, freq_setter)
+
+        return super().__new__(cls, name, bases, class_dict)
+
+
+class BaseFrequency(metaclass=FrequencyMeta):
+    """Base class for calculations in different frequencies."""
+
+    RANGE = (0, 0)
+
+    def __init__(self, frequency: float):
+        """Initialize frequency with validation."""
+        self._frequency = None
+        self.frequency = frequency
+
+
+class HighFrequency(BaseFrequency):
     """Perform ARFCN, GSCN and frequency calculations for high level frequencies.
 
     The value of N must remain within a specified valid range, depending on the frequency.
     """
 
+    RANGE = (24250, 100_000)
     MULTUPLICATION_FACTOR = 17.28  # MHz
     BASE_FREQ = 24250.08  # MHz
     MAX_N = 4383
@@ -45,28 +78,6 @@ class HighFrequency:
     FREQ_OFFSET = 24250  # MHz
     ARFCN_OFFSET = 2016667
 
-    def __init__(self, frequency: float):
-        """Perform operations in high level frequencies.
-
-        Args:
-            frequency: float (MHz)
-        """
-        self._frequency = None
-        self.frequency = frequency
-        self.high_range: Tuple[float, float] = (24250, 100_000)
-
-    @property
-    def frequency(self) -> float:
-        """Get frequency attribute."""
-        return self._frequency  # type: ignore
-
-    @frequency.setter
-    def frequency(self, value: float):
-        """Set for the frequency attribute with validation."""
-        if not (self.high_range[0] <= value < self.high_range[1]):
-            raise ValueError(f"Frequency {value} is out of the valid range for MidFrequency.")
-        self._frequency = value
-
     def freq_to_gscn(self) -> int:
         """Calculate GSCN according to frequency.
 
@@ -97,20 +108,16 @@ class HighFrequency:
         Returns:
             arfcn: int
         """
-        if self.high_range[0] <= self.frequency < self.high_range[1]:
-            return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
-
-        raise ValueError(
-            f"Frequency {self.frequency} is out of valid range for ARFCN calculations."
-        )
+        return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
 
 
-class MidFrequency:
+class MidFrequency(BaseFrequency):
     """Perform ARFCN, GSCN and frequency calculations for mid level frequencies.
 
     The value of N must remain within a specified valid range, depending on the frequency.
     """
 
+    RANGE = (3000, 24250)
     MULTUPLICATION_FACTOR = 1.44  # MHz
     BASE_FREQ = 3000  # MHz
     MAX_N = 14756
@@ -120,28 +127,6 @@ class MidFrequency:
     FREQ_OFFSET = 3000  # MHz
     ARFCN_OFFSET = 600_000
 
-    def __init__(self, frequency: float):
-        """Perform operations in mid level frequencies.
-
-        Args:
-            frequency: float (MHz)
-        """
-        self._frequency = None
-        self.frequency = frequency
-        self.mid_range: Tuple[float, float] = (3000, 24250)
-
-    @property
-    def frequency(self) -> float:
-        """Get frequency attribute."""
-        return self._frequency  # type: ignore
-
-    @frequency.setter
-    def frequency(self, value: float):
-        """Set for the frequency attribute with validation."""
-        if not (self.mid_range[0] <= value < self.mid_range[1]):
-            raise ValueError(f"Frequency {value} is out of the valid range for MidFrequency.")
-        self._frequency = value
-
     def freq_to_gscn(self) -> int:
         """Calculate GSCN according to frequency.
 
@@ -171,15 +156,10 @@ class MidFrequency:
         Returns:
             arfcn: int
         """
-        if self.mid_range[0] <= self.frequency < self.mid_range[1]:
-            return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
-
-        raise ValueError(
-            f"Frequency {self.frequency} is out of valid range for ARFCN calculations."
-        )
+        return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
 
 
-class LowFrequency:
+class LowFrequency(BaseFrequency):
     """Perform ARFCN, GSCN and frequency calculations for low frequencies.
 
     M is a scaling factor used to adjust how frequencies are divided and mapped in specific ranges
@@ -187,6 +167,7 @@ class LowFrequency:
     The value of N must remain within a specified valid range, depending on the frequency.
     """
 
+    RANGE = (0, 3000)
     M = 3
     M_MULTUPLICATION_FACTOR = 0.05  # MHz
     MULTUPLICATION_FACTOR = 1.2  # MHz
@@ -195,28 +176,6 @@ class LowFrequency:
     FREQ_GRID = 0.005  # MHz
     FREQ_OFFSET = 0  # MHz
     ARFCN_OFFSET = 0
-
-    def __init__(self, frequency: float):
-        """Perform calculations in low frequencies.
-
-        Args:
-            frequency: float (MHz)
-        """
-        self._frequency = None
-        self.frequency = frequency
-        self.low_range: Tuple[float, float] = (0, 3000)
-
-    @property
-    def frequency(self) -> float:
-        """Get frequency attribute."""
-        return self._frequency  # type: ignore
-
-    @frequency.setter
-    def frequency(self, value: float):
-        """Set for the frequency attribute with validation."""
-        if not (self.low_range[0] <= value < self.low_range[1]):
-            raise ValueError(f"Frequency {value} is out of the valid range for LowFrequency.")
-        self._frequency = value
 
     def freq_to_gscn(self) -> int:
         """Calculate GSCN according to frequency.
@@ -248,9 +207,4 @@ class LowFrequency:
         Returns:
             arfcn: int
         """
-        if self.low_range[0] <= self.frequency < self.low_range[1]:
-            return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
-
-        raise ValueError(
-            f"Frequency {self.frequency} is out of valid range for ARFCN calculations."
-        )
+        return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))
