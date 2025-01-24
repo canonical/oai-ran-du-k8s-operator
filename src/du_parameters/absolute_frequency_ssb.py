@@ -11,7 +11,7 @@ from src.du_parameters.gscn_arfcn import DetectFrequencyRange
 logger = logging.getLogger(__name__)
 
 
-def get_absolute_frequency_ssb(center_freq: float) -> Optional[int, None]:
+def get_absolute_frequency_ssb(center_freq: float) -> Optional[int]:
     """Calculate absolute frequency for ssb using center frequency.
 
     Args:

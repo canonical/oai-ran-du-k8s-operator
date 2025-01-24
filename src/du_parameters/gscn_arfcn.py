@@ -58,7 +58,7 @@ class HighFrequency:
     @property
     def frequency(self) -> float:
         """Get frequency attribute."""
-        return self._frequency
+        return self._frequency  # type: ignore
 
     @frequency.setter
     def frequency(self, value: float):
@@ -133,7 +133,7 @@ class MidFrequency:
     @property
     def frequency(self) -> float:
         """Get frequency attribute."""
-        return self._frequency
+        return self._frequency  # type: ignore
 
     @frequency.setter
     def frequency(self, value: float):
@@ -209,7 +209,7 @@ class LowFrequency:
     @property
     def frequency(self) -> float:
         """Get frequency attribute."""
-        return self._frequency
+        return self._frequency  # type: ignore
 
     @frequency.setter
     def frequency(self, value: float):
