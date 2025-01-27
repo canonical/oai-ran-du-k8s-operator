@@ -138,7 +138,7 @@ class TestGetAbsoluteFrequencySSB:
     @pytest.mark.parametrize(
         "exception", [TypeError("Unexpected error"), ValueError("Invalid value")]
     )
-    def test_get_arfcn_with_different_exceptions(self, exception):
+    def test_get_arfcn_when_different_exceptions_occur_then_return_none(self, exception):
         self.mock_get_frequency_instance.side_effect = exception
         result = get_absolute_frequency_ssb(TEST_FREQUENCY)
         assert result is None
