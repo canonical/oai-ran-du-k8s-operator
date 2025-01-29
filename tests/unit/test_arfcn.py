@@ -2,143 +2,51 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 
-from src.du_parameters.absolute_frequency_ssb import get_absolute_frequency_ssb
-from src.du_parameters.gscn_arfcn import HighFrequency, LowFrequency, MidFrequency
-
-# A random test frequency
-TEST_FREQUENCY = 24300
+from src.du_parameters.afrcn import HIGH, LOW, MID, freq_to_arfcn
 
 
-class TestGetAbsoluteFrequencySSB:
-    def setup_method(self):
-        self.get_frequency_instance_patch = patch(
-            "src.du_parameters.absolute_frequency_ssb.get_frequency_instance"
-        )
-        self.mock_get_frequency_instance = self.get_frequency_instance_patch.start()
-        self.mock_frequency_instance = MagicMock()
+class TestARFCN:
+    def test_freq_to_arfcn_when_low_frequency_is_given_then_arfcn_is_returned_as_integer(self):
+        # Frequency in low range
+        frequency = 1000
+        expected_arfcn = LOW.arfcn_offset + ((frequency - LOW.freq_offset) / LOW.freq_grid)
+        assert freq_to_arfcn(frequency) == int(expected_arfcn)
 
-        self.mock_frequency_instance.freq_to_gscn.return_value = 0
-        self.mock_frequency_instance.gscn_to_freq.return_value = 0
-        self.mock_frequency_instance.freq_to_arfcn.return_value = 0
-        self.mock_get_frequency_instance.return_value = self.mock_frequency_instance
+    def test_freq_to_arfcn_when_mid_frequency_is_given_then_arfcn_is_returned_as_integer(self):
+        # Frequency in mid range
+        frequency = 10000
+        expected_arfcn = MID.arfcn_offset + ((frequency - MID.freq_offset) / MID.freq_grid)
+        assert freq_to_arfcn(frequency) == int(expected_arfcn)
 
-    def teardown_method(self):
-        patch.stopall()
+    def test_freq_to_arfcn_when_high_frequency_is_given_then_arfcn_is_returned_as_integer(self):
+        # Frequency in high range
+        frequency = 50000
+        expected_arfcn = HIGH.arfcn_offset + ((frequency - HIGH.freq_offset) / HIGH.freq_grid)
+        assert freq_to_arfcn(frequency) == int(expected_arfcn)
 
-    @pytest.mark.parametrize(
-        "frequency, gscn, arfcn, gscn_to_freq, frequency_class",
-        [
-            (24250, 9432, None, 24249, HighFrequency),
-            # Value of N: -0.004629629629730684 is out of supported range (0-4383).
-            (99999, 232324, None, 99890, HighFrequency),
-            # Value of N: 4383.618055555555 is out of supported range (0-4383).
-            (0, 4, None, 0, LowFrequency),
-            # Value of N: -0.12500000000000003 is out of supported range (1-2499).
-            (2999, 4, None, 2998, LowFrequency),
-            # Value of N: 2499.0416666666665 is out of supported range (1-2499)
-            (24249, 9233, None, 24199, MidFrequency),
-            # Value of N: 14756.25 is out of supported range (0-14756)
-        ],
-    )
-    def test_get_arfcn_when_valid_input_provided_but_n_is_out_of_supported_range_then_none_is_returned(  # noqa E501
-        self, frequency, gscn, arfcn, gscn_to_freq, frequency_class
-    ):
-        self.mock_frequency_instance.freq_to_gscn.return_value = gscn
-        self.mock_frequency_instance.gscn_to_freq.return_value = gscn_to_freq
-        self.mock_frequency_instance.freq_to_arfcn.return_value = arfcn
+    def test_freq_to_arfcn_when_too_low_frequency_is_given_then_value_error_is_raised(self):
+        with pytest.raises(ValueError) as exc_info:
+            freq_to_arfcn(-1)
+        assert "Frequency -1 is out of supported range." in str(exc_info.value)
 
-        result = get_absolute_frequency_ssb(frequency)
-        assert result == arfcn
+    def test_freq_to_arfcn_when_too_high_frequency_is_given_then_value_error_is_raised(self):
+        with pytest.raises(ValueError) as exc_info:
+            freq_to_arfcn(2016668)
+        assert "Frequency 2016668 is out of supported range." in str(exc_info.value)
 
-    @pytest.mark.parametrize(
-        "frequency",
-        [
-            None,
-            "invalid",
-            [123],
-            {"value": 123},
-        ],
-    )
-    def test_get_arfcn_when_invalid_type_inputs_given_then_return_none(self, frequency):
-        result = get_absolute_frequency_ssb(frequency)
-        assert result is None
+    def test_freq_to_arfcn_when_non_numeric_input_is_given_then_type_error_is_raised(self):
+        with pytest.raises(TypeError) as exc_info:
+            freq_to_arfcn("not_a_number")  # type: ignore
+        assert "Frequency not_a_number is not a numeric value." in str(exc_info.value)
 
-    @pytest.mark.parametrize(
-        "frequency, expected",
-        [
-            (24250.5, None),
-            (0.01, None),
-        ],
-    )
-    def test_get_arfcn_when_float_inputs_provided_then_return_arfcn(self, frequency, expected):
-        result = get_absolute_frequency_ssb(frequency)
-        assert result is None
-
-    @pytest.mark.parametrize(
-        "frequency, expected",
-        [
-            (HighFrequency.RANGE[0], None),
-            (HighFrequency.RANGE[1], None),
-            (LowFrequency.RANGE[0], None),
-            (LowFrequency.RANGE[1], None),
-            (MidFrequency.RANGE[0], None),
-            (MidFrequency.RANGE[1], None),
-        ],
-    )
-    def test_get_arfcn_when_boundary_frequencies_provided_then_return_arfcn(
-        self, frequency, expected
-    ):
-        result = get_absolute_frequency_ssb(frequency)
-        assert result == expected
-
-    def test_get_arfcn_when_freq_to_gscn_calculation_fails_then_return_none(
-        self,
-    ):
-        self.mock_frequency_instance.freq_to_gscn.return_value = None
-        self.mock_get_frequency_instance.return_value = self.mock_frequency_instance
-        result = get_absolute_frequency_ssb(TEST_FREQUENCY)
-        assert result is None
-
-    def test_get_arfcn_when_gscn_to_freq_calculation_fails_then_returns_none(
-        self,
-    ):
-        self.mock_frequency_instance.gscn_to_freq.return_value = None
-        self.mock_get_frequency_instance.return_value = self.mock_frequency_instance
-
-        result = get_absolute_frequency_ssb(TEST_FREQUENCY)
-        assert result is None
-
-    def test_get_arfcn_when_frequency_set_failure_then_return_none(
-        self,
-    ):
-        self.mock_frequency_instance.gscn_to_freq.return_value = 24290  # Random value
-        self.mock_frequency_instance.freq_to_gscn.return_value = 9444  # Random value
-        type(self.mock_frequency_instance).frequency = MagicMock(
-            side_effect=ValueError("invalid frequency value")
-        )
-        self.mock_get_frequency_instance.return_value = self.mock_frequency_instance
-        result = get_absolute_frequency_ssb(TEST_FREQUENCY)
-        assert result is None
-
-    @pytest.mark.parametrize(
-        "frequency",
-        [
-            -10,  # Below MIN_N
-            250000,  # Above HighFrequency.MAX_N
-        ],
-    )
-    def test_get_arfcn_when_out_of_range_frequencies_provided_then_return_none(self, frequency):
-        result = get_absolute_frequency_ssb(frequency)
-        assert result is None
-
-    @pytest.mark.parametrize(
-        "exception", [TypeError("Unexpected error"), ValueError("Invalid value")]
-    )
-    def test_get_arfcn_when_different_exceptions_occur_then_return_none(self, exception):
-        self.mock_get_frequency_instance.side_effect = exception
-        result = get_absolute_frequency_ssb(TEST_FREQUENCY)
-        assert result is None
+    def test_freq_to_arfcn_when_freq_grid_is_zero_then_value_error_is_raised(self):
+        custom_range = LOW
+        # Set freq_grid to zero for testing
+        custom_range.freq_grid = 0
+        with pytest.raises(ValueError) as exc_info:
+            freq_to_arfcn(custom_range.lower + 1)
+        assert "FREQ_GRID cannot be zero." in str(exc_info.value)
+        # Reset to the initial value not to have side effects
+        custom_range.freq_grid = 0.005

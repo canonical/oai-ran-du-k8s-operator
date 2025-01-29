@@ -4,23 +4,24 @@
 
 import pytest
 
-from src.du_parameters.gscn_arfcn import (
-    BaseFrequency,
-    HighFrequency,
-    LowFrequency,
-    MidFrequency,
+from src.du_parameters.afrcn import freq_to_arfcn
+from src.du_parameters.ssb import (
+    BaseSSB,
+    HighFrequencySSB,
+    LowFrequencySSB,
+    MidFrequencySSB,
     get_frequency_instance,
 )
 
 
-class TestBaseFrequency:
+class TestBaseSSB:
     def test_base_frequency_when_called_directly_then_raise_not_implemented_error(self):
         with pytest.raises(NotImplementedError) as err:
-            BaseFrequency(1000)
+            BaseSSB(1000)
         assert "BaseFrequency cannot be instantiated directly." in str(err.value)
 
     def test_child_class_when_range_is_defined_then_subclass_is_instantiated(self):
-        class ValidFrequency(BaseFrequency):
+        class ValidFrequency(BaseSSB):
             RANGE = (2, 300)
 
             def some_required_method(self):
@@ -30,7 +31,7 @@ class TestBaseFrequency:
         assert isinstance(instance, ValidFrequency)
 
     def test_child_class_when_range_is_missing_then_raise_error(self):
-        class ValidFrequency(BaseFrequency):
+        class ValidFrequency(BaseSSB):
             def some_required_method(self):
                 return "Implemented"
 
@@ -39,7 +40,7 @@ class TestBaseFrequency:
         assert "Frequency 1 is out of range for ValidFrequency." in str(err.value)
 
     def test_child_class_when_child_class_is_unimplemented_then_raise_error(self):
-        class IncompleteFrequency(BaseFrequency):
+        class IncompleteFrequency(BaseSSB):
             pass
 
         with pytest.raises(ValueError) as err:
@@ -47,7 +48,7 @@ class TestBaseFrequency:
         assert "Frequency 1000 is out of range for IncompleteFrequency." in str(err.value)
 
     def test_child_class_when_child_class_is_defined_with_inverted_range_then_raise_error(self):
-        class InvertedRangeFrequency(BaseFrequency):
+        class InvertedRangeFrequency(BaseSSB):
             RANGE = (3000, 1000)
 
         with pytest.raises(ValueError) as err:
@@ -64,8 +65,8 @@ class TestBaseFrequency:
     )
     def test_child_class_when_invalid_initial_input_then_raises_error(self, frequency):
         with pytest.raises(ValueError) as err:
-            LowFrequency(frequency)
-        assert f"Frequency {frequency} is out of range for LowFrequency." in str(err.value)
+            LowFrequencySSB(frequency)
+        assert f"Frequency {frequency} is out of range for LowFrequencySSB." in str(err.value)
 
     @pytest.mark.parametrize(
         "frequency",
@@ -77,13 +78,13 @@ class TestBaseFrequency:
     )
     def test_child_class_when_non_numeric_input_provided_then_raises_error(self, frequency):
         with pytest.raises(TypeError) as err:
-            LowFrequency(frequency)
+            LowFrequencySSB(frequency)
         assert f"Frequency {frequency} is not a numeric value." in str(err.value)
 
     def test_base_class_enforcing_an_abstract_method_when_child_class_instance_called_with_enforced_method_then_method_is_available(  # noqa E501
         self,
     ):
-        class ConcreteFrequency(BaseFrequency):
+        class ConcreteFrequency(BaseSSB):
             RANGE = (0, 300)
 
             def some_required_method(self):
@@ -93,7 +94,7 @@ class TestBaseFrequency:
         assert freq.some_required_method() == "Implemented"
 
 
-class TestLowFrequency:
+class TestLowFrequencySSB:
     @pytest.mark.parametrize(
         "frequency",
         [
@@ -109,9 +110,9 @@ class TestLowFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError) as err:
-            instance = LowFrequency(frequency)
+            instance = LowFrequencySSB(frequency)
             assert instance is None
-        assert f"Frequency {frequency} is out of range for LowFrequency." in str(err.value)
+        assert f"Frequency {frequency} is out of range for LowFrequencySSB." in str(err.value)
 
     @pytest.mark.parametrize(
         "frequency",
@@ -127,11 +128,11 @@ class TestLowFrequency:
     def test_low_frequency_instance_when_valid_value_provided_then_instance_is_instantiated(
         self, frequency
     ):
-        instance = LowFrequency(frequency)
-        assert isinstance(instance, LowFrequency)
+        instance = LowFrequencySSB(frequency)
+        assert isinstance(instance, LowFrequencySSB)
 
     def test_low_frequency_instance_when_freq_to_gcsn_is_called_then_gcsn_returned(self):
-        instance = LowFrequency(2000)
+        instance = LowFrequencySSB(2000)
         assert instance.freq_to_gscn() == 4999
 
     @pytest.mark.parametrize(
@@ -145,19 +146,18 @@ class TestLowFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError):
-            instance = LowFrequency(frequency)
+            instance = LowFrequencySSB(frequency)
             instance.freq_to_gscn()
 
     def test_low_frequency_instance_when_gcsn_to_freq_is_called_then_freq_is_returned(self):
-        instance = LowFrequency(2000)
+        instance = LowFrequencySSB(2000)
         assert instance.gscn_to_freq(4999) == 1999.75
 
-    def test_low_frequency_instance_when_freq_to_arfcn_is_called_then_arfcn_is_returned(self):
-        instance = LowFrequency(1999.75)
-        assert instance.freq_to_arfcn() == 399950
+    def test_low_frequency_when_freq_to_arfcn_is_called_then_arfcn_is_returned(self):
+        assert freq_to_arfcn(1999.75) == 399950
 
 
-class TestMidFrequency:
+class TestMidFrequencySSB:
     @pytest.mark.parametrize(
         "frequency",
         [
@@ -173,9 +173,9 @@ class TestMidFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError) as err:
-            instance = MidFrequency(frequency)
+            instance = MidFrequencySSB(frequency)
             assert instance is None
-        assert f"Frequency {frequency} is out of range for MidFrequency." in str(err.value)
+        assert f"Frequency {frequency} is out of range for MidFrequencySSB." in str(err.value)
 
     @pytest.mark.parametrize(
         "frequency",
@@ -190,8 +190,8 @@ class TestMidFrequency:
     def test_mid_frequency_instance_when_valid_value_provided_then_instance_is_instantiated(
         self, frequency
     ):
-        instance = MidFrequency(frequency)
-        assert isinstance(instance, MidFrequency)
+        instance = MidFrequencySSB(frequency)
+        assert isinstance(instance, MidFrequencySSB)
 
     @pytest.mark.parametrize(
         "frequency",
@@ -205,23 +205,22 @@ class TestMidFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError):
-            instance = MidFrequency(frequency)
+            instance = MidFrequencySSB(frequency)
             instance.freq_to_gscn()
 
     def test_mid_frequency_instance_when_freq_to_gcsn_is_called_then_gcsn_returned(self):
-        instance = MidFrequency(3925)
+        instance = MidFrequencySSB(3925)
         assert instance.freq_to_gscn() == 8141
 
     def test_mid_frequency_instance_when_gcsn_to_freq_is_called_then_freq_is_returned(self):
-        instance = MidFrequency(3925)
+        instance = MidFrequencySSB(3925)
         assert instance.gscn_to_freq(8141) == 3924.48
 
-    def test_mid_frequency_instance_when_freq_to_arfcn_is_called_then_arfcn_is_returned(self):
-        instance = MidFrequency(3924.48)
-        assert instance.freq_to_arfcn() == 661632
+    def test_mid_frequency_when_freq_to_arfcn_is_called_then_arfcn_is_returned(self):
+        assert freq_to_arfcn(3924.48) == 661632
 
 
-class TestHighFrequency:
+class TestHighFrequencySSB:
     @pytest.mark.parametrize(
         "frequency",
         [
@@ -237,9 +236,9 @@ class TestHighFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError) as err:
-            instance = HighFrequency(frequency)
+            instance = HighFrequencySSB(frequency)
             assert instance is None
-        assert f"Frequency {frequency} is out of range for HighFrequency." in str(err.value)
+        assert f"Frequency {frequency} is out of range for HighFrequencySSB." in str(err.value)
 
     @pytest.mark.parametrize(
         "frequency",
@@ -255,11 +254,11 @@ class TestHighFrequency:
     def test_high_frequency_instance_when_valid_value_provided_then_instance_is_instantiated(
         self, frequency
     ):
-        instance = HighFrequency(frequency)
-        assert isinstance(instance, HighFrequency)
+        instance = HighFrequencySSB(frequency)
+        assert isinstance(instance, HighFrequencySSB)
 
     def test_high_frequency_instance_when_freq_to_gcsn_is_called_then_gcsn_returned(self):
-        instance = HighFrequency(50000)
+        instance = HighFrequencySSB(50000)
         assert instance.freq_to_gscn() == 23746
 
     @pytest.mark.parametrize(
@@ -274,31 +273,30 @@ class TestHighFrequency:
         self, frequency
     ):
         with pytest.raises(ValueError):
-            instance = HighFrequency(frequency)
+            instance = HighFrequencySSB(frequency)
             instance.freq_to_gscn()
 
     def test_high_frequency_instance_when_gcsn_to_freq_is_called_then_freq_is_returned(self):
-        instance = HighFrequency(50000)
+        instance = HighFrequencySSB(50000)
         assert instance.gscn_to_freq(23746) == 49997.28
 
     def test_high_frequency_instance_when_freq_to_arfcn_is_called_then_arfcn_is_returned(self):
-        instance = HighFrequency(50000)
-        assert instance.freq_to_arfcn() == 2445833
+        assert freq_to_arfcn(50000) == 2445833
 
 
 class TestGetFrequencyInstance:
     @pytest.mark.parametrize(
         "frequency, expected_cls",
         [
-            (0, LowFrequency),
-            (1500, LowFrequency),
-            (2999.999, LowFrequency),
-            (3000, MidFrequency),
-            (5000, MidFrequency),
-            (24249.99, MidFrequency),
-            (24250, HighFrequency),
-            (50000, HighFrequency),
-            (99999.99, HighFrequency),
+            (0, LowFrequencySSB),
+            (1500, LowFrequencySSB),
+            (2999.999, LowFrequencySSB),
+            (3000, MidFrequencySSB),
+            (5000, MidFrequencySSB),
+            (24249.99, MidFrequencySSB),
+            (24250, HighFrequencySSB),
+            (50000, HighFrequencySSB),
+            (99999.99, HighFrequencySSB),
         ],
     )
     def test_get_frequency_instance_when_valid_ranges_provided_then_instance_returned(
@@ -341,4 +339,4 @@ class TestGetFrequencyInstance:
     def test_get_frequency_instance_when_input_is_none_then_error_raised(self):
         with pytest.raises(TypeError) as err:
             get_frequency_instance(None)  # type: ignore
-        assert "Frequency cannot be None." in str(err.value)
+        assert "Frequency None is not a numeric value." in str(err.value)
