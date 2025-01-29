@@ -1,11 +1,13 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
-"""ARFCN and GSCN calculations for DU configuration."""
+
+"""Synchronization Signal block calculations for different frequencies."""
 
 from abc import ABC
+from typing import Union
 
 
-class BaseFrequency(ABC):
+class BaseSSB(ABC):
     """Base class for calculations in different frequencies."""
 
     RANGE = (0, 0)
@@ -14,13 +16,10 @@ class BaseFrequency(ABC):
     BASE_FREQ = 0
     MAX_N = 0
     MIN_N = 0
-    FREQ_GRID = 0
-    FREQ_OFFSET = 0
-    ARFCN_OFFSET = 0
 
-    def __init__(self, frequency: float):
+    def __init__(self, frequency: Union[int, float]):
         """Initialize frequency with validation."""
-        if self.__class__ == BaseFrequency:
+        if self.__class__ == BaseSSB:
             raise NotImplementedError("BaseFrequency cannot be instantiated directly.")
 
         if not isinstance(frequency, (int, float)):
@@ -31,19 +30,7 @@ class BaseFrequency(ABC):
                 f"Frequency {frequency} is out of range for {self.__class__.__name__}."
             )
 
-        self._frequency = None
-        self.frequency = frequency
-
-    @property
-    def frequency(self):
-        """Get frequency."""
-        return self._frequency
-
-    @frequency.setter
-    def frequency(self, value: float):
-        if not (self.RANGE[0] <= value < self.RANGE[1]):
-            raise ValueError(f"Frequency {value} is out of range for {self.__class__.__name__}.")
-        self._frequency = value
+        self.frequency: Union[int, float] = frequency
 
     def freq_to_gscn(self) -> int:
         """Calculate GSCN according to frequency.
@@ -52,7 +39,7 @@ class BaseFrequency(ABC):
             gscn: int
 
         Raises:
-            ValueError: If the  MULTIPLICATION_FACTOR is invalid.
+            ValueError: If the MULTIPLICATION_FACTOR is 0 or N is out of range.
         """
         if self.MULTIPLICATION_FACTOR == 0:
             raise ValueError(f"{self.__class__.__name__}.MULTIPLICATION_FACTOR cannot be zero.")
@@ -72,30 +59,20 @@ class BaseFrequency(ABC):
 
         Returns:
             frequency: float(MHz)
+
+        Raises:
+            ValueError: If N is out of range.
         """
         n = gscn - self.BASE_GSCN
+
         if self.MIN_N <= n <= self.MAX_N:
             return n * self.MULTIPLICATION_FACTOR + self.BASE_FREQ
 
         raise ValueError(f"Value of N: {n} is out of supported range ({self.MIN_N}-{self.MAX_N}).")
 
-    def freq_to_arfcn(self) -> int:
-        """Calculate Absolute Radio Frequency Channel Number (ARFCN).
 
-        Returns:
-            arfcn: int
-
-        Raises:
-            ValueError: If the FREQ_GRID is invalid.
-        """
-        if self.FREQ_GRID == 0:
-            raise ValueError(f"{self.__class__.__name__}.FREQ_GRID cannot be zero.")
-
-        return int(self.ARFCN_OFFSET + ((self.frequency - self.FREQ_OFFSET) / self.FREQ_GRID))  # type: ignore
-
-
-class HighFrequency(BaseFrequency):
-    """Perform ARFCN, GSCN and frequency calculations for high level frequencies.
+class HighFrequencySSB(BaseSSB):
+    """Perform GSCN calculations for high level frequencies.
 
     The value of N must remain within a specified valid range, depending on the frequency.
     """
@@ -106,13 +83,10 @@ class HighFrequency(BaseFrequency):
     MAX_N = 4383
     MIN_N = 0
     BASE_GSCN = 22256
-    FREQ_GRID = 0.06  # MHz
-    FREQ_OFFSET = 24250  # MHz
-    ARFCN_OFFSET = 2016667
 
 
-class MidFrequency(BaseFrequency):
-    """Perform ARFCN, GSCN and frequency calculations for mid level frequencies.
+class MidFrequencySSB(BaseSSB):
+    """Perform GSCN calculations for mid level frequencies.
 
     The value of N must remain within a specified valid range, depending on the frequency.
     """
@@ -123,13 +97,10 @@ class MidFrequency(BaseFrequency):
     MAX_N = 14756
     MIN_N = 0
     BASE_GSCN = 7499
-    FREQ_GRID = 0.015  # MHz
-    FREQ_OFFSET = 3000  # MHz
-    ARFCN_OFFSET = 600_000
 
 
-class LowFrequency(BaseFrequency):
-    """Perform ARFCN, GSCN and frequency calculations for low frequencies.
+class LowFrequencySSB(BaseSSB):
+    """Perform GSCN calculations for low frequencies.
 
     M is a scaling factor used to adjust how frequencies are divided and mapped in specific ranges
     The default value of M is 3.
@@ -142,9 +113,6 @@ class LowFrequency(BaseFrequency):
     MULTIPLICATION_FACTOR = 1.2  # MHz
     MAX_N = 2499
     MIN_N = 1
-    FREQ_GRID = 0.005  # MHz
-    FREQ_OFFSET = 0  # MHz
-    ARFCN_OFFSET = 0
 
     def freq_to_gscn(self) -> int:
         """Calculate GSCN according to frequency.
@@ -153,8 +121,11 @@ class LowFrequency(BaseFrequency):
             gscn: int
 
         Raises:
-            ValueError: If the  MULTIPLICATION_FACTOR is invalid.
+            ValueError: If the  MULTIPLICATION_FACTOR is 0 or N is out of range.
         """
+        if self.MULTIPLICATION_FACTOR == 0:
+            raise ValueError(f"{self.__class__.__name__}.MULTIPLICATION_FACTOR cannot be zero.")
+
         n = (self.frequency - (self.M * self.M_MULTIPLICATION_FACTOR)) / self.MULTIPLICATION_FACTOR  # type: ignore
         if self.MIN_N <= n <= self.MAX_N:
             return int((3 * n) + (self.M - 3) / 2)
@@ -174,18 +145,27 @@ class LowFrequency(BaseFrequency):
         return n * self.MULTIPLICATION_FACTOR + self.M * self.M_MULTIPLICATION_FACTOR
 
 
-def get_frequency_instance(frequency: float) -> BaseFrequency:
-    """Create the instance according to appropriate frequency range class."""
-    ranges = [
-        ((0, 3000), LowFrequency),
-        ((3000, 24250), MidFrequency),
-        ((24250, 100_000), HighFrequency),
-    ]
-    if frequency is None:
-        raise TypeError("Frequency cannot be None.")
+def get_frequency_instance(frequency: Union[float, int]) -> BaseSSB:
+    """Create the instance according to appropriate frequency range class.
 
+    Args:
+        frequency: float or int
+
+    Returns:
+        BaseSSB: instance
+
+    Raises:
+        ValueError: If frequency is out of supported range
+        TypeError: If frequency is not a numeric value
+    """
     if not isinstance(frequency, (int, float)):
         raise TypeError(f"Frequency {frequency} is not a numeric value.")
+
+    ranges = [
+        ((0, 3000), LowFrequencySSB),
+        ((3000, 24250), MidFrequencySSB),
+        ((24250, 100000), HighFrequencySSB),
+    ]
 
     for (range_min, range_max), frequency_cls in ranges:
         if range_min <= frequency < range_max:
