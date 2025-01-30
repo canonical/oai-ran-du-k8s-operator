@@ -49,7 +49,7 @@ def freq_to_arfcn(frequency: int) -> int:
         arfcn: int
 
     Raises:
-        ValueError: If the FREQ_GRID is 0 or frequency is out of range.
+        ValueError: If frequency is out of range.
     """
     ranges = [LOW, MID, HIGH]
 
