@@ -127,22 +127,26 @@ HIGH_FREQUENCY = FrequencyRange(
 )
 
 
-FREQUENCY_RANGES = [LOW_FREQUENCY, MID_FREQUENCY, HIGH_FREQUENCY]
-
-
-def get_config_for_frequency(frequency: Decimal) -> FrequencyRange | None:
+def get_config_for_frequency(frequency: float | int | Decimal) -> FrequencyRange | None:
     """Return the appropriate frequency range configuration based on the frequency.
 
     Args:
-        frequency (Decimal): Frequency in MHz.
+        frequency:
+                    (int | float): Frequency in MHz.
+                        or
+                    (Decimal): Frequency in HZ.
 
     Returns:
         FrequencyRange | None:
             Frequency range configuration if frequency is within the range, else None.
     """
-    freq_instance = Frequency(Decimal(frequency))
-    for config in FREQUENCY_RANGES:
-        if config.lower_frequency <= freq_instance < config.upper_frequency:
+    ranges = [LOW_FREQUENCY, MID_FREQUENCY, HIGH_FREQUENCY]
+
+    if isinstance(frequency, (float, int)):
+        frequency = Frequency.from_mhz(frequency)
+
+    for config in ranges:
+        if config.lower_frequency <= frequency < config.upper_frequency:
             return config
     return None
 
@@ -188,8 +192,7 @@ class ARFCN:
         if isinstance(other, Decimal):
             return ARFCN(self._channel + other)
         if isinstance(other, int):
-            freq = Frequency.from_mhz(other)
-            return ARFCN(self._channel + freq)
+            return ARFCN(self._channel + Frequency(other))
         raise TypeError(f"Unsupported type for addition: {type(other).__name__}")
 
     def __eq__(self, other) -> bool:
@@ -201,7 +204,7 @@ class ARFCN:
         """Find the closest ARFCN corresponding to a given frequency.
 
         Args:
-            frequency (Frequency): The input frequency instance.
+            frequency (Decimal): The input frequency instance.
 
         Returns:
             ARFCN (int): The closest ARFCN value to the given frequency.
@@ -270,7 +273,7 @@ class GSCN:
                     + config.m_scaling * config.m_multiplication_factor
                 )
 
-        elif config.name in {"MidFrequency", "HighFrequency"}:
+        if config.name in {"MidFrequency", "HighFrequency"}:
             # For high/medium range frequencies
             n = Decimal(gscn) - config.base_gscn
             if config.min_n <= n <= config.max_n:
@@ -279,11 +282,11 @@ class GSCN:
         raise ValueError("Invalid GSCN or frequency range.")
 
     @classmethod
-    def freq_to_gcsn(cls, frequency: "Frequency") -> int:
+    def freq_to_gcsn(cls, frequency: int | float | Decimal) -> int:
         """Calculate the closest GSCN for a given frequency.
 
         Args:
-            frequency (Frequency): The input frequency.
+            frequency (int | float): The input frequency.
 
         Returns:
             GSCN (int): The closest GSCN.
@@ -296,7 +299,8 @@ class GSCN:
             raise ValueError(
                 f"Frequency {frequency} is out of supported range for GSCN calculations."
             )
-
+        if isinstance(frequency, (int | float)):
+            frequency = Frequency.from_mhz(frequency)
         n = (frequency - config.base_freq) / config.multiplication_factor
         if config.min_n <= n <= config.max_n:
             if config.name == "LowFrequency":

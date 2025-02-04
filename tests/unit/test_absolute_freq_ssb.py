@@ -65,3 +65,6 @@ def test_get_absolute_frequency_ssb_when_invalid_center_freq_then_expected_resul
 
     result = get_absolute_frequency_ssb(center_freq)
     assert result == expected_result
+    mock_gscn.freq_to_gcsn.assert_not_called()
+    mock_gscn.gscn_to_freq.assert_not_called()
+    mock_arfcn.freq_to_arfcn.assert_not_called()
