@@ -185,9 +185,6 @@ class ARFCN:
             return ARFCN(self._channel + int(other))
         raise TypeError(f"Unsupported type for addition: {type(other).__name__}")
 
-    def __radd__(self, other: "ARFCN | Frequency | int") -> "ARFCN":
-        """Add another ARFCN, frequency, or integer to this ARFCN."""
-        return self.__add__(other)
 
     def __eq__(self, other) -> bool:
         """Check if two ARFCN instances are equal."""
@@ -259,9 +256,8 @@ class GSCN:
 
         if config.name == "LowFrequency":
             # Special calculation for low frequencies with scaling factor (m_scaling)
-            n = (
-                Decimal(gscn) - (config.m_multiplication_factor - Decimal("3")) / Decimal("2")
-            ) / Decimal("3")
+            constant_term = (config.m_multiplication_factor - Decimal("3")) / Decimal("2")
+            n = (Decimal(gscn) - constant_term) / Decimal("3")
             if config.min_n <= n <= config.max_n:
                 return (
                     n * config.multiplication_factor
