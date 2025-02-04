@@ -25,12 +25,12 @@ class Frequency(Decimal):
     @classmethod
     def from_khz(cls, value: int) -> "Frequency":
         """Convert KHz to Frequency."""
-        return cls(Decimal(value) * cls.Units.KHZ)
+        return cls(Decimal(str(value)) * cls.Units.KHZ)
 
     @classmethod
     def from_mhz(cls, value: float) -> "Frequency":
         """Convert MHz to Frequency."""
-        return cls(Decimal(value) * cls.Units.MHZ)
+        return cls(Decimal(str(value)) * cls.Units.MHZ)
 
     def __add__(self, other: "Frequency | Decimal | float | int") -> "Frequency":
         """Add Frequency to others."""
@@ -51,9 +51,11 @@ class Frequency(Decimal):
         return Frequency(super().__mul__(Decimal(other)))
 
     def __truediv__(self, other: "Decimal | float | int") -> "Frequency":
-        """Divide Frequency by other."""
+        """Divide Frequency by others."""
         if not isinstance(other, (Decimal, int, float)):
             raise TypeError(f"Unsupported type for division: {type(other)}")
+        if other == 0:
+            raise ZeroDivisionError("Division by zero is not allowed.")
         return Frequency(super().__truediv__(Decimal(other)))
 
     def __repr__(self) -> str:
@@ -167,11 +169,11 @@ class ARFCN:
         """Return the ARFCN as a string."""
         return str(self._channel)
 
-    def __add__(self, other: "ARFCN | Frequency | int") -> "ARFCN":
+    def __add__(self, other: "ARFCN | Frequency | Decimal | int") -> "ARFCN":
         """Add another ARFCN, frequency, or integer to this ARFCN.
 
         Args:
-            other: The value to add (ARFCN, Frequency, or int).
+            other: The value to add (ARFCN, Frequency, Decimal or int).
 
         Returns:
             ARFCN: A new ARFCN instance with the updated channel.
@@ -181,8 +183,13 @@ class ARFCN:
         """
         if isinstance(other, ARFCN):
             return ARFCN(self._channel + other._channel)
-        if isinstance(other, (Frequency, int)):
-            return ARFCN(self._channel + int(other))
+        if isinstance(other, Frequency):
+            return ARFCN(self._channel + other)
+        if isinstance(other, Decimal):
+            return ARFCN(self._channel + other)
+        if isinstance(other, int):
+            freq = Frequency.from_mhz(other)
+            return ARFCN(self._channel + freq)
         raise TypeError(f"Unsupported type for addition: {type(other).__name__}")
 
     def __eq__(self, other) -> bool:

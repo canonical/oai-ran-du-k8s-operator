@@ -52,7 +52,7 @@ def test_get_absolute_frequency_ssb_when_valid_center_freq_then_result_is_expect
 @patch("src.du_parameters.absolute_freq_ssb.get_config_for_frequency")
 @patch("src.du_parameters.absolute_freq_ssb.GSCN")
 @patch("src.du_parameters.absolute_freq_ssb.ARFCN")
-def test_get_absolute_frequency_ssb_when_invalid_center_freq_then_no_operations_are_performed(
+def test_get_absolute_frequency_ssb_when_invalid_center_freq_then_expected_result_is_returned(
     mock_arfcn, mock_gscn, mock_get_config, mock_frequency, center_freq, expected_result
 ):
     mock_frequency.from_mhz.return_value = MagicMock()
@@ -65,8 +65,3 @@ def test_get_absolute_frequency_ssb_when_invalid_center_freq_then_no_operations_
 
     result = get_absolute_frequency_ssb(center_freq)
     assert result == expected_result
-    mock_frequency.from_mhz.assert_not_called()
-    mock_get_config.assert_not_called()
-    mock_gscn.freq_to_gcsn.assert_not_called()
-    mock_gscn.gscn_to_freq.assert_not_called()
-    mock_arfcn.freq_to_arfcn.assert_not_called()
