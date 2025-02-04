@@ -185,7 +185,6 @@ class ARFCN:
             return ARFCN(self._channel + int(other))
         raise TypeError(f"Unsupported type for addition: {type(other).__name__}")
 
-
     def __eq__(self, other) -> bool:
         """Check if two ARFCN instances are equal."""
         return isinstance(other, ARFCN) and self._channel == other._channel
