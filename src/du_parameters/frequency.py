@@ -58,8 +58,7 @@ class Frequency(Decimal):
         """
         if not isinstance(other, (Frequency, Decimal, int, str)):
             raise NotImplementedError(f"Unsupported type for addition: {type(other)}")
-        if isinstance(other, Frequency | Decimal | int | str):
-            return Frequency(super().__add__(Decimal(other)))
+        return Frequency(super().__add__(Decimal(other)))
 
     def __sub__(self, other: "Frequency | Decimal | str | int") -> "Frequency":
         """Subtract Frequency from others.
@@ -72,8 +71,7 @@ class Frequency(Decimal):
         """
         if not isinstance(other, (Frequency, Decimal, int, str)):
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}")
-        if isinstance(other, Frequency | Decimal | int | str):
-            return Frequency(super().__sub__(Decimal(other)))
+        return Frequency(super().__sub__(Decimal(other)))
 
     def __rsub__(self, other: "Frequency | Decimal | str | int") -> "Frequency":
         """Subtract Frequency from others.
@@ -86,10 +84,9 @@ class Frequency(Decimal):
         """
         if not isinstance(other, (Frequency, Decimal, int, str)):
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}")
-        if isinstance(other, Frequency | Decimal | int | str):
-            return Frequency(super().__sub__(Decimal(other)))
+        return Frequency(super().__sub__(Decimal(other)))
 
-    def __mul__(self, other: "Decimal | str| int") -> "Frequency":
+    def __mul__(self, other: "Frequency | Decimal | str| int") -> "Frequency":
         """Multiply Frequency by others.
 
         Args:
@@ -98,10 +95,9 @@ class Frequency(Decimal):
         Returns:
             Frequency: The resulting Frequency after the multiplication.
         """
-        if not isinstance(other, (Decimal, int, str)):
+        if not isinstance(other, (Frequency, Decimal, int, str)):
             raise NotImplementedError(f"Unsupported type for multiplication: {type(other)}")
-        if isinstance(other, Frequency | Decimal | int | str):
-            return Frequency(super().__mul__(Decimal(other)))
+        return Frequency(super().__mul__(Decimal(other)))
 
     def __truediv__(self, other: "Decimal | str | int") -> "Frequency":
         """Divide Frequency by others.
@@ -116,8 +112,7 @@ class Frequency(Decimal):
             raise NotImplementedError(f"Unsupported type for division: {type(other)}")
         if other == 0:
             raise ZeroDivisionError("Division by zero is not allowed.")
-        if isinstance(other, Frequency | Decimal | int | str):
-            return Frequency(super().__truediv__(Decimal(other)))
+        return Frequency(super().__truediv__(Decimal(other)))
 
     def __repr__(self) -> str:
         """Return the Frequency as a string for development purposes."""
@@ -179,7 +174,7 @@ class ARFCN:
         """Check if ARFCN instance and other are equal.
 
         Args:
-            other (ARFCN | Decimal | int): The value to add.
+            other (ARFCN | Decimal | int): The value to compare with.
 
         Returns:
             ARFCN: A new ARFCN instance with the updated channel.
@@ -242,7 +237,7 @@ class GSCN:
         """Check if two GSCN instances are equal.
 
         Args:
-            other: The value to add (GSCN or int or Decimal).
+            other: The value to compare (GSCN or int or Decimal).
 
         Returns:
             Bool: True if the two GSCN instances are equal, False otherwise.
@@ -390,9 +385,7 @@ class GSCN:
                 frequency - (config.m_scaling * config.m_multiplication_factor)
             ) / config.multiplication_factor
             if is_valid_n(n, config.min_n, config.max_n):
-                result = (CONFIG_CONSTANT_THREE * n) + (
-                    config.m_scaling - CONFIG_CONSTANT_THREE
-                ) / CONFIG_CONSTANT_TWO
+                result = CONFIG_CONSTANT_THREE * n
                 return GSCN(round(result))
             else:
                 raise ValueError(
@@ -504,7 +497,7 @@ def get_range_from_frequency(frequency: Frequency) -> FrequencyRange:
 
 
 def get_range_from_gscn(gscn: GSCN) -> FrequencyRange:
-    """Return the appropriate frequency range configuration based on the frequency.
+    """Return the appropriate frequency range configuration based on GCSN.
 
     Args:
         gscn: GSCN instance
