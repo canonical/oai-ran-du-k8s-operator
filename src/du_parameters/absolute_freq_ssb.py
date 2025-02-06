@@ -30,8 +30,7 @@ def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
         AbsoluteFrequencySSBError: If calculation fails
     """
     try:
-        frequency = Frequency.from_mhz(str(center_freq))
-        gscn = GSCN.from_frequency(frequency)
+        gscn = GSCN.from_frequency(center_freq)
         adjusted_frequency = GSCN.to_frequency(gscn)
         return ARFCN.from_frequency(adjusted_frequency)
 
