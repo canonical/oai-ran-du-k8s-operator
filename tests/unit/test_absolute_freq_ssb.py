@@ -63,3 +63,17 @@ def test_get_absolute_frequency_ssb_when_value_error_raised_during_freq_to_gcsn_
             get_absolute_frequency_ssb(mock_center_freq)
 
         mock_from_frequency.assert_called_once_with(mock_center_freq)
+
+@pytest.mark.parametrize(
+    "center_freq, expected_result",
+    [
+        (3925, 661632),
+        (4000, 666624),
+        (20, 4030),
+        (1000, 200030),
+        (25000, 2029052),
+    ],
+)
+def test_get_absolute_frequency_ssb_when_center_frequency_given_then_return_expected_result(center_freq, expected_result):
+    result = get_absolute_frequency_ssb(Frequency.from_mhz(center_freq))
+    assert result == ARFCN(expected_result)

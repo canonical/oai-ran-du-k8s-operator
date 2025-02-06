@@ -187,14 +187,15 @@ class TestGSCN:
     @pytest.mark.parametrize(
         "frequency_mhz, expected_gscn",
         [
-            (100, GSCN(25248)),
+            (100, GSCN(250)),
+            (2000, GSCN(5000)),
             (3000, GSCN(7499)),
             (4000, GSCN(8193)),
             (24000, GSCN(22082)),
             (50000, GSCN(23746)),
             (99090, GSCN(26587)),
             (3925, GSCN(8141)),
-            (2, GSCN(25004)),
+            (2, GSCN(5)),
         ],
     )
     def test_gscn_from_frequency_when_valid_inputs_given_then_return_expected_gcsn(
@@ -261,6 +262,7 @@ class TestGetRangeFromGSCN:
             (GSCN(2), LOW_FREQUENCY),
             (GSCN(7498), LOW_FREQUENCY),
             (GSCN(1000), LOW_FREQUENCY),
+            (GSCN(2900), LOW_FREQUENCY),
             (GSCN(7499), MID_FREQUENCY),
             (GSCN(22255), MID_FREQUENCY),
             (GSCN(15000), MID_FREQUENCY),
