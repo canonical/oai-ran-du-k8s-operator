@@ -12,6 +12,7 @@ from pytest_operator.plugin import OpsTest
 
 METADATA = yaml.safe_load(Path("./charmcraft.yaml").read_text())
 ANY_CHARM_PATH = "./tests/integration/any_charm.py"
+REQUIREMENTS_PATH = "./tests/integration/any_charm_requirements.txt"
 APP_NAME = METADATA["name"]
 AMF_CHARM_NAME = "sdcore-amf-k8s"
 AMF_CHARM_CHANNEL = "1.6/edge"
@@ -179,7 +180,7 @@ async def _deploy_nms_mock(ops_test: OpsTest):
         channel="beta",
         config={
             "src-overwrite": json.dumps(any_charm_src_overwrite),
-            "python-packages": ["pytest-interface-tester", "ops-scenario"],
+            "python-packages": "pytest-interface-tester",
         },
     )
 
