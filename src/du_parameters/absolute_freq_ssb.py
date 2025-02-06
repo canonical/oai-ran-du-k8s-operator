@@ -1,41 +1,41 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Calculate Synchronization Signal Block frequency for given 5G RF center frequency."""
+"""Calculate Synchronization Signal Block ARFCN for given 5G RF center frequency."""
 
+import decimal
 import logging
 
-from src.du_parameters.frequency import ARFCN, GSCN, Frequency, get_config_for_frequency
+from src.du_parameters.frequency import ARFCN, GSCN, Frequency
 
 logger = logging.getLogger(__name__)
 
 
-def get_absolute_frequency_ssb(center_freq: float | int) -> int | None:
+class AbsoluteFrequencySSBError(Exception):
+    """Exception raised when absolute frequency SSB calculation fails."""
+
+    pass
+
+
+def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
     """Calculate absolute frequency SSB using center frequency.
 
     Args:
-        center_freq (float or int): Center frequency in MHz.
+        center_freq (Frequency): Center frequency
 
     Returns:
-        int | None: The absolute SSB frequency in ARFCN format, or None if calculation fails.
+        ARFCN: The absolute SSB frequency in ARFCN format
+
+    Raises:
+        AbsoluteFrequencySSBError: If calculation fails
     """
     try:
-        if not isinstance(center_freq, (int, float)) or center_freq <= 0:
-            logger.error(f"Invalid center frequency: {center_freq}")
-            return None
+        frequency = Frequency.from_mhz(str(center_freq))
+        gscn = GSCN.from_frequency(frequency)
+        adjusted_frequency = GSCN.to_frequency(gscn)
+        return ARFCN.from_frequency(adjusted_frequency)
 
-        frequency = Frequency.from_mhz(center_freq)
-        config = get_config_for_frequency(frequency)
-        if config is None:
-            logger.error(f"Invalid frequency: {frequency}")
-            return None
-
-        gscn = GSCN.freq_to_gcsn(frequency)
-        adjusted_freq = GSCN.gscn_to_freq(config, gscn)
-        return ARFCN.freq_to_arfcn(adjusted_freq)
-
-    except (TypeError, AttributeError, ValueError) as e:
-        logger.error(
+    except (TypeError, ValueError, decimal.InvalidOperation) as e:
+        raise AbsoluteFrequencySSBError(
             f"Error calculating absolute frequency for SSB with center_freq={center_freq}: {e}"
         )
-        return None
