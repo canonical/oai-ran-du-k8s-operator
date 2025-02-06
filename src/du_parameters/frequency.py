@@ -346,10 +346,10 @@ class GSCN:
         config = get_range_from_gscn(gscn)
         if config.name == "LowFrequency":
             # Special calculation for low frequencies with scaling factor (m_scaling)
-            n = (gscn / CONFIG_CONSTANT_THREE)  # type: ignore[operator]
-            if is_valid_n(n, config.min_n, config.max_n):
+            n = gscn / CONFIG_CONSTANT_THREE
+            if is_valid_n(n, config.min_n, config.max_n):  # type: ignore[operator]
                 result = (
-                    config.multiplication_factor * n
+                    config.multiplication_factor * n  # type: ignore[operator]
                     + config.m_multiplication_factor * config.m_scaling
                 )
                 return result
@@ -386,9 +386,13 @@ class GSCN:
         """
         config = get_range_from_frequency(frequency)
         if config.name == "LowFrequency":
-            n = (frequency - (config.m_scaling * config.m_multiplication_factor)) / config.multiplication_factor
+            n = (
+                frequency - (config.m_scaling * config.m_multiplication_factor)
+            ) / config.multiplication_factor
             if is_valid_n(n, config.min_n, config.max_n):
-                result = (CONFIG_CONSTANT_THREE * n) + (config.m_scaling - CONFIG_CONSTANT_THREE) / CONFIG_CONSTANT_TWO
+                result = (CONFIG_CONSTANT_THREE * n) + (
+                    config.m_scaling - CONFIG_CONSTANT_THREE
+                ) / CONFIG_CONSTANT_TWO
                 return GSCN(round(result))
             else:
                 raise ValueError(
