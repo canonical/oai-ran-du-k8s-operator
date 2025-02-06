@@ -208,7 +208,7 @@ class ARFCN:
         if config is None:
             raise ValueError(f"No configuration found for frequency {frequency}")
         offset = (frequency - config.freq_offset) / config.freq_grid
-        result = config.arfcn_offset + Decimal(offset)
+        result = config.arfcn_offset + round(Decimal(offset))
         return result
 
 
@@ -227,7 +227,7 @@ class GSCN:
 
     def __init__(self, channel: "GSCN | int | Decimal"):
         if channel < 0 or channel > 26639:  # type: ignore[operator]
-            raise ValueError("GSCN must be between 0 and 26639.")
+            raise ValueError(f"GSCN must be between 0 and 26639, got {channel} instead.")
         self._channel = channel
 
     def __repr__(self) -> str:
@@ -311,6 +311,28 @@ class GSCN:
             return self._channel + other  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
+    def __truediv__(self, other) -> "GSCN":
+        """Divide GSCN to other GSCN, integer or Decimal.
+
+        Args:
+            other (GSCN | int | Decimal): The value to divide by.
+
+        Returns:
+            GSCN: A new GSCN instance with the updated channel.
+
+        Raises:
+            NotImplementedError: If the other value is not an GSCN, int or Decimal.
+        """
+        if isinstance(other, GSCN):
+            if other._channel == 0:
+                raise ZeroDivisionError("Division by zero is not allowed.")
+            return self._channel / other._channel  # type: ignore[operator]
+        if isinstance(other, int | Decimal):
+            if other == 0:
+                raise ZeroDivisionError("Division by zero is not allowed.")
+            return self._channel / other  # type: ignore[operator]
+        raise NotImplementedError(f"Unsupported type for division: {type(other).__name__}")
+
     @staticmethod
     def to_frequency(gscn: "GSCN") -> Frequency:  # type: ignore[operator]
         """Calculate the frequency using input GSCN.
@@ -324,16 +346,17 @@ class GSCN:
         config = get_range_from_gscn(gscn)
         if config.name == "LowFrequency":
             # Special calculation for low frequencies with scaling factor (m_scaling)
-            constant_term = (
-                config.m_multiplication_factor - CONFIG_CONSTANT_THREE
-            ) / CONFIG_CONSTANT_TWO
-            n = (gscn - constant_term) / CONFIG_CONSTANT_THREE  # type: ignore[operator]
+            n = (gscn / CONFIG_CONSTANT_THREE)  # type: ignore[operator]
             if is_valid_n(n, config.min_n, config.max_n):
                 result = (
                     config.multiplication_factor * n
                     + config.m_multiplication_factor * config.m_scaling
                 )
                 return result
+
+            raise ValueError(
+                f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
+            )
 
         elif config.name in {"MidFrequency", "HighFrequency"}:
             # For high/medium range frequencies
@@ -342,8 +365,11 @@ class GSCN:
                 result = config.multiplication_factor * n + config.base_freq  # type: ignore
                 return result
 
-        else:
-            raise ValueError(f"Unsupported configuration name: {config.name}")
+            raise ValueError(
+                f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
+            )
+
+        raise ValueError(f"Unsupported configuration name: {config.name}")
 
     @staticmethod
     def from_frequency(frequency: Frequency) -> "GSCN":
@@ -359,22 +385,28 @@ class GSCN:
             ValueError: If the frequency is out of supported range or n is out of range.
         """
         config = get_range_from_frequency(frequency)
-        n = (frequency - config.base_freq) / config.multiplication_factor
-        if config.min_n <= n <= config.max_n:
-            if config.name == "LowFrequency":
-                result = (CONFIG_CONSTANT_THREE * n) + (
-                    config.m_multiplication_factor - CONFIG_CONSTANT_THREE
-                ) / CONFIG_CONSTANT_TWO
+        if config.name == "LowFrequency":
+            n = (frequency - (config.m_scaling * config.m_multiplication_factor)) / config.multiplication_factor
+            if is_valid_n(n, config.min_n, config.max_n):
+                result = (CONFIG_CONSTANT_THREE * n) + (config.m_scaling - CONFIG_CONSTANT_THREE) / CONFIG_CONSTANT_TWO
                 return GSCN(round(result))
-
             else:
+                raise ValueError(
+                    f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
+                )
+
+        elif config.name in {"MidFrequency", "HighFrequency"}:
+            n = (frequency - config.base_freq) / config.multiplication_factor
+            if is_valid_n(n, config.min_n, config.max_n):
                 # Handle Medium and High frequency range
                 result = config.base_gscn + Decimal(n)
                 return GSCN(round(result))  # type: ignore[operator]
+            else:
+                raise ValueError(
+                    f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
+                )
 
-        raise ValueError(
-            f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
-        )
+        raise ValueError(f"Unsupported configuration name: {config.name}")
 
 
 @dataclass
