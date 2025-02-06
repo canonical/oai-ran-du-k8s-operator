@@ -79,7 +79,6 @@ parts:
   charm:
     source: .
     plugin: uv
-
     build-packages:
       - libffi-dev
       - libssl-dev
