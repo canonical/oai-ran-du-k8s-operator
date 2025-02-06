@@ -77,3 +77,27 @@ def test_get_absolute_frequency_ssb_when_value_error_raised_during_freq_to_gcsn_
 def test_get_absolute_frequency_ssb_when_center_frequency_given_then_return_expected_result(center_freq, expected_result):
     result = get_absolute_frequency_ssb(Frequency.from_mhz(center_freq))
     assert result == ARFCN(expected_result)
+
+@pytest.mark.parametrize(
+    "center_freq, expected_error_message",
+    [
+        (0, "Value of N: -0.125 is out of supported range (1-2499)"),
+        (99999, "Value of N: 4383.618055555555555555555556 is out of supported range (0-4383)"),
+    ],
+)
+def test_get_absolute_frequency_ssb_when_n_is_out_of_range_then_raise_error(center_freq, expected_error_message):
+    with pytest.raises(AbsoluteFrequencySSBError) as err:
+        get_absolute_frequency_ssb(Frequency.from_mhz(center_freq))
+    assert expected_error_message in str(err.value)
+
+@pytest.mark.parametrize(
+    "invalid_freq, expected_error",
+    [
+        (-1e10, GetRangeFromFrequencyError),  # Extremely large negative value
+        (1e10, GetRangeFromFrequencyError),  # Extremely large positive value
+        (complex(1, 1), TypeError),  # Complex number
+    ],
+)
+def test_get_absolute_frequency_ssb_when_extreme_invalid_values_given_then_raise_error(invalid_freq, expected_error):
+    with pytest.raises(expected_error):
+        get_absolute_frequency_ssb(Frequency.from_mhz(invalid_freq))
