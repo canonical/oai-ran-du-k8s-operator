@@ -31,13 +31,7 @@ def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
     """
     try:
         gscn = GSCN.from_frequency(center_freq)
-    except (TypeError, ValueError, decimal.InvalidOperation) as e:
-        raise AbsoluteFrequencySSBError(f"Error converting center_freq={center_freq} to GSCN: {e}")
-    try:
         adjusted_frequency = GSCN.to_frequency(gscn)
-    except (TypeError, ValueError, decimal.InvalidOperation) as e:
-        raise AbsoluteFrequencySSBError(f"Error converting GSCN={gscn} to frequency: {e}")
-    try:
         return ARFCN.from_frequency(adjusted_frequency)
     except (TypeError, ValueError, decimal.InvalidOperation) as e:
         raise AbsoluteFrequencySSBError(
