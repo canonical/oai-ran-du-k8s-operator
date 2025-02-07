@@ -179,7 +179,7 @@ async def _deploy_nms_mock(ops_test: OpsTest):
         channel="beta",
         config={
             "src-overwrite": json.dumps(any_charm_src_overwrite),
-            "python-packages": "ops-scenario==7.0.5\nops==2.17.1\npytest-interface-tester",
+            "python-packages": "ops==2.17.1\npytest-interface-tester",
         },
     )
 
