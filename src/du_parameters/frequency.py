@@ -9,6 +9,7 @@ Handle arithmetic operations with different types of objects.
 import logging
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +48,11 @@ class Frequency(Decimal):
         """Convert MHz to Frequency."""
         return cls(Decimal(value) * cls.Units.MHZ)
 
-    def __add__(self, other: any) -> "Frequency":
+    def __add__(self, other: Any) -> "Frequency":
         """Add Frequency to others.
 
         Args:
-            other (any): The value to add.
+            other (Any): The value to add.
 
         Returns:
             Frequency: The resulting Frequency after the addition.
@@ -64,11 +65,11 @@ class Frequency(Decimal):
         except (ValueError, TypeError) as e:
             raise NotImplementedError(f"Unsupported type for addition: {type(other)}") from e
 
-    def __sub__(self, other: any) -> "Frequency":
+    def __sub__(self, other: Any) -> "Frequency":
         """Subtract Frequency from others.
 
         Args:
-            other (any): The value to subtract.
+            other (Any): The value to subtract.
 
         Returns:
             Frequency: The resulting Frequency after the subtraction.
@@ -81,11 +82,11 @@ class Frequency(Decimal):
         except (ValueError, TypeError) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
-    def __rsub__(self, other: any) -> "Frequency":
+    def __rsub__(self, other: Any) -> "Frequency":
         """Subtract Frequency from others.
 
         Args:
-            other (any): The value to reversely subtract from.
+            other (Any): The value to reversely subtract from.
 
         Returns:
             Frequency: The resulting Frequency after the subtraction.
@@ -98,11 +99,11 @@ class Frequency(Decimal):
         except (ValueError, TypeError) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
-    def __mul__(self, other: any) -> "Frequency":
+    def __mul__(self, other: Any) -> "Frequency":
         """Multiply Frequency by others.
 
         Args:
-            other (any): The value to multiply by.
+            other (Any): The value to multiply by.
 
         Returns:
             Frequency: The resulting Frequency after the multiplication.
@@ -115,11 +116,11 @@ class Frequency(Decimal):
         except (ValueError, TypeError) as e:
             raise NotImplementedError(f"Unsupported type for multiplication: {type(other)}") from e
 
-    def __truediv__(self, other: any) -> "Frequency":
+    def __truediv__(self, other: Any) -> "Frequency":
         """Divide Frequency by others.
 
         Args:
-            other (any): The value to divide by.
+            other (Any): The value to divide by.
 
         Returns:
             Frequency: The resulting Frequency after the division.
@@ -166,11 +167,11 @@ class ARFCN:
         """Return the ARFCN as a string."""
         return str(self._channel)
 
-    def __add__(self, other: any) -> "ARFCN":
+    def __add__(self, other: Any) -> "ARFCN":
         """Add another ARFCN or integer to this ARFCN.
 
         Args:
-            other (any): The value to add.
+            other (Any): The value to add.
 
         Returns:
             ARFCN: A new ARFCN instance with the updated channel.
@@ -179,16 +180,16 @@ class ARFCN:
             NotImplementedError: If the other value is not an ARFCN or int or Decimal.
         """
         if isinstance(other, ARFCN):
-            return ARFCN(self._channel + other._channel)  # type: ignore[operator]
+            return self._channel + other._channel  # type: ignore[operator]
         if isinstance(other, int | Decimal):
-            return ARFCN(self._channel + other)
+            return self._channel + other  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
-    def __eq__(self, other: any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if ARFCN instance and other are equal.
 
         Args:
-            other (any): The value to compare with.
+            other (Any): The value to compare with.
 
         Returns:
             ARFCN: A new ARFCN instance with the updated channel.
@@ -252,11 +253,11 @@ class GSCN:
         """Return the GSCN as a string."""
         return f"{self._channel}"
 
-    def __eq__(self, other: any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Check if two GSCN instances are equal.
 
         Args:
-            other (any): The value to compare.
+            other (Any): The value to compare.
 
         Returns:
             Bool: True if the two GSCN instances are equal, False otherwise.
@@ -270,11 +271,11 @@ class GSCN:
             return self._channel == other
         raise NotImplementedError(f"Unsupported type for equality: {type(other).__name__}")
 
-    def __le__(self, other: any) -> bool:
+    def __le__(self, other: Any) -> bool:
         """Check if the current GSCN instance is less than or equal to another.
 
         Args:
-            other (any): The value to compare.
+            other (Any): The value to compare.
 
         Returns:
             bool: True if the current GSCN instance is less than or equal to the other,
@@ -289,11 +290,11 @@ class GSCN:
             return self._channel <= other
         raise NotImplementedError(f"Unsupported type for comparison: {type(other).__name__}")
 
-    def __sub__(self, other: any) -> "GSCN":
+    def __sub__(self, other: Any) -> "GSCN":
         """Subtract another GSCN or integer or decimal from this GSCN.
 
         Args:
-            other (any): The value to subtract.
+            other (Any): The value to subtract.
 
         Returns:
             GSCN: A new GSCN instance with the updated channel.
@@ -307,11 +308,11 @@ class GSCN:
             return self._channel - other  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for subtraction: {type(other).__name__}")
 
-    def __add__(self, other: any) -> "GSCN":
+    def __add__(self, other: Any) -> "GSCN":
         """Add another GSCN or integer or Decimal to this GSCN.
 
         Args:
-            other (any): The value to add.
+            other (Any): The value to add.
 
         Returns:
             GSCN: A new GSCN instance with the updated channel.
@@ -325,11 +326,11 @@ class GSCN:
             return self._channel + other  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
-    def __truediv__(self, other: any) -> "GSCN":
+    def __truediv__(self, other: Any) -> "GSCN":
         """Divide GSCN to other GSCN, integer or Decimal.
 
         Args:
-            other (any): The value to divide by.
+            other (Any): The value to divide by.
 
         Returns:
             GSCN: A new GSCN instance with the updated channel.

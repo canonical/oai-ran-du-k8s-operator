@@ -248,9 +248,7 @@ class TestGSCN:
             (None, NotImplementedError),
         ],
     )
-    def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(
-        self, gscn, expected_error
-    ):
+    def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(self, gscn, expected_error):
         with pytest.raises(expected_error):
             GSCN.to_frequency(GSCN(gscn))
 

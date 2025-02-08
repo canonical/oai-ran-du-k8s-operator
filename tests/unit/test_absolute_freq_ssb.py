@@ -10,7 +10,7 @@ from src.du_parameters.absolute_freq_ssb import (
     AbsoluteFrequencySSBError,
     get_absolute_frequency_ssb,
 )
-from src.du_parameters.frequency import ARFCN, GSCN, Frequency, GetRangeFromFrequencyError
+from src.du_parameters.frequency import ARFCN, GSCN, Frequency
 
 
 class TestAbsoluteFrequencySSB:
@@ -39,7 +39,11 @@ class TestAbsoluteFrequencySSB:
         "invalid_freq, expected_error, error_message",
         [
             (-1222, AbsoluteFrequencySSBError, "Frequency -1222 is not supported for any range"),
-            ("invalid", AbsoluteFrequencySSBError, "Frequency invalid is not supported for any range"),
+            (
+                "invalid",
+                AbsoluteFrequencySSBError,
+                "Frequency invalid is not supported for any range",
+            ),
             (None, AbsoluteFrequencySSBError, "Frequency None is not supported for any range"),
         ],
     )
@@ -88,8 +92,8 @@ class TestAbsoluteFrequencySSB:
             (0, "Value of N: -0.125 is out of supported range (1-2499)"),
             (
                 99999,
-                "Value of N: 4383.618055555555555555555556 is out of supported range (0-4383)",
-            ),  # noqa: E501
+                "Value of N: 4383.618055555555555555555556 is out of supported range (0-4383)",  # noqa: E501
+            ),
         ],
     )
     def test_get_absolute_frequency_ssb_when_n_is_out_of_range_then_raise_error(
@@ -102,9 +106,21 @@ class TestAbsoluteFrequencySSB:
     @pytest.mark.parametrize(
         "invalid_freq, expected_error, error_message",
         [
-            (-1e10, AbsoluteFrequencySSBError, "Frequency -10000000000000000 is not supported for any range"),  # Extremely large negative value
-            (1e10, AbsoluteFrequencySSBError, "Frequency 10000000000000000 is not supported for any range"),  # Extremely large positive value
-            (complex(1, 1), TypeError, "conversion from complex to Decimal is not supported"),  # Complex number
+            (
+                -1e10,  # Extremely large negative value
+                AbsoluteFrequencySSBError,
+                "Frequency -10000000000000000 is not supported for any range",
+            ),
+            (
+                1e10,  # Extremely large positive value
+                AbsoluteFrequencySSBError,
+                "Frequency 10000000000000000 is not supported for any range",
+            ),
+            (
+                complex(1, 1),  # Complex number
+                TypeError,
+                "conversion from complex to Decimal is not supported",
+            ),
         ],
     )
     def test_get_absolute_frequency_ssb_when_extreme_invalid_values_given_then_raise_error(
