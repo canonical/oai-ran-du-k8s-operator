@@ -244,11 +244,11 @@ class TestGSCN:
             (-248, ValueError),
             (8140001, ValueError),
             (-34, ValueError),
-            ("invalid", TypeError),
-            (None, TypeError),
+            ("invalid", NotImplementedError),
+            (None, NotImplementedError),
         ],
     )
-    def test_gscn_to_freq_when_invalid_inputs_given_then_raise_value_error(
+    def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(
         self, gscn, expected_error
     ):
         with pytest.raises(expected_error):
