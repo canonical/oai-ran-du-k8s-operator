@@ -36,19 +36,20 @@ class TestAbsoluteFrequencySSB:
             mock_from_frequency_arfcn.assert_called_once_with(mock_adjusted_frequency)
 
     @pytest.mark.parametrize(
-        "invalid_freq, expected_error",
+        "invalid_freq, expected_error, error_message",
         [
-            (-1222, GetRangeFromFrequencyError),
-            ("invalid", GetRangeFromFrequencyError),
-            (None, GetRangeFromFrequencyError),
+            (-1222, AbsoluteFrequencySSBError, "Frequency -1222 is not supported for any range"),
+            ("invalid", AbsoluteFrequencySSBError, "Frequency invalid is not supported for any range"),
+            (None, AbsoluteFrequencySSBError, "Frequency None is not supported for any range"),
         ],
     )
     def test_get_absolute_frequency_ssb_when_input_with_invalid_type_given_then_raise_exception(  # noqa: E501
-        self, invalid_freq, expected_error
+        self, invalid_freq, expected_error, error_message
     ):
         invalid_center_freq = invalid_freq
-        with pytest.raises(expected_error):
+        with pytest.raises(expected_error) as e:
             get_absolute_frequency_ssb(invalid_center_freq)
+        assert error_message in str(e.value)
 
     def test_get_absolute_frequency_ssb_when_value_error_raised_during_freq_to_gcsn_conversion_then_raise_exception(  # noqa: E501
         self,
@@ -99,15 +100,16 @@ class TestAbsoluteFrequencySSB:
         assert expected_error_message in str(err.value)
 
     @pytest.mark.parametrize(
-        "invalid_freq, expected_error",
+        "invalid_freq, expected_error, error_message",
         [
-            (-1e10, GetRangeFromFrequencyError),  # Extremely large negative value
-            (1e10, GetRangeFromFrequencyError),  # Extremely large positive value
-            (complex(1, 1), TypeError),  # Complex number
+            (-1e10, AbsoluteFrequencySSBError, "Frequency -10000000000000000 is not supported for any range"),  # Extremely large negative value
+            (1e10, AbsoluteFrequencySSBError, "Frequency 10000000000000000 is not supported for any range"),  # Extremely large positive value
+            (complex(1, 1), TypeError, "conversion from complex to Decimal is not supported"),  # Complex number
         ],
     )
     def test_get_absolute_frequency_ssb_when_extreme_invalid_values_given_then_raise_error(
-        self, invalid_freq, expected_error
+        self, invalid_freq, expected_error, error_message
     ):
-        with pytest.raises(expected_error):
+        with pytest.raises(expected_error) as err:
             get_absolute_frequency_ssb(Frequency.from_mhz(invalid_freq))
+        assert error_message in str(err.value)
