@@ -11,6 +11,7 @@ from src.du_parameters.frequency import (
     GSCN,
     Frequency,
     GetRangeFromFrequencyError,
+    GetRangeFromGSCNError,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
         ValueError,
         decimal.InvalidOperation,
         NotImplementedError,
-        GetRangeFromFrequencyError,
+        GetRangeFromGSCNError,
         GetRangeFromFrequencyError,
     ) as e:
         raise AbsoluteFrequencySSBError(

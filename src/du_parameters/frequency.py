@@ -151,7 +151,7 @@ class ARFCN:
         channel (ARFCN | int): The input ARFCN instance.
 
     Raises:
-        ValueError: If the ARFCN is not within the valid range for ARFCN.,
+        ValueError: If the ARFCN is not within the valid range for ARFCN.
         NotImplementedError: If the other value is not an ARFCN or int.
     """
 
