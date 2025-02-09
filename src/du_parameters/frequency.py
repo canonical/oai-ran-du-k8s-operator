@@ -124,6 +124,9 @@ class Frequency(Decimal):
 
         Returns:
             Frequency: The resulting Frequency after the division.
+
+        Raises:
+            NotImplementedError: If the other value is not Frequency, int, str or Decimal.
         """
         try:
             return Frequency(super().__truediv__(Decimal(other)))
@@ -152,11 +155,17 @@ class ARFCN:
         NotImplementedError: If the other value is not an ARFCN or int.
     """
 
+    MIN_VALUE = 0
+    MAX_VALUE = 3279165
+
     def __init__(self, channel: "int | ARFCN"):
         if not isinstance(channel, (int, ARFCN)):
             raise NotImplementedError("Channel must be an integer or ARFCN instance.")
-        if channel < 0 or channel > 3279165:  # type: ignore[operator]
-            raise ValueError("ARFCN must be between 0 and 327916.")
+        if channel < self.MIN_VALUE or channel > self.MAX_VALUE:  # type: ignore[operator]
+            raise ValueError(
+                f"ARFCN must be between {self.MIN_VALUE} "
+                f"and {self.MAX_VALUE}, got {channel} instead."
+            )
         self._channel = channel
 
     def __repr__(self) -> str:
@@ -180,9 +189,9 @@ class ARFCN:
             NotImplementedError: If the other value is not an ARFCN or int or Decimal.
         """
         if isinstance(other, ARFCN):
-            return self._channel + other._channel  # type: ignore[operator]
+            return ARFCN(self._channel + other._channel)  # type: ignore[operator]
         if isinstance(other, int | Decimal):
-            return self._channel + other  # type: ignore[operator]
+            return ARFCN(round(self._channel + other))  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
     def __eq__(self, other: Any) -> bool:
@@ -221,7 +230,7 @@ class ARFCN:
         if config is None:
             raise ValueError(f"No configuration found for frequency {frequency}")
         offset = (frequency - config.freq_offset) / config.freq_grid
-        result = config.arfcn_offset + round(Decimal(offset))
+        result = config.arfcn_offset + Decimal(offset)
         return result
 
 
@@ -231,18 +240,24 @@ class GSCN:
     Include conversions to frequencies and validity checks.
 
     Args:
-        channel (GSCN): The input GSCN.
+        channel (GSCN | int): The input GSCN instance.
 
     Raises:
         ValueError: If the GSCN is not within the valid range for GSCN or n is out of range.
         NotImplementedError: If the other value is not an GSCN or int.
     """
 
+    MIN_VALUE = 0
+    MAX_VALUE = 26639
+
     def __init__(self, channel: "GSCN | int"):
         if not isinstance(channel, (int, GSCN)):
             raise NotImplementedError("Channel must be an integer or GSCN instance.")
-        if channel < 0 or channel > 26639:  # type: ignore[operator]
-            raise ValueError(f"GSCN must be between 0 and 26639, got {channel} instead.")
+        if channel < self.MIN_VALUE or channel > self.MAX_VALUE:  # type: ignore[operator]
+            raise ValueError(
+                f"GSCN must be between {self.MIN_VALUE} "
+                f"and {self.MAX_VALUE}, got {channel} instead."
+            )
         self._channel = channel
 
     def __repr__(self) -> str:
@@ -272,7 +287,7 @@ class GSCN:
         raise NotImplementedError(f"Unsupported type for equality: {type(other).__name__}")
 
     def __le__(self, other: Any) -> bool:
-        """Check if the current GSCN instance is less than or equal to another.
+        """Check if the current GSCN instance is less than or equal to other.
 
         Args:
             other (Any): The value to compare.
@@ -285,9 +300,28 @@ class GSCN:
             NotImplementedError: If the other value is not an GSCN, int or Decimal.
         """
         if isinstance(other, GSCN):
-            return self._channel <= other._channel  # type: ignore[operator]
+            return self._channel <= other._channel
         if isinstance(other, int | Decimal):
             return self._channel <= other
+        raise NotImplementedError(f"Unsupported type for comparison: {type(other).__name__}")
+
+    def __ge__(self, other: Any) -> bool:
+        """Check if the current GSCN instance is greater than or equal to other.
+
+        Args:
+            other (Any): The value to compare.
+
+        Returns:
+            bool: True if the current GSCN instance is greater than or equal to the other,
+             False otherwise.
+
+        Raises:
+            NotImplementedError: If the other value is not an GSCN, int or Decimal.
+        """
+        if isinstance(other, GSCN):
+            return self._channel >= other._channel
+        if isinstance(other, int | Decimal):
+            return self._channel >= other
         raise NotImplementedError(f"Unsupported type for comparison: {type(other).__name__}")
 
     def __sub__(self, other: Any) -> "GSCN":
@@ -303,9 +337,9 @@ class GSCN:
             NotImplementedError: If the other value is not an GSCN, int or Decimal.
         """
         if isinstance(other, GSCN):
-            return self._channel - other._channel  # type: ignore[operator]
+            return GSCN(self._channel - other._channel)  # type: ignore[operator]
         if isinstance(other, int | Decimal):
-            return self._channel - other  # type: ignore[operator]
+            return GSCN(self._channel - round(other))
         raise NotImplementedError(f"Unsupported type for subtraction: {type(other).__name__}")
 
     def __add__(self, other: Any) -> "GSCN":
@@ -321,9 +355,9 @@ class GSCN:
             NotImplementedError: If the other value is not an GSCN, int or Decimal.
         """
         if isinstance(other, GSCN):
-            return self._channel + other._channel  # type: ignore[operator]
+            return GSCN(self._channel + other._channel)  # type: ignore[operator]
         if isinstance(other, int | Decimal):
-            return self._channel + other  # type: ignore[operator]
+            return GSCN(self._channel + round(other))
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
     def __truediv__(self, other: Any) -> "GSCN":
@@ -339,14 +373,17 @@ class GSCN:
             NotImplementedError: If the other value is not an GSCN, int or Decimal.
         """
         if isinstance(other, GSCN):
-            return self._channel / other._channel  # type: ignore[operator]
+            return GSCN(round(self._channel / other._channel))  # type: ignore[operator]
         if isinstance(other, int | Decimal):
-            return self._channel / other  # type: ignore[operator]
+            return GSCN(round(self._channel / other))  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for division: {type(other).__name__}")
 
     @staticmethod
-    def to_frequency(gscn: "GSCN") -> Frequency:  # type: ignore[operator]
+    def to_frequency(gscn: "GSCN") -> Frequency:
         """Calculate the frequency using input GSCN.
+
+        Args:
+           gscn (GSCN): The input GSCN.
 
         Returns:
             frequency (Frequency): The closest frequency.
@@ -360,10 +397,10 @@ class GSCN:
             n = gscn / CONFIG_CONSTANT_THREE
             if is_valid_n(n, config.min_n, config.max_n):  # type: ignore[operator]
                 result = (
-                    config.multiplication_factor * n  # type: ignore[operator]
+                    n._channel * config.multiplication_factor  # type: ignore[operator]
                     + config.m_multiplication_factor * config.m_scaling
                 )
-                return result
+                return Frequency(result)
 
             raise ValueError(
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
@@ -372,9 +409,9 @@ class GSCN:
         elif config.name in {"MidFrequency", "HighFrequency"}:
             # For high/medium range frequencies
             n = gscn - config.base_gscn
-            if is_valid_n(n, config.min_n, config.max_n):  # type: ignore
-                result = config.multiplication_factor * n + config.base_freq  # type: ignore
-                return result
+            if is_valid_n(n._channel, config.min_n, config.max_n):  # type: ignore
+                result = config.multiplication_factor * n._channel + config.base_freq  # type: ignore
+                return Frequency(result)
 
             raise ValueError(
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
@@ -401,7 +438,7 @@ class GSCN:
                 frequency - (config.m_scaling * config.m_multiplication_factor)
             ) / config.multiplication_factor
             if is_valid_n(n, config.min_n, config.max_n):
-                result = CONFIG_CONSTANT_THREE * n
+                result = n * CONFIG_CONSTANT_THREE
                 return GSCN(round(result))
 
             raise ValueError(
@@ -413,7 +450,7 @@ class GSCN:
             if is_valid_n(n, config.min_n, config.max_n):
                 # Handle Medium and High frequency range
                 result = config.base_gscn + Decimal(n)
-                return GSCN(round(result))  # type: ignore[operator]
+                return result  # type: ignore[operator]
 
             raise ValueError(
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
@@ -499,17 +536,11 @@ def get_range_from_frequency(frequency: Frequency) -> FrequencyRange:
     Raises:
         GetRangeFromFrequencyError: If frequency is not appropriate for any frequency range.
     """
-    try:
-        ranges = [LOW_FREQUENCY, MID_FREQUENCY, HIGH_FREQUENCY]
-        for config in ranges:
-            if config.lower_frequency <= frequency < config.upper_frequency:
-                return config
-        raise ValueError(f"Frequency {frequency} is out of supported range.")
-
-    except Exception as e:
-        raise GetRangeFromFrequencyError(
-            f"Frequency {frequency} is not supported for any range: {e}."
-        )
+    ranges = [LOW_FREQUENCY, MID_FREQUENCY, HIGH_FREQUENCY]
+    for config in ranges:
+        if config.lower_frequency <= frequency < config.upper_frequency:
+            return config
+    raise GetRangeFromFrequencyError(f"Frequency {frequency} is out of supported range.")
 
 
 def get_range_from_gscn(gscn: GSCN) -> FrequencyRange:
@@ -524,17 +555,13 @@ def get_range_from_gscn(gscn: GSCN) -> FrequencyRange:
     Raises:
         GetRangeFromGSCNError: If GSCN is not appropriate for any frequency range.
     """
-    try:
-        if GSCN(2) <= gscn <= GSCN(7498):
-            return LOW_FREQUENCY
-        if GSCN(7499) <= gscn <= GSCN(22255):
-            return MID_FREQUENCY
-        if GSCN(22256) <= gscn <= GSCN(26639):
-            return HIGH_FREQUENCY
-        raise ValueError(f"GSCN {gscn} is out of supported range.")
-
-    except Exception as e:
-        raise GetRangeFromGSCNError(f"GSCN {gscn} is not supported for any range: {e}.")
+    if GSCN(2) <= gscn <= GSCN(7498):
+        return LOW_FREQUENCY
+    if GSCN(7499) <= gscn <= GSCN(22255):
+        return MID_FREQUENCY
+    if GSCN(22256) <= gscn <= GSCN(26639):
+        return HIGH_FREQUENCY
+    raise GetRangeFromGSCNError(f"GSCN {gscn} is out of supported range.")
 
 
 def is_valid_n(n: Decimal, min_n: Decimal, max_n: Decimal) -> bool:

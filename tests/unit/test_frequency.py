@@ -1,7 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
-
 import decimal
+from builtins import isinstance
 
 import pytest
 
@@ -171,9 +171,9 @@ class TestARFCN:
         [
             (Frequency.from_mhz(150000), GetRangeFromFrequencyError),
             (Frequency.from_mhz(-1), GetRangeFromFrequencyError),
-            ("invalid", GetRangeFromFrequencyError),
+            ("invalid", TypeError),
             (-100, GetRangeFromFrequencyError),
-            (None, GetRangeFromFrequencyError),
+            (None, TypeError),
         ],
     )
     def test_arfcn_from_frequency_when_invalid_inputs_given_then_raise_value_error(
@@ -278,8 +278,8 @@ class TestGetRangeFromGSCN:
         "invalid_gscn_input, exception_type, exception_message",
         [
             (GSCN(1), GetRangeFromGSCNError, "is out of supported range"),
-            (None, GetRangeFromGSCNError, "Unsupported type for comparison"),
-            ("invalid", GetRangeFromGSCNError, "is not supported for any range"),
+            (None, NotImplementedError, "Unsupported type for comparison: NoneType"),
+            ("invalid", NotImplementedError, "Unsupported type for comparison: str"),
         ],
     )
     def test_get_range_from_gscn_when_invalid_inputs_given_then_raise_error(
