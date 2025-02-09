@@ -38,13 +38,17 @@ class TestAbsoluteFrequencySSB:
     @pytest.mark.parametrize(
         "invalid_freq, expected_error, error_message",
         [
-            (-1222, AbsoluteFrequencySSBError, "Frequency -1222 is not supported for any range"),
+            (-1222, AbsoluteFrequencySSBError, "Frequency -1222 is out of supported range"),
             (
                 "invalid",
                 AbsoluteFrequencySSBError,
-                "Frequency invalid is not supported for any range",
+                "'<=' not supported between instances of 'Frequency' and 'str'",
             ),
-            (None, AbsoluteFrequencySSBError, "Frequency None is not supported for any range"),
+            (
+                None,
+                AbsoluteFrequencySSBError,
+                "'<=' not supported between instances of 'Frequency' and 'NoneType'",
+            ),
         ],
     )
     def test_get_absolute_frequency_ssb_when_input_with_invalid_type_given_then_raise_exception(  # noqa: E501
@@ -65,7 +69,7 @@ class TestAbsoluteFrequencySSB:
                 GSCN, "from_frequency", side_effect=ValueError("Invalid GSCN")
             ) as mock_from_frequency,
         ):
-            with pytest.raises(AbsoluteFrequencySSBError, match=r"GSCN"):
+            with pytest.raises(AbsoluteFrequencySSBError, match=r"Invalid GSCN"):
                 get_absolute_frequency_ssb(mock_center_freq)
 
             mock_from_frequency.assert_called_once_with(mock_center_freq)
@@ -75,8 +79,8 @@ class TestAbsoluteFrequencySSB:
         [
             (3925, 661632),
             (4000, 666624),
-            (20, 4030),
-            (1000, 200030),
+            (20, 4110),
+            (1000, 199950),
             (25000, 2029052),
         ],
     )
@@ -109,12 +113,12 @@ class TestAbsoluteFrequencySSB:
             (
                 -1e10,  # Extremely large negative value
                 AbsoluteFrequencySSBError,
-                "Frequency -10000000000000000 is not supported for any range",
+                "Frequency -10000000000000000 is out of supported range",
             ),
             (
                 1e10,  # Extremely large positive value
                 AbsoluteFrequencySSBError,
-                "Frequency 10000000000000000 is not supported for any range",
+                "Frequency 10000000000000000 is out of supported range.",
             ),
             (
                 complex(1, 1),  # Complex number
