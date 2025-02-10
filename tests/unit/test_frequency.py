@@ -172,7 +172,7 @@ class TestARFCN:
             (Frequency.from_mhz(150000), ValueError),
             (Frequency.from_mhz(-1), ValueError),
             ("invalid", TypeError),
-            (-100, ValueError),
+            (-100, TypeError),
             (None, TypeError),
         ],
     )

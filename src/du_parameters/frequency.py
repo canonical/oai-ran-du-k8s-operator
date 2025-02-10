@@ -235,7 +235,10 @@ class ARFCN:
         Raises:
             ValueError: If no configuration is found for the given frequency
             or frequency is out of range.
+            TypeError: If frequency is not a Frequency instance.
         """
+        if not isinstance(frequency, Frequency):
+            raise TypeError(f"Expected Frequency, got {type(frequency).__name__}")
         try:
             config = get_range_from_frequency(frequency)
         except GetRangeFromFrequencyError:
@@ -401,7 +404,10 @@ class GSCN:
 
         Raises:
             ValueError: If the GSCN is out of supported range or n is out of range.
+            TypeError: If the input is not a GSCN.
         """
+        if not isinstance(gscn, GSCN):
+            raise TypeError(f"Expected GSCN, got {type(gscn).__name__}")
         try:
             config = get_range_from_gscn(gscn)
         except GetRangeFromGSCNError:
@@ -445,7 +451,10 @@ class GSCN:
 
         Raises:
             ValueError: If the frequency is out of supported range or n is out of range.
+            TypeError: If the input is not a Frequency.
         """
+        if not isinstance(frequency, Frequency):
+            raise TypeError(f"Expected Frequency, got {type(frequency).__name__}")
         try:
             config = get_range_from_frequency(frequency)
         except GetRangeFromFrequencyError:
