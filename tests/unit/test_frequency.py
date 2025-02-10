@@ -169,10 +169,10 @@ class TestARFCN:
     @pytest.mark.parametrize(
         "invalid_freq_mhz, expected_error",
         [
-            (Frequency.from_mhz(150000), GetRangeFromFrequencyError),
-            (Frequency.from_mhz(-1), GetRangeFromFrequencyError),
+            (Frequency.from_mhz(150000), ValueError),
+            (Frequency.from_mhz(-1), ValueError),
             ("invalid", TypeError),
-            (-100, GetRangeFromFrequencyError),
+            (-100, ValueError),
             (None, TypeError),
         ],
     )
@@ -217,9 +217,11 @@ class TestGSCN:
     def test_gscn_from_frequency_when_n_is_out_of_range_then_raise_range_error(
         self, frequency_mhz
     ):
-        with pytest.raises(GetRangeFromFrequencyError) as err:
+        with pytest.raises(ValueError) as err:
             GSCN.from_frequency(Frequency.from_mhz(frequency_mhz))
-        assert "is out of supported range" in str(err.value)
+        assert (
+            f"No frequency range found for frequency " f"{Frequency.from_mhz(frequency_mhz)}"
+        ) in str(err.value)
 
     @pytest.mark.parametrize(
         "gscn, expected_freq",
