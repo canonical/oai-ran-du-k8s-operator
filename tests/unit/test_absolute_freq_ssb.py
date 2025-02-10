@@ -38,16 +38,16 @@ class TestAbsoluteFrequencySSB:
     @pytest.mark.parametrize(
         "invalid_freq, expected_error, error_message",
         [
-            (-1222, AbsoluteFrequencySSBError, " No frequency range found for frequency -1222"),
+            (-1222, AbsoluteFrequencySSBError, "Expected Frequency, got int"),
             (
                 "invalid",
                 AbsoluteFrequencySSBError,
-                "'<=' not supported between instances of 'Frequency' and 'str'",
+                "Expected Frequency, got str",
             ),
             (
                 None,
                 AbsoluteFrequencySSBError,
-                "'<=' not supported between instances of 'Frequency' and 'NoneType'",
+                "Expected Frequency, got NoneType",
             ),
         ],
     )
