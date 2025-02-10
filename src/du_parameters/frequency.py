@@ -58,8 +58,10 @@ class Frequency(Decimal):
             Frequency: The resulting Frequency after the addition.
 
         Raises:
-            NotImplementedError: If the other value is not Frequency, int, str or Decimal.
+            NotImplementedError: If the other value is float or not compatible with Decimal.
         """
+        if isinstance(other, float):
+            raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__add__(Decimal(other)))
         except (ValueError, TypeError) as e:
@@ -75,8 +77,10 @@ class Frequency(Decimal):
             Frequency: The resulting Frequency after the subtraction.
 
         Raises:
-             NotImplementedError: If the other value is not Frequency, int, str or Decimal.
+             NotImplementedError:  If the other value is float or not compatible with Decimal.
         """
+        if isinstance(other, float):
+            raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__sub__(Decimal(other)))
         except (ValueError, TypeError) as e:
@@ -92,8 +96,10 @@ class Frequency(Decimal):
             Frequency: The resulting Frequency after the subtraction.
 
         Raises:
-            NotImplementedError: If the other value is not Frequency, int, str or Decimal.
+            NotImplementedError: If the other value is float or not compatible with Decimal.
         """
+        if isinstance(other, float):
+            raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__rsub__(Decimal(other)))
         except (ValueError, TypeError) as e:
@@ -109,8 +115,10 @@ class Frequency(Decimal):
             Frequency: The resulting Frequency after the multiplication.
 
         Raises:
-            NotImplementedError: If the other value is not Frequency, int, str or Decimal.
+            NotImplementedError: If the other value is float or not compatible with Decimal.
         """
+        if isinstance(other, float):
+            raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__mul__(Decimal(other)))
         except (ValueError, TypeError) as e:
@@ -126,8 +134,10 @@ class Frequency(Decimal):
             Frequency: The resulting Frequency after the division.
 
         Raises:
-            NotImplementedError: If the other value is not Frequency, int, str or Decimal.
+            NotImplementedError:  If the other value is float or not compatible with Decimal.
         """
+        if isinstance(other, float):
+            raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__truediv__(Decimal(other)))
         except (ValueError, TypeError) as e:
@@ -230,7 +240,7 @@ class ARFCN:
         if config is None:
             raise ValueError(f"No configuration found for frequency {frequency}")
         offset = (frequency - config.freq_offset) / config.freq_grid
-        result = config.arfcn_offset + Decimal(offset)
+        result = config.arfcn_offset + offset
         return result
 
 
