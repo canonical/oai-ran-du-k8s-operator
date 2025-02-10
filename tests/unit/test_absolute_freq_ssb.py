@@ -2,7 +2,6 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -10,31 +9,10 @@ from src.du_parameters.absolute_freq_ssb import (
     AbsoluteFrequencySSBError,
     get_absolute_frequency_ssb,
 )
-from src.du_parameters.frequency import ARFCN, GSCN, Frequency
+from src.du_parameters.frequency import ARFCN, Frequency
 
 
 class TestAbsoluteFrequencySSB:
-    def test_get_absolute_frequency_ssb_when_valid_input_given_then_return_expected_result(self):
-        mock_center_freq = MagicMock(spec=Frequency)
-        mock_gscn = MagicMock(spec=GSCN)
-        mock_adjusted_frequency = MagicMock(spec=Frequency)
-        mock_arfcn = MagicMock(spec=ARFCN)
-
-        with (
-            patch.object(GSCN, "from_frequency", return_value=mock_gscn) as mock_from_frequency,
-            patch.object(
-                GSCN, "to_frequency", return_value=mock_adjusted_frequency
-            ) as mock_to_frequency,
-            patch.object(
-                ARFCN, "from_frequency", return_value=mock_arfcn
-            ) as mock_from_frequency_arfcn,
-        ):
-            result = get_absolute_frequency_ssb(mock_center_freq)
-            assert result == mock_arfcn
-            mock_from_frequency.assert_called_once_with(mock_center_freq)
-            mock_to_frequency.assert_called_once_with(mock_gscn)
-            mock_from_frequency_arfcn.assert_called_once_with(mock_adjusted_frequency)
-
     @pytest.mark.parametrize(
         "invalid_freq, expected_error, error_message",
         [
@@ -49,6 +27,16 @@ class TestAbsoluteFrequencySSB:
                 AbsoluteFrequencySSBError,
                 "Expected Frequency, got NoneType",
             ),
+            (
+                Frequency.from_mhz(100099991111212),
+                AbsoluteFrequencySSBError,
+                "No frequency range found for frequency 100099991111212000000",
+            ),
+            (
+                "invalid",
+                AbsoluteFrequencySSBError,
+                "Expected Frequency, got str",
+            ),
         ],
     )
     def test_get_absolute_frequency_ssb_when_input_with_invalid_type_given_then_raise_exception(  # noqa: E501
@@ -58,21 +46,6 @@ class TestAbsoluteFrequencySSB:
         with pytest.raises(expected_error) as e:
             get_absolute_frequency_ssb(invalid_center_freq)
         assert error_message in str(e.value)
-
-    def test_get_absolute_frequency_ssb_when_value_error_raised_during_freq_to_gcsn_conversion_then_raise_exception(  # noqa: E501
-        self,
-    ):
-        mock_center_freq = MagicMock(spec=Frequency)
-
-        with (
-            patch.object(
-                GSCN, "from_frequency", side_effect=ValueError("Invalid GSCN")
-            ) as mock_from_frequency,
-        ):
-            with pytest.raises(AbsoluteFrequencySSBError, match=r"Invalid GSCN"):
-                get_absolute_frequency_ssb(mock_center_freq)
-
-            mock_from_frequency.assert_called_once_with(mock_center_freq)
 
     @pytest.mark.parametrize(
         "center_freq, expected_result",
