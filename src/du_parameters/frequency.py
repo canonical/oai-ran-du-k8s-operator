@@ -222,8 +222,8 @@ class ARFCN:
             return other._channel == self._channel
         raise NotImplementedError(f"Unsupported type for equality: {type(other).__name__}")
 
-    @classmethod
-    def from_frequency(cls, frequency: Frequency) -> "ARFCN":
+    @staticmethod
+    def from_frequency(frequency: Frequency) -> "ARFCN":
         """Find the closest ARFCN corresponding to a given frequency.
 
         Args:
