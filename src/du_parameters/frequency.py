@@ -158,7 +158,7 @@ class ARFCN:
     Provides arithmetic operations and conversions from frequencies.
 
     Args:
-        channel (ARFCN | int): The input ARFCN instance.
+        channel (int): The input ARFCN instance.
 
     Raises:
         ValueError: If the ARFCN is not within the valid range for ARFCN.
@@ -168,9 +168,9 @@ class ARFCN:
     MIN_VALUE = 0
     MAX_VALUE = 3279165
 
-    def __init__(self, channel: "int | ARFCN"):
-        if not isinstance(channel, (int, ARFCN)):
-            raise NotImplementedError("Channel must be an integer or ARFCN instance.")
+    def __init__(self, channel: int):
+        if not isinstance(channel, int):
+            raise NotImplementedError("Channel must be an integer.")
         if channel < self.MIN_VALUE or channel > self.MAX_VALUE:  # type: ignore[operator]
             raise ValueError(
                 f"ARFCN must be between {self.MIN_VALUE} "
@@ -250,7 +250,7 @@ class GSCN:
     Include conversions to frequencies and validity checks.
 
     Args:
-        channel (GSCN | int): The input GSCN instance.
+        channel (int): The input GSCN instance.
 
     Raises:
         ValueError: If the GSCN is not within the valid range for GSCN or n is out of range.
@@ -260,9 +260,9 @@ class GSCN:
     MIN_VALUE = 0
     MAX_VALUE = 26639
 
-    def __init__(self, channel: "GSCN | int"):
-        if not isinstance(channel, (int, GSCN)):
-            raise NotImplementedError("Channel must be an integer or GSCN instance.")
+    def __init__(self, channel: int):
+        if not isinstance(channel, int):
+            raise NotImplementedError("Channel must be an integer.")
         if channel < self.MIN_VALUE or channel > self.MAX_VALUE:  # type: ignore[operator]
             raise ValueError(
                 f"GSCN must be between {self.MIN_VALUE} "
