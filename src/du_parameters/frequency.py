@@ -29,6 +29,18 @@ class GetRangeFromGSCNError(Exception):
     pass
 
 
+class GSCNToFrequencyError(Exception):
+    """Exception raised when a GSCN cannot be converted to a valid Frequency."""
+
+    pass
+
+
+class FrequencytoGSCNError(Exception):
+    """Exception raised when Frequency can not be converted to a GSCN."""
+
+    pass
+
+
 class Frequency(Decimal):
     """Represents a frequency with unit conversion methods and arithmetic capabilities."""
 
@@ -437,6 +449,7 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
+        raise GSCNToFrequencyError(f"Unsupported configuration name: {config.name}")
 
     @staticmethod
     def from_frequency(frequency: Frequency) -> "GSCN":
@@ -481,6 +494,7 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
+        raise FrequencytoGSCNError(f"Unsupported configuration name: {config.name}")
 
 
 @dataclass
