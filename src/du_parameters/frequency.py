@@ -437,7 +437,6 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
-        raise ValueError(f"Unsupported configuration name: {config.name}")
 
     @staticmethod
     def from_frequency(frequency: Frequency) -> "GSCN":
@@ -482,7 +481,6 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
-        raise ValueError(f"Unsupported configuration name: {config.name}")
 
 
 @dataclass
