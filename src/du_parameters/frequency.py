@@ -236,9 +236,10 @@ class ARFCN:
             ValueError: If no configuration is found for the given frequency
             or frequency is out of range.
         """
-        config = get_range_from_frequency(frequency)
-        if config is None:
-            raise ValueError(f"No configuration found for frequency {frequency}")
+        try:
+            config = get_range_from_frequency(frequency)
+        except GetRangeFromFrequencyError:
+            raise ValueError(f"No frequency range found for frequency {frequency}")
         offset = (frequency - config.freq_offset) / config.freq_grid
         result = config.arfcn_offset + offset
         return result
@@ -401,7 +402,10 @@ class GSCN:
         Raises:
             ValueError: If the GSCN is out of supported range or n is out of range.
         """
-        config = get_range_from_gscn(gscn)
+        try:
+            config = get_range_from_gscn(gscn)
+        except GetRangeFromGSCNError:
+            raise ValueError(f"No frequency range found for GSCN {gscn}")
         if config.name == "LowFrequency":
             # Special calculation for low frequencies with scaling factor (m_scaling)
             n = gscn / CONFIG_CONSTANT_THREE
@@ -442,7 +446,10 @@ class GSCN:
         Raises:
             ValueError: If the frequency is out of supported range or n is out of range.
         """
-        config = get_range_from_frequency(frequency)
+        try:
+            config = get_range_from_frequency(frequency)
+        except GetRangeFromFrequencyError:
+            raise ValueError(f"No frequency range found for frequency {frequency}")
         if config.name == "LowFrequency":
             n = (
                 frequency - (config.m_scaling * config.m_multiplication_factor)

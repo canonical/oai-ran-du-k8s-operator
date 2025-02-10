@@ -38,7 +38,7 @@ class TestAbsoluteFrequencySSB:
     @pytest.mark.parametrize(
         "invalid_freq, expected_error, error_message",
         [
-            (-1222, AbsoluteFrequencySSBError, "Frequency -1222 is out of supported range"),
+            (-1222, AbsoluteFrequencySSBError, " No frequency range found for frequency -1222"),
             (
                 "invalid",
                 AbsoluteFrequencySSBError,
@@ -113,12 +113,12 @@ class TestAbsoluteFrequencySSB:
             (
                 -1e10,  # Extremely large negative value
                 AbsoluteFrequencySSBError,
-                "Frequency -10000000000000000 is out of supported range",
+                "No frequency range found for frequency -10000000000000000",
             ),
             (
                 1e10,  # Extremely large positive value
                 AbsoluteFrequencySSBError,
-                "Frequency 10000000000000000 is out of supported range.",
+                "No frequency range found for frequency 10000000000000000",
             ),
             (
                 complex(1, 1),  # Complex number
