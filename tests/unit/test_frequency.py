@@ -30,7 +30,7 @@ class TestFrequency:
             (100000000, "100000.0", "Frequency(100000000000)"),
         ],
     )
-    def test_frequency_instantiation_when_khz_or_mhz_values_are_given_then_return_in_hz(
+    def test_frequency_instantiation_when_khz_or_mhz_values_are_given_then_return_expected_value(
         self, from_khz, from_mhz, expected_repr
     ):
         freq1 = Frequency.from_khz(from_khz)
@@ -48,7 +48,7 @@ class TestFrequency:
             (10**7, 10**7, 2 * 10**7),
         ],
     )
-    def test_frequency_addition_when_khz_inputs_given_then_return_in_khz(
+    def test_frequency_addition_when_khz_inputs_given_then_result_is_expected_value(
         self, freq1_khz, freq2_khz, expected_khz
     ):
         freq1 = Frequency.from_khz(freq1_khz)
@@ -65,7 +65,7 @@ class TestFrequency:
             (10, 1500, 11500000),
         ],
     )
-    def test_frequency_addition_when_mixed_inputs_given_then_return_in_hz(
+    def test_frequency_addition_when_mixed_inputs_given_then_result_is_expected_value(
         self, freq1_mhz, freq2_khz, expected_hz
     ):
         freq1 = Frequency.from_mhz(freq1_mhz)
@@ -77,7 +77,7 @@ class TestFrequency:
     @pytest.mark.parametrize("invalid_input", ["invalid", "wrong"])
     def test_frequency_addition_when_invalid_inputs_given_then_raise_error(self, invalid_input):
         freq1 = Frequency.from_khz(500)
-        with pytest.raises(decimal.InvalidOperation):
+        with pytest.raises(NotImplementedError):
             _ = freq1 + invalid_input
 
     @pytest.mark.parametrize(
@@ -89,7 +89,7 @@ class TestFrequency:
             ("5.0", "1.0", "4999000.0"),
         ],
     )
-    def test_frequency_subtraction_when_mhz_and_khz_inputs_given_then_return_output_in_hz(  # noqa: E501
+    def test_frequency_subtraction_when_mhz_and_khz_inputs_given_then_return_expected_output(  # noqa: E501
         self, freq1_mhz, freq2_khz, expected_hz
     ):
         freq1 = Frequency.from_mhz(freq1_mhz)
@@ -100,7 +100,7 @@ class TestFrequency:
     @pytest.mark.parametrize("invalid_input", ["invalid", "wrong"])
     def test_frequency_subtraction_when_invalid_inputs_given_then_raise_error(self, invalid_input):
         freq1 = Frequency.from_mhz("2.0")
-        with pytest.raises(decimal.InvalidOperation):
+        with pytest.raises(NotImplementedError):
             _ = freq1 - invalid_input
 
     @pytest.mark.parametrize(
@@ -117,6 +117,29 @@ class TestFrequency:
         freq1 = Frequency.from_mhz(freq1_mhz)
         freq2 = Frequency.from_mhz(freq2_mhz)
         assert (freq1 < freq2) == expected
+
+    def test_frequency_add_operation_when_float_type_input_is_given_then_raise_error(self):
+        freq = Frequency.from_mhz(3000)
+        with pytest.raises(NotImplementedError):
+            freq + 1.5
+
+    def test_frequency_subtract_operation_when_unsupported_type_is_given_then_raise_error(self):
+        freq = Frequency.from_mhz(3000)
+        with pytest.raises(NotImplementedError):
+            freq - "invalid"
+
+    def test_frequency_divide_operation_when_unsupported_type_is_given_then_raise_error(self):
+        freq = Frequency.from_mhz(3000)
+        with pytest.raises(NotImplementedError):
+            freq / [1, 2]
+
+    def test_frequency_subtraction_when_big_value_is_extracted_from_small_value_then_return_negative_result(  # noqa: E501
+        self,
+    ):
+        freq1 = Frequency.from_mhz(1000)
+        freq2 = Frequency.from_mhz(3000)
+        result = freq1 - freq2
+        assert result == Frequency(-2000000000)
 
 
 class TestGetRangeFromFrequency:
@@ -135,7 +158,7 @@ class TestGetRangeFromFrequency:
         self, freq, expected_config_name
     ):
         config = get_range_from_frequency(Frequency.from_mhz(freq))
-        assert config.name == expected_config_name  # type: ignore
+        assert config.name == expected_config_name  # type: ignore[argument]
 
     @pytest.mark.parametrize(
         "invalid_freq, expected_error",
@@ -181,6 +204,30 @@ class TestARFCN:
     ):
         with pytest.raises(expected_error):
             ARFCN.from_frequency(invalid_freq_mhz)
+
+    @pytest.mark.parametrize(
+        "channel, expected_error",
+        [
+            (-1, ValueError),
+            (3279166, ValueError),
+        ],
+    )
+    def test_arfcn_when_values_given_lower_than_min_upper_than_max_then_raise_error(
+        self, channel, expected_error
+    ):
+        with pytest.raises(expected_error):
+            ARFCN(channel)
+
+    def test_arfcn_addition_when_incompatible_type_is_given_then_raise_error(self):
+        arfcn = ARFCN(100)
+        with pytest.raises(NotImplementedError):
+            arfcn + "invalid"
+
+    def test_arfcn_addition_when_compatible_types_are_given_then_return_expected_result(self):
+        arfcn1 = ARFCN(100)
+        arfcn2 = ARFCN(50)
+        result = arfcn1 + arfcn2
+        assert result._channel == 150
 
 
 class TestGSCN:
@@ -231,6 +278,7 @@ class TestGSCN:
             (8141, Frequency("3924480000")),
             (26587, Frequency("99089760000")),
             (26639, Frequency("99988320000")),
+            (200, Frequency("80550000")),
         ],
     )
     def test_gscn_to_freq_when_valid_inputs_given_then_return_expected_frequency(
@@ -253,6 +301,34 @@ class TestGSCN:
     def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(self, gscn, expected_error):
         with pytest.raises(expected_error):
             GSCN.to_frequency(GSCN(gscn))
+
+    def test_gscn_equality_when_valid_inputs_given_then_return_expected_result(self):
+        gscn1 = GSCN(1000)
+        gscn2 = GSCN(1000)
+        gscn3 = GSCN(2000)
+        assert gscn1 == gscn2
+        assert gscn1 != gscn3
+
+    @pytest.mark.parametrize(
+        "channel, expected_error, error_message",
+        [
+            (-10, ValueError, "GSCN must be between 0 and 26639, got -10 instead"),
+            (8140001, ValueError, "GSCN must be between 0 and 26639, got 8140001 instead"),
+            ("invalid", NotImplementedError, "Channel must be an integer"),
+        ],
+    )
+    def test_gscn_initialization_when_invalid_input_given_then_raise_error(
+        self, channel, expected_error, error_message
+    ):
+        with pytest.raises(expected_error) as err:
+            GSCN(channel)
+        assert error_message in str(err.value)
+
+    def test_gscn_addition_when_other_type_is_invalid_then_raise_error(self):
+        gscn = GSCN(100)
+        with pytest.raises(NotImplementedError) as err:
+            gscn + [1, 2, 3]
+        assert "Unsupported type for addition: list" in str(err.value)
 
 
 class TestGetRangeFromGSCN:

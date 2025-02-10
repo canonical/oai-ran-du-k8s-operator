@@ -6,6 +6,7 @@
 Handle arithmetic operations with different types of objects.
 """
 
+import decimal
 import logging
 from dataclasses import dataclass
 from decimal import Decimal
@@ -76,7 +77,7 @@ class Frequency(Decimal):
             raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__add__(Decimal(other)))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for addition: {type(other)}") from e
 
     def __sub__(self, other: Any) -> "Frequency":
@@ -95,7 +96,7 @@ class Frequency(Decimal):
             raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__sub__(Decimal(other)))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
     def __rsub__(self, other: Any) -> "Frequency":
@@ -114,7 +115,7 @@ class Frequency(Decimal):
             raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__rsub__(Decimal(other)))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
     def __mul__(self, other: Any) -> "Frequency":
@@ -133,7 +134,7 @@ class Frequency(Decimal):
             raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__mul__(Decimal(other)))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for multiplication: {type(other)}") from e
 
     def __truediv__(self, other: Any) -> "Frequency":
@@ -152,7 +153,7 @@ class Frequency(Decimal):
             raise NotImplementedError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__truediv__(Decimal(other)))
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for division: {type(other)}") from e
 
     def __repr__(self) -> str:
@@ -441,8 +442,8 @@ class GSCN:
         elif config.name in {"MidFrequency", "HighFrequency"}:
             # For high/medium range frequencies
             n = gscn - config.base_gscn
-            if is_valid_n(n._channel, config.min_n, config.max_n):  # type: ignore
-                result = config.multiplication_factor * n._channel + config.base_freq  # type: ignore
+            if is_valid_n(n._channel, config.min_n, config.max_n):  # type: ignore[operator]
+                result = config.multiplication_factor * n._channel + config.base_freq  # type: ignore[operator]
                 return Frequency(result)
 
             raise ValueError(
