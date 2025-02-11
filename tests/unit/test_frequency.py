@@ -120,7 +120,7 @@ class TestFrequency:
 
     def test_frequency_add_operation_when_float_type_input_is_given_then_raise_error(self):
         freq = Frequency.from_mhz(3000)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             freq + 1.5
 
     def test_frequency_subtract_operation_when_unsupported_type_is_given_then_raise_error(self):
@@ -294,8 +294,8 @@ class TestGSCN:
             (-248, ValueError),
             (8140001, ValueError),
             (-34, ValueError),
-            ("invalid", NotImplementedError),
-            (None, NotImplementedError),
+            ("invalid", TypeError),
+            (None, TypeError),
         ],
     )
     def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(self, gscn, expected_error):
@@ -314,7 +314,7 @@ class TestGSCN:
         [
             (-10, ValueError, "GSCN must be between 0 and 26639, got -10 instead"),
             (8140001, ValueError, "GSCN must be between 0 and 26639, got 8140001 instead"),
-            ("invalid", NotImplementedError, "Channel must be an integer"),
+            ("invalid", TypeError, "Channel must be an integer"),
         ],
     )
     def test_gscn_initialization_when_invalid_input_given_then_raise_error(
@@ -356,8 +356,8 @@ class TestGetRangeFromGSCN:
         "invalid_gscn_input, exception_type, exception_message",
         [
             (GSCN(1), GetRangeFromGSCNError, "is out of supported range"),
-            (None, NotImplementedError, "Unsupported type for comparison: NoneType"),
-            ("invalid", NotImplementedError, "Unsupported type for comparison: str"),
+            (None, TypeError, "Expected GSCN, got NoneType"),
+            ("invalid", TypeError, "Expected GSCN, got str"),
         ],
     )
     def test_get_range_from_gscn_when_invalid_inputs_given_then_raise_error(
