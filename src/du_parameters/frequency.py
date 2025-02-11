@@ -72,7 +72,7 @@ class Frequency(Decimal):
 
         Raises:
             NotImplementedError: If the other value is float or not compatible with Decimal.
-            TypeError: If the other value is float or not compatible with Decimal.
+            TypeError: If the other value is float.
         """
         if isinstance(other, float):
             raise TypeError("Float values are not supported, please use str instead.")
@@ -92,7 +92,7 @@ class Frequency(Decimal):
 
         Raises:
              NotImplementedError:  If the other value is float or not compatible with Decimal.
-             TypeError: If the other value is float or not compatible with Decimal.
+             TypeError: If the other value is float.
         """
         if isinstance(other, float):
             raise TypeError("Float values are not supported, please use str instead.")
@@ -112,7 +112,7 @@ class Frequency(Decimal):
 
         Raises:
             NotImplementedError: If the other value is float or not compatible with Decimal.
-            TypeError: If the other value is float or not compatible with Decimal.
+            TypeError: If the other value is float.
         """
         if isinstance(other, float):
             raise TypeError("Float values are not supported, please use str instead.")
@@ -132,7 +132,7 @@ class Frequency(Decimal):
 
         Raises:
             NotImplementedError: If the other value is float or not compatible with Decimal.
-            TypeError: If the other value is float or not compatible with Decimal.
+            TypeError: If the other value is float.
         """
         if isinstance(other, float):
             raise TypeError("Float values are not supported, please use str instead.")
@@ -152,7 +152,7 @@ class Frequency(Decimal):
 
         Raises:
             NotImplementedError:  If the other value is float or not compatible with Decimal.
-            TypeError: If the other value is float or not compatible with Decimal.
+            TypeError: If the other value is float.
         """
         if isinstance(other, float):
             raise TypeError("Float values are not supported, please use str instead.")
@@ -229,7 +229,7 @@ class ARFCN:
             other (Any): The value to compare with.
 
         Returns:
-            ARFCN: A new ARFCN instance with the updated channel.
+            bool: If the ARFCN instance and other are equal, return True, else False.
         """
         if isinstance(other, int | Decimal):
             return other == self._channel
@@ -333,7 +333,7 @@ class GSCN:
         return False
 
     def __ge__(self, other: Any) -> bool:
-        """Check if the current GSCN instance is greater than or equal to other.
+        """Check if the current GSCN instance is greater than or equal to others.
 
         Args:
             other (Any): The value to compare.
