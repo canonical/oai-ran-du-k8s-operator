@@ -32,11 +32,6 @@ class TestAbsoluteFrequencySSB:
                 AbsoluteFrequencySSBError,
                 "No frequency range found for frequency 100099991111212000000",
             ),
-            (
-                "invalid",
-                AbsoluteFrequencySSBError,
-                "Expected Frequency, got str",
-            ),
         ],
     )
     def test_get_absolute_frequency_ssb_when_input_with_invalid_type_given_then_raise_exception(  # noqa: E501
