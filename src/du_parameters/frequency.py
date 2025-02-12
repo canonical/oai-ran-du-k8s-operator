@@ -402,8 +402,7 @@ class GSCN:
             return GSCN(round(self._channel / other))  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for division: {type(other).__name__}")
 
-    @classmethod
-    def to_frequency(cls, gscn: "GSCN") -> Frequency:
+    def to_frequency(self) -> Frequency:
         """Calculate the frequency using input GSCN.
 
         Args:
@@ -416,25 +415,21 @@ class GSCN:
             ValueError: If the GSCN is out of supported range or n is out of range.
             TypeError: If the input is not a GSCN.
         """
-        if not isinstance(gscn, GSCN):
-            logger.error("Expected GSCN but got: %s.", type(gscn).__name__)
-            raise TypeError(f"Expected GSCN, got {type(gscn).__name__}")
-
         try:
-            config = get_range_from_gscn(gscn)
+            config = get_range_from_gscn(self)
         except GetRangeFromGSCNError:
-            logger.error("No frequency range found for GSCN: %s.", gscn)
-            raise ValueError(f"No frequency range found for GSCN {gscn}")
+            logger.error("No frequency range found for GSCN: %s.", self)
+            raise ValueError(f"No frequency range found for GSCN {self}")
 
         if config.name == "LowFrequency":
             # Special calculation for low frequencies with scaling factor (m_scaling)
-            n = gscn / CONFIG_CONSTANT_THREE
+            n = self / CONFIG_CONSTANT_THREE
             if is_valid_n(n, config.min_n, config.max_n):  # type: ignore[operator]
                 result = (
                     n._channel * config.multiplication_factor  # type: ignore[operator]
                     + config.m_multiplication_factor * config.m_scaling
                 )
-                logger.debug("Found frequency: %s for GSCN: %s.", result, gscn)
+                logger.debug("Found frequency: %s for GSCN: %s.", result, self)
                 return Frequency(result)
 
             logger.error(
@@ -446,10 +441,10 @@ class GSCN:
 
         elif config.name in {"MidFrequency", "HighFrequency"}:
             # For high/medium range frequencies
-            n = gscn - config.base_gscn
+            n = self - config.base_gscn
             if is_valid_n(n._channel, config.min_n, config.max_n):  # type: ignore[operator]
                 result = config.multiplication_factor * n._channel + config.base_freq  # type: ignore[operator]
-                logger.debug("Found frequency: %s for GSCN: %s", result, gscn)
+                logger.debug("Found frequency: %s for GSCN: %s", result, self)
                 return Frequency(result)
 
             logger.error(

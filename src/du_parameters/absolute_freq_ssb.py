@@ -35,7 +35,7 @@ def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
     """
     try:
         gscn = GSCN.from_frequency(center_freq)
-        adjusted_frequency = GSCN.to_frequency(gscn)
+        adjusted_frequency = gscn.to_frequency()
         afrcn = ARFCN.from_frequency(adjusted_frequency)
         logger.info(
             "Calculated absolute frequency for SSB with center_freq=%s: %s",

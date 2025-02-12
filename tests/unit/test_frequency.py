@@ -284,7 +284,7 @@ class TestGSCN:
     def test_gscn_to_freq_when_valid_inputs_given_then_return_expected_frequency(
         self, gscn, expected_freq
     ):
-        freq = GSCN.to_frequency(GSCN(gscn))
+        freq = GSCN(gscn).to_frequency()
         assert isinstance(freq, Frequency)
         assert freq == expected_freq
 
@@ -300,7 +300,7 @@ class TestGSCN:
     )
     def test_gscn_to_freq_when_invalid_inputs_given_then_raise_error(self, gscn, expected_error):
         with pytest.raises(expected_error):
-            GSCN.to_frequency(GSCN(gscn))
+            GSCN(gscn).to_frequency()
 
     def test_gscn_equality_when_valid_inputs_given_then_return_expected_result(self):
         gscn1 = GSCN(1000)
