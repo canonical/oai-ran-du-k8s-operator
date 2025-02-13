@@ -30,14 +30,8 @@ class GetRangeFromGSCNError(Exception):
     pass
 
 
-class GSCNToFrequencyError(Exception):
-    """Exception raised when a GSCN cannot be converted to a valid Frequency."""
-
-    pass
-
-
-class FrequencytoGSCNError(Exception):
-    """Exception raised when Frequency can not be converted to a GSCN."""
+class GSCNError(Exception):
+    """Exception raised when a GSCN to Frequency or Frequency to GSCN conversion fails."""
 
     pass
 
@@ -455,7 +449,7 @@ class GSCN:
             )
 
         logger.error("Given configuration: %s is not supported.", config.name)
-        raise GSCNToFrequencyError(f"Unsupported configuration name: {config.name}")
+        raise GSCNError(f"Unsupported configuration name: {config.name}")
 
     @classmethod
     def from_frequency(cls, frequency: Frequency) -> "GSCN":
@@ -511,7 +505,7 @@ class GSCN:
             )
 
         logger.error("Given configuration: %s is not supported.", config.name)
-        raise FrequencytoGSCNError(f"Unsupported configuration name: {config.name}")
+        raise GSCNError(f"Unsupported configuration name: {config.name}")
 
 
 @dataclass
