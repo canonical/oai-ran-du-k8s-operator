@@ -40,14 +40,22 @@ def get_dl_absolute_frequency_point_a(center_freq: Frequency, bandwidth: Frequen
     try:
         lowest_freq = center_freq - (bandwidth / CONFIG_CONSTANT_TWO)
         arfcn = ARFCN.from_frequency(lowest_freq)
+        logger.info("Calculated downlink absolute frequency Point A: %s", arfcn)
         return arfcn
     except (
-            TypeError,
-            ValueError,
-            decimal.InvalidOperation,
-            NotImplementedError,
-            GetRangeFromFrequencyError,
+        TypeError,
+        ValueError,
+        decimal.InvalidOperation,
+        NotImplementedError,
+        GetRangeFromFrequencyError,
     ) as e:
+        logger.error(
+            "Error calculating downlink absolute frequency Point A"
+            " using center_freq=%s and bandwidth=%s: %s",
+            center_freq,
+            bandwidth,
+            str(e),
+        )
         raise DLAbsoluteFrequencyPointAError(
             f"Error calculating downlink absolute frequency Point A "
             f"using center_freq={center_freq} and bandwidth={bandwidth}: {e}"
