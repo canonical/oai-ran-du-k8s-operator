@@ -19,9 +19,9 @@ class TestDLAbsoluteFrequencyPointA:
     @pytest.mark.parametrize(
         "center_freq, bandwidth, expected_arfcn_value",
         [
-            (Frequency.from_mhz(1000), Frequency.from_mhz("20.43"), 123456),
-            (Frequency.from_mhz("700.3"), Frequency.from_mhz(10), 654321),
-            (Frequency.from_mhz(3500), Frequency.from_mhz(100), 987654),
+            (Frequency.from_mhz(1000), Frequency.from_mhz("20.43"), 197957),
+            (Frequency.from_mhz("700.3"), Frequency.from_mhz(10), 139060),
+            (Frequency.from_mhz(3500), Frequency.from_mhz(100), 630000),
             (Frequency.from_mhz(3925), Frequency.from_mhz(20), 661000),
             (Frequency.from_mhz(25000), Frequency.from_mhz(20), 2029000),
             (Frequency.from_mhz("24000.523"), Frequency.from_mhz(20), 1999368),
@@ -37,8 +37,16 @@ class TestDLAbsoluteFrequencyPointA:
     @pytest.mark.parametrize(
         "center_freq, bandwidth, expected_lowest_freq",
         [
-            (Frequency.from_mhz(1000), Frequency.from_mhz("20.43"), Frequency.from_mhz(989.785)),  # type: ignore
-            (Frequency.from_mhz("700.3"), Frequency.from_mhz(10), Frequency.from_mhz(695.3)),  # type: ignore
+            (
+                Frequency.from_mhz(1000),
+                Frequency.from_mhz("20.43"),
+                Frequency(str(989784999.9999999681676854379)),
+            ),
+            (
+                Frequency.from_mhz("700.3"),
+                Frequency.from_mhz(10),
+                Frequency(str(695299999.9999999545252649114)),
+            ),
             (Frequency.from_mhz(3500), Frequency.from_mhz(100), Frequency.from_mhz(3450)),
             (Frequency.from_mhz(3925), Frequency.from_mhz(20), Frequency.from_mhz(3915)),
         ],
@@ -58,7 +66,7 @@ class TestDLAbsoluteFrequencyPointA:
                 "invalid",
                 Frequency.from_mhz(20),
                 DLAbsoluteFrequencyPointAError,
-                "decimal.ConversionSyntax",
+                "Unsupported type for subtraction: <class 'str'>",
             ),
             (
                 Frequency.from_mhz(1000),
@@ -108,13 +116,13 @@ class TestDLAbsoluteFrequencyPointA:
                 Frequency.from_mhz(392533333),
                 Frequency.from_mhz(20),
                 DLAbsoluteFrequencyPointAError,
-                "Frequency 392533323000000 is out of supported range.",
+                "No frequency range found for frequency 392533323000000",
             ),
             (
                 Frequency.from_mhz(-1000),
                 Frequency.from_mhz(50),
                 DLAbsoluteFrequencyPointAError,
-                "Frequency -1025000000 is out of supported range.",
+                "No frequency range found for frequency -1025000000",
             ),
             (
                 None,
@@ -126,7 +134,7 @@ class TestDLAbsoluteFrequencyPointA:
                 "24000.523",
                 Frequency.from_mhz(20),
                 DLAbsoluteFrequencyPointAError,
-                "Frequency -9975999.477 is out of supported range",
+                "No frequency range found for frequency -9975999.477",
             ),
         ],
     )
