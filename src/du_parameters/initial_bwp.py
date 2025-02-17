@@ -33,11 +33,6 @@ def get_total_prbs_from_scs(subcarrier_spacing: Frequency) -> int:
         ValueError: If the Subcarrier spacing value is not supported.
         TypeError: If the Subcarrier spacing is not a Frequency object.
     """
-    if not isinstance(subcarrier_spacing, Frequency):
-        raise TypeError(
-            f"Subcarrier spacing must be a Frequency object, not {type(subcarrier_spacing)}"
-        )
-
     scs_to_prbs = {
         Frequency.from_khz(15): 275,
         Frequency.from_khz(30): 137,
@@ -47,7 +42,7 @@ def get_total_prbs_from_scs(subcarrier_spacing: Frequency) -> int:
     try:
         return scs_to_prbs[subcarrier_spacing]
     except KeyError:
-        supported_subcarrier_spacing = ", ".join(str(freq) for freq in scs_to_prbs.keys())
+        supported_subcarrier_spacing = ", ".join(str(freq) for freq in scs_to_prbs)
         logger.error(
             "Subcarrier spacing value: %s is not supported. Supported values: %s",
             subcarrier_spacing,
@@ -79,14 +74,6 @@ def calculate_initial_bwp(carrier_bandwidth: int, subcarrier_spacing: Frequency)
     Returns:
         int: The calculated initialBWP location and bandwidth.
     """
-    if not isinstance(subcarrier_spacing, Frequency):
-        logger.error(
-            "Subcarrier spacing must be a Frequency object, not %s", type(subcarrier_spacing)
-        )
-        raise TypeError(
-            f"Subcarrier spacing must be a Frequency object, not {type(subcarrier_spacing)}"
-        )
-
     if not isinstance(carrier_bandwidth, int):
         logger.error("Carrier bandwidth must be an integer, not %s", type(carrier_bandwidth))
         raise TypeError(f"Carrier bandwidth must be an integer, not {type(carrier_bandwidth)}")

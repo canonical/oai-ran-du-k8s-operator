@@ -37,7 +37,11 @@ class TestGetTotalPRBs:
     def test_get_total_prbs_from_scs_when_invalid_type_inputs_given_then_raise_type_error(
         self, scs
     ):
-        with pytest.raises(TypeError, match="Subcarrier spacing must be a Frequency object"):
+        with pytest.raises(
+            ValueError,
+            match=f"Subcarrier spacing value {scs} is not supported."
+            f"Supported values: 15000, 30000, 60000, 120000",
+        ):
             get_total_prbs_from_scs(scs)
 
     def test_get_total_prbs_from_scs_when_unsupported_value_given_then_raise_value_error(self):
@@ -91,7 +95,9 @@ class TestCalculateInitialBWP:
         ],
     )
     def test_calculate_initial_bwp_when_invalid_type_scs_given_then_raise_type_error(self, scs):
-        with pytest.raises(TypeError, match="Subcarrier spacing must be a Frequency object"):
+        with pytest.raises(
+            CalculateBWPLocationBandwidthError, match="Error calculating total PRBs"
+        ):
             calculate_initial_bwp(1, scs)
 
     def test_calculate_initial_bwp__when_unsupported_carrier_bandwidth_value_given_then_raise_value_error(  # noqa: E501
