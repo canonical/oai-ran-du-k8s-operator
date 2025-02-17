@@ -75,12 +75,14 @@ config:
       description: |
         This parameter enables three-quarter sampling on DU by adding -E flag to DU startup command. This flag might be required to split 8 sample rate to run DU connected to physical devices (such as USRP B210).
     center-frequency:
-      type: string
+      type: str
+      default: "4060"
       description: |
         The frequency which is permitted by statutory regulations given in MHz in FR1 5G spectrum.
         FR1 5G covers potential spectrum offerings from 410 MHz to 7125 MHz.
     bandwidth:
       type: integer
+      default: 40
       description: |
         The width of radio frequencies, centered on the center frequency given in MHz. 
         The supported bandwidth in FR1 5G is between 5 MHz to 100 MHz.
