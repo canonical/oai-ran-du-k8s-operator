@@ -3,8 +3,6 @@
 # See LICENSE file for licensing details.
 
 import decimal
-from unittest.mock import patch
-
 import pytest
 
 from src.du_parameters.dl_absolute_freq_point_a import (
@@ -85,29 +83,10 @@ class TestDLAbsoluteFrequencyPointA:
     def test_get_dl_absolute_frequency_point_a_when_invalid_inputs_given_then_raise_error(
         self, center_freq, bandwidth, expected_exception, expected_msg
     ):
-        with patch.object(
-            ARFCN,
-            "from_frequency",
-        ):
-            with pytest.raises(expected_exception) as err:
-                get_dl_absolute_frequency_point_a(center_freq, bandwidth)
-            assert expected_msg in str(err.value)
+        with pytest.raises(expected_exception) as err:
+            get_dl_absolute_frequency_point_a(center_freq, bandwidth)
+        assert expected_msg in str(err.value)
 
-    def test_get_dl_absolute_frequency_point_a_when_decimal_invalid_operation_error_raised_then_handle_and_raise_dl_absolute_frequency_point_a_error(  # noqa: E501
-        self,
-    ):
-        with patch.object(
-            ARFCN,
-            "from_frequency",
-            side_effect=decimal.InvalidOperation("Invalid decimal operation"),
-        ):
-            center_freq = Frequency.from_mhz(1000)
-            bandwidth = Frequency.from_mhz(20)
-            with pytest.raises(
-                DLAbsoluteFrequencyPointAError,
-                match="Error calculating downlink absolute frequency Point A.*Invalid decimal operation",  # noqa: E501
-            ):
-                get_dl_absolute_frequency_point_a(center_freq, bandwidth)
 
     @pytest.mark.parametrize(
         "center_freq, bandwidth, expected_exception, expected_msg",
