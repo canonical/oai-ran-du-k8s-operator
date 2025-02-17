@@ -2,7 +2,6 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import decimal
 import pytest
 
 from src.du_parameters.dl_absolute_freq_point_a import (
@@ -86,7 +85,6 @@ class TestDLAbsoluteFrequencyPointA:
         with pytest.raises(expected_exception) as err:
             get_dl_absolute_frequency_point_a(center_freq, bandwidth)
         assert expected_msg in str(err.value)
-
 
     @pytest.mark.parametrize(
         "center_freq, bandwidth, expected_exception, expected_msg",
