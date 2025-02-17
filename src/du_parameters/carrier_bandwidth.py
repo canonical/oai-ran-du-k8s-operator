@@ -38,17 +38,13 @@ def get_carrier_bandwidth(bandwidth: Frequency, subcarrier_spacing: Frequency) -
          in terms of Resource Blocks (RB)
 
     Raises:
-        TypeError: If bandwidth or subcarrier spacing are not of type Frequency.
         ValueError: If bandwidth or subcarrier spacing are not greater than 0.
         CarrierBandwidthError: If calculation fails or Guard band calculation fails.
     """
-    if not isinstance(bandwidth, Frequency) or not isinstance(subcarrier_spacing, Frequency):
-        logger.error("Both bandwidth and subcarrier_spacing must be of type Frequency.")
-        raise TypeError("Both bandwidth and subcarrier_spacing must be of type Frequency.")
-
     if subcarrier_spacing <= Frequency(0) or bandwidth <= Frequency(0):
         logger.error("Both bandwidth and subcarrier spacing must be greater than 0.")
         raise ValueError("Both bandwidth and subcarrier spacing must be greater than 0.")
+
     try:
         guard_band = get_minimum_guard_band(subcarrier_spacing, bandwidth)
     except (TypeError, GuardBandError) as e:

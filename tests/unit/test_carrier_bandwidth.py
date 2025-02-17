@@ -52,13 +52,13 @@ class TestGetCarrierBandwidth:
         self, bandwidth, subcarrier_spacing
     ):
         with pytest.raises(
-            TypeError, match="Both bandwidth and subcarrier_spacing must be of type Frequency"
+            TypeError, match="'<=' not supported between instances of 'str' and 'Frequency'"
         ):
             get_carrier_bandwidth(bandwidth, subcarrier_spacing)
 
     def test_carrier_bandwidth_when_none_inputs_are_given_then_raise_error(self):
         with pytest.raises(
-            TypeError, match="Both bandwidth and subcarrier_spacing must be of type Frequency"
+            TypeError, match="'<=' not supported between instances of 'NoneType' and 'Frequency'"
         ):
             get_carrier_bandwidth(None, None)  # type: ignore
 
@@ -119,5 +119,5 @@ class TestGetMinimumGuardBand:
         ],
     )
     def test_guard_band_when_invalid_type_inputs_given_then_raise_error(self, scs, bandwidth):
-        with pytest.raises(TypeError, match="Both scs and bandwidth must be of type Frequency"):
+        with pytest.raises(GuardBandError, match="No guard band found"):
             get_minimum_guard_band(scs, bandwidth)

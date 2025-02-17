@@ -16,7 +16,7 @@ class GuardBandError(Exception):
     pass
 
 
-minimum_guard_bands = {
+_minimum_guard_bands = {
     # SCS = 15 kHz
     Frequency.from_khz(15): {
         # Bandwidth             Guard Band
@@ -29,7 +29,7 @@ minimum_guard_bands = {
         Frequency.from_mhz(40): Frequency.from_khz("552.5"),
         Frequency.from_mhz(50): Frequency.from_khz("692.5"),
     },
-    # SCS = 15 kHz
+    # SCS = 30 kHz
     Frequency.from_khz(30): {
         # Bandwidth             Guard Band
         Frequency.from_mhz(5): Frequency.from_khz(505),
@@ -77,13 +77,8 @@ def get_minimum_guard_band(subcarrier_spacing: Frequency, bandwidth: Frequency) 
 
     Raises:
         GuardBandError: If the guard band is not found.
-        TypeError: If scs or bandwidth are not of type Frequency.
     """
-    if not isinstance(subcarrier_spacing, Frequency) or not isinstance(bandwidth, Frequency):
-        logger.error("Both scs and bandwidth must be of type Frequency.")
-        raise TypeError("Both scs and bandwidth must be of type Frequency.")
-
-    scs_data = minimum_guard_bands.get(subcarrier_spacing)
+    scs_data = _minimum_guard_bands.get(subcarrier_spacing)
     if scs_data:
         guard_band = scs_data.get(bandwidth)
         if guard_band:
