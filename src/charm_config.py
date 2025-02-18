@@ -55,6 +55,7 @@ def to_kebab(name: str) -> str:
     return name.replace("_", "-")
 
 
+# The reference of TDD FR1 bands: https://en.wikipedia.org/wiki/5G_NR_frequency_bands
 TDD_FR1_BANDS = {
     # band_number: ( frequency range in MHz)
     34: (2010, 2025),
@@ -74,7 +75,7 @@ TDD_FR1_BANDS = {
     102: (5925, 6425),
 }
 
-
+# The reference of allowed channel bandwidths: https://www.nrexplained.com/bandwidth Table 5.3.5-1
 ALLOWED_CHANNEL_BANDWIDTHS = {
     # frequency_band: {sub_carrier_spacing (KHz): {allowed_bandwidths (MHz)}}
     34: {
@@ -186,10 +187,12 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     f1_port: int = Field(ge=1, le=65535)
     simulation_mode: bool = False
     use_three_quarter_sampling: bool = False
-    bandwidth: int = Field(default=40, ge=5, le=100)
-    frequency_band: int = Field(default=77, ge=34, le=102)
-    sub_carrier_spacing: int = Field(default=30, ge=15, le=60)
-    center_frequency: str = Field(default="4060")
+    bandwidth: int = Field(ge=5, le=100)
+    frequency_band: int = Field(ge=34, le=102)
+    sub_carrier_spacing: int = Field(ge=15, le=60)
+    center_frequency: str = Field(
+        pattern=r"^\d+(\.\d+)?$", description="Center frequency as an integer or a float"
+    )
 
     @field_validator("f1_ip_address", mode="before")
     @classmethod

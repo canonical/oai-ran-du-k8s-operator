@@ -10,11 +10,19 @@ from ops.model import ActiveStatus, BlockedStatus, WaitingStatus
 
 from tests.unit.fixtures import F1_PROVIDER_DATA, DUFixtures
 
+SAMPLE_CONFIG = {
+    "bandwidth": 20,
+    "frequency-band": 77,
+    "sub-carrier-spacing": 15,
+    "center-frequency": "3500",
+}
+
 
 class TestCharmCollectStatus(DUFixtures):
     def test_given_unit_is_not_leader_when_collect_status_then_status_is_blocked(self):
         state_in = testing.State(
             leader=False,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -35,7 +43,7 @@ class TestCharmCollectStatus(DUFixtures):
     ):
         state_in = testing.State(
             leader=True,
-            config={config_param: value},
+            config={**SAMPLE_CONFIG, config_param: value},
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -48,6 +56,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.multus_is_available.return_value = False
         state_in = testing.State(
             leader=True,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -61,6 +70,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_k8s_multus.is_ready.return_value = False
         state_in = testing.State(
             leader=True,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -73,6 +83,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_du_security_context.is_privileged.return_value = False
         state_in = testing.State(
             leader=True,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -86,6 +97,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_du_usb_volume.is_mounted.return_value = False
         state_in = testing.State(
             leader=True,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -99,6 +111,7 @@ class TestCharmCollectStatus(DUFixtures):
         self.mock_du_usb_volume.is_mounted.return_value = True
         state_in = testing.State(
             leader=True,
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -122,6 +135,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
             relations=[f1_relation],
             containers=[container],
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -146,6 +160,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
             relations=[f1_relation],
             containers=[container],
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -170,6 +185,7 @@ class TestCharmCollectStatus(DUFixtures):
             leader=True,
             relations=[f1_relation],
             containers=[container],
+            config=SAMPLE_CONFIG,
         )
 
         state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -203,6 +219,7 @@ class TestCharmCollectStatus(DUFixtures):
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
+                config=SAMPLE_CONFIG,
             )
 
             state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)
@@ -236,6 +253,7 @@ class TestCharmCollectStatus(DUFixtures):
                 leader=True,
                 relations=[f1_relation],
                 containers=[container],
+                config=SAMPLE_CONFIG,
             )
 
             state_out = self.ctx.run(self.ctx.on.collect_unit_status(), state_in)

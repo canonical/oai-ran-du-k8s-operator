@@ -23,6 +23,13 @@ F1_PROVIDER_DATA_MULTIPLE_PLMNS = ProviderAppData(
     ],
 )
 
+SAMPLE_CONFIG = {
+    "bandwidth": 20,
+    "frequency-band": 77,
+    "sub-carrier-spacing": 15,
+    "center-frequency": "3500",
+}
+
 
 class TestCharmConfigure(DUFixtures):
     def test_given_statefulset_is_not_patched_when_configure_then_usb_is_mounted_and_privileged_context_is_set(  # noqa: E501
@@ -37,6 +44,7 @@ class TestCharmConfigure(DUFixtures):
         state_in = testing.State(
             leader=True,
             containers=[container],
+            config=SAMPLE_CONFIG,
         )
 
         self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -56,7 +64,7 @@ class TestCharmConfigure(DUFixtures):
         state_in = testing.State(
             leader=True,
             containers=[container],
-            config={"simulation-mode": True},
+            config={**SAMPLE_CONFIG, "simulation-mode": True},
         )
 
         self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -76,6 +84,7 @@ class TestCharmConfigure(DUFixtures):
         state_in = testing.State(
             leader=True,
             containers=[container],
+            config=SAMPLE_CONFIG,
         )
 
         self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -124,6 +133,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
+                config=SAMPLE_CONFIG,
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -164,7 +174,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -207,6 +217,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
+                config=SAMPLE_CONFIG,
             )
             with open("tests/unit/resources/expected_config.conf") as expected_config_file:
                 expected_config = expected_config_file.read().strip()
@@ -246,6 +257,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
+                config=SAMPLE_CONFIG,
             )
 
             state_out = self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -309,6 +321,7 @@ class TestCharmConfigure(DUFixtures):
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={
+                    **SAMPLE_CONFIG,
                     "simulation-mode": simulation_mode,
                     "use-three-quarter-sampling": three_quarter_sampling,
                 },
@@ -360,7 +373,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -399,7 +412,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation, rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -438,7 +451,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation, rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -477,7 +490,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation, rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -511,7 +524,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -550,7 +563,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation, rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
@@ -585,6 +598,7 @@ class TestCharmConfigure(DUFixtures):
                 relations=[f1_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
+                config=SAMPLE_CONFIG,
             )
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
