@@ -71,19 +71,18 @@ class TestCalculateInitialBWP:
         assert calculate_initial_bwp(carrier_bandwidth, scs) == expected_bwp
 
     @pytest.mark.parametrize(
-        "carrier_bandwidth",
+        "carrier_bandwidth, error_type, error_message",
         [
-            "invalid",
-            None,
-            4.23,
+            ("invalid", TypeError, "'<=' not supported between instances of 'str' and 'int'"),
+            (None, TypeError, "'<=' not supported between instances of 'NoneType' and 'int'"),
         ],
     )
-    def test_calculate_initial_bwp_when_invalid_type_carrier_bandwidth_given_then_raise_type_error(
-        self, carrier_bandwidth
+    def test_calculate_initial_bwp_when_invalid_type_carrier_bandwidth_given_then_it_raises_error(
+        self, carrier_bandwidth, error_type, error_message
     ):
-        with pytest.raises(TypeError) as e:
+        with pytest.raises(error_type) as e:
             calculate_initial_bwp(carrier_bandwidth, Frequency.from_khz(15))
-        assert "Carrier bandwidth must be an integer" in str(e.value)
+        assert error_message in str(e.value)
 
     @pytest.mark.parametrize(
         "scs",

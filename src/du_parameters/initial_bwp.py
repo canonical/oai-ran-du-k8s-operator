@@ -74,10 +74,6 @@ def calculate_initial_bwp(carrier_bandwidth: int, subcarrier_spacing: Frequency)
     Returns:
         int: The calculated initialBWP location and bandwidth.
     """
-    if not isinstance(carrier_bandwidth, int):
-        logger.error("Carrier bandwidth must be an integer, not %s", type(carrier_bandwidth))
-        raise TypeError(f"Carrier bandwidth must be an integer, not {type(carrier_bandwidth)}")
-
     if carrier_bandwidth <= 0:
         logger.error("Carrier bandwidth must be greater than 0.")
         raise ValueError("Carrier bandwidth must be greater than 0.")
