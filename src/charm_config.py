@@ -20,7 +20,7 @@ from pydantic import (  # pylint: disable=no-name-in-module,import-error
 )
 from pydantic_core.core_schema import ValidationInfo
 
-from src.du_parameters.frequency import Frequency
+from du_parameters.frequency import Frequency
 
 logger = logging.getLogger(__name__)
 
