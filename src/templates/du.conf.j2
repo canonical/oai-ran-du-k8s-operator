@@ -9,6 +9,7 @@ gNBs =
         gNB_DU_ID = 0xe00;
         gNB_name  =  "{{ gnb_name }}";
 
+        # tracking_area_code: TAC specified in the CN
         tracking_area_code = {{ tac }};
         plmn_list =
         (
@@ -33,107 +34,157 @@ gNBs =
         );
         nr_cellid        = 12345678L;
         min_rxtxtime     = 6;
+
+        # do_CSIRS: 1= active if 2x2 MIMO, otherwise not considered. Suggestion, let it active
         do_CSIRS                                                  = 0;
         do_SRS                                                    = 0;
 
+        # force_256qam_off: disable 256 QAM
         force_256qam_off = 1;
 
     servingCellConfigCommon = (
     {
       physCellId                                                    = 0;
-      #frequencyInfoDL
+      # frequencyInfoDL
 
-      # this is 3924.48 MHz (GSCN: 8141)
-      absoluteFrequencySSB                                             = 661632;
-      dl_frequencyBand                                                 = 77;
+      # absoluteFrequencySSB: Frequency-domain position of the SSB
+      absoluteFrequencySSB                                             = {{ absoluteFrequencySSB }};
 
-      # Absolute Frequency of Point A was calculated like this:
-      # center_frequency - (bandwidth / 2)
-      # the bandwidth in this case is 20 MHz, based on numerology 1
-      # and 51 PRBs.
-      # In this case:
-      # 3925 - (20 / 2)
-      # this is 3915 MHz
-      dl_absoluteFrequencyPointA                                       = 660332;
-      #scs-SpecificCarrierList
+      # dl_frequencyBand: The 5G FR1 band
+      dl_frequencyBand                                                 = {{ frequencyBand }};
+
+      # dl_absoluteFrequencyPointA: frequency-location of Point A in downlink
+      dl_absoluteFrequencyPointA                                       = {{ dl_absoluteFrequencyPointA }};
+
+      # dl_offstToCarrier: Offset in the frequency domain between Point A
       dl_offstToCarrier                                              = 0;
-      # subcarrierSpacing
+
+      # dl_subcarrierSpacing: subcarrierSpacing using numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      dl_subcarrierSpacing                                           = 1;
-      dl_carrierBandwidth                                            = 106;
-      #initialDownlinkBWP
-      #genericParameters
-      # this is RBstart=27,L=48 (275*(L-1))+RBstart
-      initialDLBWPlocationAndBandwidth                               = 28875;
-      # subcarrierSpacing
+      dl_subcarrierSpacing                                           = {{ subcarrierSpacing }};
+
+      # dl_carrierBandwidth: number of PRBs
+      dl_carrierBandwidth                                            = {{ dl_carrierBandwidth }};
+
+      # initialDLBWPlocationAndBandwidth: allows the UE to receive the RRC setup including first RB
+      # and the number of consecutively used RBs
+      initialDLBWPlocationAndBandwidth                               = {{ initialULBWPlocationAndBandwidth }};
+
+      # initialDLBWPsubcarrierSpacing: subcarrierSpacing using numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      initialDLBWPsubcarrierSpacing                                   = 1;
-      #pdcch-ConfigCommon
+      initialDLBWPsubcarrierSpacing                                   = {{ subcarrierSpacing }};
+
+      # pdcch-ConfigCommon
+      # initialDLBWPcontrolResourceSetZero:BWP that contains all NR channels that are necessary
+      # to conclude the initial access procedure
       initialDLBWPcontrolResourceSetZero                              = 12;
       initialDLBWPsearchSpaceZero                                     = 0;
 
-      #uplinkConfigCommon
-      #frequencyInfoUL
-      ul_frequencyBand                                              = 77;
-      #scs-SpecificCarrierList
+      # uplinkConfigCommon
+      # frequencyInfoUL
+      ul_frequencyBand                                              = {{ frequencyBand }};
+
+      # scs-SpecificCarrierList
+      # ul_offstToCarrier: frequency offset between Point A and the lowest usable subcarrier
+      # in terms of RBs for UL
       ul_offstToCarrier                                             = 0;
-      # subcarrierSpacing
+
+      # ul_subcarrierSpacing: subcarrierSpacing with numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      ul_subcarrierSpacing                                          = 1;
-      ul_carrierBandwidth                                           = 106;
+      ul_subcarrierSpacing                                          = {{ subcarrierSpacing }};
+
+      # ul_carrierBandwidth: Number of PRBs
+      ul_carrierBandwidth                                           = {{ ul_carrierBandwidth }};
+
       pMax                                                          = 20;
-      #initialUplinkBWP
-      #genericParameters
-      initialULBWPlocationAndBandwidth                            = 28875;
-      # subcarrierSpacing
+
+      # initialUplinkBWP
+      # genericParameters
+      # initialULBWPlocationAndBandwidth: allows the UE to receive the RRC setup including
+      # first RB and the number of consecutively used RBs
+      initialULBWPlocationAndBandwidth                            = {{ initialULBWPlocationAndBandwidth }};
+
+      # initialULBWPsubcarrierSpacing: subcarrierSpacing in numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      initialULBWPsubcarrierSpacing                               = 1;
-      #rach-ConfigCommon
-      #rach-ConfigGeneric
+      initialULBWPsubcarrierSpacing                               = {{ subcarrierSpacing }};
+
+      # rach-ConfigCommon
+      # rach-ConfigGeneric
+      # prach_ConfigurationIndex: available set of PRACH occasions for the transmission
+      # of the Random Access Preamble
       prach_ConfigurationIndex                                  = 98;
-      #prach_msg1_FDM
-      #0 = one, 1=two, 2=four, 3=eight
+
+      # prach_msg1_FDM
+      # 0 = one, 1=two, 2=four, 3=eight
       prach_msg1_FDM                                            = 0;
       prach_msg1_FrequencyStart                                 = 0;
       zeroCorrelationZoneConfig                                 = 13;
+
+      # preambleReceivedTargetPower: initial Random Access Preamble power
       preambleReceivedTargetPower                               = -96;
-      #preamblTransMax (0...10) = (3,4,5,6,7,8,10,20,50,100,200)
+
+      # preamblTransMax (0...10) = (3,4,5,6,7,8,10,20,50,100,200)
+      # the maximum number of Random Access Preamble transmission
       preambleTransMax                                          = 6;
-      #powerRampingStep
+
+      # powerRampingStep: the power-ramping factor
       # 0=dB0,1=dB2,2=dB4,3=dB6
       powerRampingStep                                            = 1;
-      #ra_ReponseWindow
-      #1,2,4,8,10,20,40,80
+
+      # ra_ReponseWindow: Msg2 (RAR) window length in number of slots
+      # 1,2,4,8,10,20,40,80
       ra_ResponseWindow                                           = 4;
-      #ssb_perRACH_OccasionAndCB_PreamblesPerSSB_PR
-      #1=oneeighth,2=onefourth,3=half,4=one,5=two,6=four,7=eight,8=sixteen
+
+      # ssb_perRACH_OccasionAndCB_PreamblesPerSSB_PR
+      # 1=oneeighth,2=onefourth,3=half,4=one,5=two,6=four,7=eight,8=sixteen
       ssb_perRACH_OccasionAndCB_PreamblesPerSSB_PR                = 4;
-      #oneHalf (0..15) 4,8,12,16,...60,64
+
+      # ssb_perRACH_OccasionAndCB_PreamblesPerSSB: the number of SSBs mapped to each PRACH occasion
+      # and the number of contention-based Random Access Preambles mapped to each SSB
+      # oneHalf (0..15) 4,8,12,16,...60,64
       ssb_perRACH_OccasionAndCB_PreamblesPerSSB                   = 14;
-      #ra_ContentionResolutionTimer
-      #(0..7) 8,16,24,32,40,48,56,64
+
+      # ra_ContentionResolutionTimer
+      # (0..7) 8,16,24,32,40,48,56,64
       ra_ContentionResolutionTimer                                = 7;
+
+      # rsrp_ThresholdSSB: an RSRP threshold for the selection of the SSB
       rsrp_ThresholdSSB                                           = 19;
-      #prach-RootSequenceIndex_PR
-      #1 = 839, 2 = 139
+
+      # prach-RootSequenceIndex_PR: 5G supports four types of long sequence preambles
+      # with a length of 839 and nine types of short sequence
+      # preambles with a length of 139
+      # 1 = 839, 2 = 139
       prach_RootSequenceIndex_PR                                  = 2;
+
+      # prach_RootSequenceIndex: informs the UE on which sequence to use via SIB2
       prach_RootSequenceIndex                                     = 1;
-      # SCS for msg1, can only be 15 for 30 kHz < 6 GHz, takes precedence over the one derived from prach-ConfigIndex
-      #
+
+      # msg1_SubcarrierSpacing: takes precedence over the one derived from prach-ConfigIndex
+      # SCS for msg1, can only be 15 for 30 kHz < 6 GHz
       msg1_SubcarrierSpacing                                      = 1,
-      # restrictedSetConfig
-      # 0=unrestricted, 1=restricted type A, 2=restricted type B
+
+      # restrictedSetConfig: 0=unrestricted, 1=restricted type A, 2=restricted type B
       restrictedSetConfig                                         = 0,
 
+      # msg3_DeltaPreamble: Power offset between msg3 and RACH preamble transmission in steps of 1dB
       msg3_DeltaPreamble                                          = 1;
+
+      # p0_NominalWithGrant: uplink transmission power on the PUSCH which serves as a reference power level
+      # from which adjustments are made based on various factors like path loss
+      # indicates UE power capability
       p0_NominalWithGrant                                         =-90;
 
-      # pucch-ConfigCommon setup :
-      # pucchGroupHopping
-      # 0 = neither, 1= group hopping, 2=sequence hopping
+      # pucch-ConfigCommon setup
+      # pucchGroupHopping: 0 = neither, 1= group hopping, 2=sequence hopping
       pucchGroupHopping                                           = 0;
+
+      # hoppingId: Gets or sets hopping ID for PUCCH Format 1 or 4 configuration
       hoppingId                                                   = 40;
+
+      # p0_nominal: the power for a Pucch transmission
       p0_nominal                                                  = -90;
+
       # ssb_PositionsInBurs_BitmapPR
       # 1=short, 2=medium, 3=long
       ssb_PositionsInBurst_Bitmap                                   = 1;
@@ -146,24 +197,32 @@ gNBs =
       # 0 = pos2, 1 = pos3
       dmrs_TypeA_Position                                           = 0;
 
-      # subcarrierSpacing
+      # subcarrierSpacing with numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      subcarrierSpacing                                             = 1;
+      subcarrierSpacing                                             = {{ subcarrierSpacing }};
 
-
-      #tdd-UL-DL-ConfigurationCommon
-      # subcarrierSpacing
+      # tdd-UL-DL-ConfigurationCommon
+      # subcarrierSpacing with numerology
       # 0=kHz15, 1=kHz30, 2=kHz60, 3=kHz120
-      referenceSubcarrierSpacing                                    = 1;
-      # pattern1
-      # dl_UL_TransmissionPeriodicity
+      referenceSubcarrierSpacing                                    = {{ subcarrierSpacing }};
+
+      # dl_UL_TransmissionPeriodicity: periodicity indexes
       # 0=ms0p5, 1=ms0p625, 2=ms1, 3=ms1p25, 4=ms2, 5=ms2p5, 6=ms5, 7=ms10
       dl_UL_TransmissionPeriodicity                                 = 6;
+
+      # DL slots
       nrofDownlinkSlots                                             = 7;
+
+      # DL symbols in mixed slots
       nrofDownlinkSymbols                                           = 6;
+
+      # UL slots
       nrofUplinkSlots                                               = 2;
+
+      # UL symbols in mixed slots
       nrofUplinkSymbols                                             = 4;
 
+      # ssPBCH_BlockPower: the power at which gNB transmit the reference signal (SSB block power)
       ssPBCH_BlockPower                                             = -25;
   }
   );
@@ -211,12 +270,23 @@ L1s =
 RUs =
 (
     {
+        # local_rf: indicates the monolithic connection to the SDR
         local_rf                      = "yes"
+
+        # nb_tx: 1 means SISO, 2 means MIMO
         nb_tx                         = 1
+
+        # nb_rx: 1 means SISO, 2 means MIMO
         nb_rx                         = 1
+
+        # att_tx: ranges 6-10 if the UE is close to the B210 antennas. Leave 0 otherwise
         att_tx                        = 12;
+
+        # att_rx: ranges 6-10 if the UE is close to the B210 antennas. Leave 0 otherwise
         att_rx                        = 12;
-        bands                         = [77];
+
+        # 5G NR FR1 bands
+        bands                         = [{{ frequencyBand }}];
         max_pdschReferenceSignalPower = -27;
         max_rxgain                    = 114;
         eNB_instances                 = [0];
