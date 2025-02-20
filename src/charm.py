@@ -266,6 +266,14 @@ class OAIRANDUOperator(CharmBase):
             tac=remote_network_config.tac,
             plmns=remote_network_config.plmns,
             simulation_mode=self._charm_config.simulation_mode,
+            absoluteFrequencySSB=None,
+            frequencyBand=None,
+            dl_absoluteFrequencyPointA=None,
+            subcarrierSpacing=None,
+            dl_carrierBandwidth=None,
+            initialDLBWPlocationAndBandwidth=None,
+            ul_carrierBandwidth=None,
+            initialULBWPlocationAndBandwidth=None,
         ).rstrip()
 
     def _generate_network_annotations(self) -> List[NetworkAnnotation]:
