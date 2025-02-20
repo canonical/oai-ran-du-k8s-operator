@@ -75,7 +75,7 @@ TDD_FR1_BANDS = {
     102: (5925, 6425),
 }
 
-# The reference of allowed channel bandwidths: https://www.nrexplained.com/bandwidth Table 5.3.5-1
+# The reference of channel bandwidths for each NR band: 3GPP TS 38.101-1 version 17.5.0 Table 5.3.5-1
 ALLOWED_CHANNEL_BANDWIDTHS = {
     # frequency_band: {sub_carrier_spacing (KHz): {allowed_bandwidths (MHz)}}
     34: {
