@@ -5,6 +5,7 @@
 """Config of the Charm."""
 
 import dataclasses
+import decimal
 import logging
 from enum import Enum
 from ipaddress import ip_network
@@ -75,7 +76,8 @@ TDD_FR1_BANDS = {
     102: (5925, 6425),
 }
 
-# The reference of channel bandwidths for each NR band: 3GPP TS 38.101-1 version 17.5.0 Table 5.3.5-1
+# The reference of channel bandwidths for each NR band:
+# 3GPP TS 38.101-1 version 17.5.0 Table 5.3.5-1
 ALLOWED_CHANNEL_BANDWIDTHS = {
     # frequency_band: {sub_carrier_spacing (KHz): {allowed_bandwidths (MHz)}}
     34: {
@@ -281,21 +283,26 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     @classmethod
     def validate_center_frequency(cls, center_frequency: str, info: ValidationInfo):
         """Validate the center frequency."""
-        if not (
-            Frequency.from_mhz(410)
-            <= Frequency.from_mhz(center_frequency)
-            <= Frequency.from_mhz(7125)
-        ):
-            logger.error(
-                "Center_frequency %s must be within the usable range"
-                " [410 MHz, 7125 MHz] for the given bandwidth %s MHz.",
-                center_frequency,
-                info.data.get("bandwidth"),
-            )
-            raise ValueError(
-                f"Center_frequency {center_frequency} must be within the usable range "
-                f"[410 MHz, 7125 MHz] for the given bandwidth {info.data.get('bandwidth')} MHz."
-            )
+        try:
+            if not (
+                Frequency.from_mhz(410)
+                <= Frequency.from_mhz(center_frequency)
+                <= Frequency.from_mhz(7125)
+            ):
+                logger.error(
+                    "Center_frequency %s must be within the usable range"
+                    " [410 MHz, 7125 MHz] for the given bandwidth %s MHz.",
+                    center_frequency,
+                    info.data.get("bandwidth"),
+                )
+                raise ValueError(
+                    f"Center_frequency {center_frequency} must be within the usable range "
+                    f"[410 MHz, 7125 MHz] for the given bandwidth "
+                    f"{info.data.get('bandwidth')} MHz."
+                )
+        except decimal.InvalidOperation:
+            logger.error("Center_frequency must be an integer or a float.")
+            raise ValueError("Center_frequency must be an integer or a float.")
 
         frequency_band = info.data.get("frequency_band")
         bandwidth = info.data.get("bandwidth")
@@ -358,6 +365,10 @@ class CharmConfig:
     f1_port: int
     simulation_mode: bool
     use_three_quarter_sampling: bool
+    frequency_band: int
+    sub_carrier_spacing: int
+    bandwidth: int
+    center_frequency: str
 
     def __init__(self, *, du_config: DUConfig):
         """Initialize a new instance of the CharmConfig class.
@@ -371,6 +382,10 @@ class CharmConfig:
         self.f1_port = du_config.f1_port
         self.simulation_mode = du_config.simulation_mode
         self.use_three_quarter_sampling = du_config.use_three_quarter_sampling
+        self.frequency_band = du_config.frequency_band
+        self.sub_carrier_spacing = du_config.sub_carrier_spacing
+        self.bandwidth = du_config.bandwidth
+        self.center_frequency = du_config.center_frequency
 
     @classmethod
     def from_charm(
