@@ -7,10 +7,10 @@ import decimal
 import logging
 from decimal import Decimal
 
-from frequency import (
+from du_parameters.frequency import (
     Frequency,
 )
-from guard_band import GuardBandError, get_minimum_guard_band
+from du_parameters.guard_band import GuardBandError, get_minimum_guard_band
 
 logger = logging.getLogger(__name__)
 

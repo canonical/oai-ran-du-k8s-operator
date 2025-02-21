@@ -8,7 +8,7 @@ Uses subcarrier spacing and carrier bandwidth as inputs.
 
 import logging
 
-from frequency import Frequency
+from du_parameters.frequency import Frequency
 
 logger = logging.getLogger(__name__)
 
