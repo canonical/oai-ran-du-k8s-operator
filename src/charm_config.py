@@ -193,7 +193,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     frequency_band: int = Field(ge=34, le=102)
     sub_carrier_spacing: int = Field(ge=15, le=60)
     center_frequency: str = Field(
-        pattern=r"^\d+(\.\d+)?$", description="Center frequency as an integer or a float"
+        description="Center frequency as an integer or a float wrapped as str."
     )
 
     @field_validator("f1_ip_address", mode="before")

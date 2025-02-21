@@ -554,13 +554,13 @@ def _get_pod_ip() -> Optional[str]:
 
 
 def _get_numerology(sub_carrier_spacing: Frequency) -> int:
-    mapping = {
+    scs_to_numerology = {
         Frequency.from_khz(15): 0,
         Frequency.from_khz(30): 1,
         Frequency.from_khz(60): 2,
     }
-    if sub_carrier_spacing in mapping:
-        return mapping[sub_carrier_spacing]
+    if sub_carrier_spacing in scs_to_numerology:
+        return scs_to_numerology[sub_carrier_spacing]
     raise ValueError(f"Unsupported sub-carrier spacing: {sub_carrier_spacing}")
 
 
