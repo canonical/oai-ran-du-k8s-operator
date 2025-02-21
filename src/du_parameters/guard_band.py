@@ -5,7 +5,7 @@
 
 import logging
 
-from src.du_parameters.frequency import Frequency
+from frequency import Frequency
 
 logger = logging.getLogger(__name__)
 

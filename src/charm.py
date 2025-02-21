@@ -33,11 +33,11 @@ from ops.pebble import Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
-from src.du_parameters.absolute_freq_ssb import get_absolute_frequency_ssb
-from src.du_parameters.carrier_bandwidth import get_carrier_bandwidth
-from src.du_parameters.dl_absolute_freq_point_a import get_dl_absolute_frequency_point_a
-from src.du_parameters.frequency import ARFCN, Frequency
-from src.du_parameters.initial_bwp import calculate_initial_bwp
+from du_parameters.absolute_freq_ssb import get_absolute_frequency_ssb
+from du_parameters.carrier_bandwidth import get_carrier_bandwidth
+from du_parameters.dl_absolute_freq_point_a import get_dl_absolute_frequency_point_a
+from du_parameters.frequency import ARFCN, Frequency
+from du_parameters.initial_bwp import calculate_initial_bwp
 
 logger = logging.getLogger(__name__)
 

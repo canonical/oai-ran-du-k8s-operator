@@ -7,7 +7,7 @@ import decimal
 import logging
 from decimal import Decimal
 
-from src.du_parameters.frequency import (
+from frequency import (
     ARFCN,
     Frequency,
     GetRangeFromFrequencyError,
