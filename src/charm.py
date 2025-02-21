@@ -36,7 +36,7 @@ from du_parameters.absolute_freq_ssb import get_absolute_frequency_ssb
 from du_parameters.carrier_bandwidth import get_carrier_bandwidth
 from du_parameters.dl_absolute_freq_point_a import get_dl_absolute_frequency_point_a
 from du_parameters.frequency import ARFCN, Frequency
-from du_parameters.initial_bwp import calculate_initial_bwp
+from du_parameters.initial_bwp import get_initial_bwp
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 
 logger = logging.getLogger(__name__)
@@ -272,23 +272,19 @@ class OAIRANDUOperator(CharmBase):
             plmns=remote_network_config.plmns,
             simulation_mode=self._charm_config.simulation_mode,
             frequency_band=self._charm_config.frequency_band,
-            sub_carrier_spacing=_get_numerology(
-                Frequency.from_khz(self._charm_config.sub_carrier_spacing)
-            ),
-            absolute_frequency_ssb=get_absolute_frequency_ssb(
-                Frequency.from_mhz(self._charm_config.center_frequency)
-            ),
+            sub_carrier_spacing=_get_numerology(self._charm_config.sub_carrier_spacing),
+            absolute_frequency_ssb=get_absolute_frequency_ssb(self._charm_config.center_frequency),
             dl_absolute_frequency_point_a=get_dl_absolute_frequency_point_a(
-                Frequency.from_mhz(self._charm_config.center_frequency),
-                Frequency.from_mhz(self._charm_config.bandwidth),
-                Frequency.from_khz(self._charm_config.sub_carrier_spacing),
+                self._charm_config.center_frequency,
+                self._charm_config.bandwidth,
+                self._charm_config.sub_carrier_spacing,
             ),
             dl_carrier_bandwidth=self._get_carrier_bandwidth(),
             ul_carrier_bandwidth=self._get_carrier_bandwidth(),
-            initial_dl_bwp_location_and_bandwidth=calculate_initial_bwp(
+            initial_dl_bwp_location_and_bandwidth=get_initial_bwp(
                 self._get_carrier_bandwidth(),
             ),
-            initial_ul_bwp_location_and_bandwidth=calculate_initial_bwp(
+            initial_ul_bwp_location_and_bandwidth=get_initial_bwp(
                 self._get_carrier_bandwidth(),
             ),
         ).rstrip()
@@ -296,8 +292,8 @@ class OAIRANDUOperator(CharmBase):
     def _get_carrier_bandwidth(self) -> int:
         """Return the carrier bandwidth."""
         return get_carrier_bandwidth(
-            Frequency.from_mhz(self._charm_config.bandwidth),
-            Frequency.from_khz(self._charm_config.sub_carrier_spacing),
+            self._charm_config.bandwidth,
+            self._charm_config.sub_carrier_spacing,
         )
 
     def _generate_network_annotations(self) -> List[NetworkAnnotation]:

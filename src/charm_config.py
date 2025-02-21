@@ -366,9 +366,9 @@ class CharmConfig:
     simulation_mode: bool
     use_three_quarter_sampling: bool
     frequency_band: int
-    sub_carrier_spacing: int
-    bandwidth: int
-    center_frequency: str
+    sub_carrier_spacing: Frequency
+    bandwidth: Frequency
+    center_frequency: Frequency
 
     def __init__(self, *, du_config: DUConfig):
         """Initialize a new instance of the CharmConfig class.
@@ -383,9 +383,9 @@ class CharmConfig:
         self.simulation_mode = du_config.simulation_mode
         self.use_three_quarter_sampling = du_config.use_three_quarter_sampling
         self.frequency_band = du_config.frequency_band
-        self.sub_carrier_spacing = du_config.sub_carrier_spacing
-        self.bandwidth = du_config.bandwidth
-        self.center_frequency = du_config.center_frequency
+        self.sub_carrier_spacing = Frequency.from_khz(du_config.sub_carrier_spacing)
+        self.bandwidth = Frequency.from_mhz(du_config.bandwidth)
+        self.center_frequency = Frequency.from_mhz(du_config.center_frequency)
 
     @classmethod
     def from_charm(

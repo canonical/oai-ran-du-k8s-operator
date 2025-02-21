@@ -93,8 +93,8 @@ config:
     sub-carrier-spacing:
       type: int
       description: | 
-        The distance between two adjacent sub-carriers given in KHZ. 
-        As FR1 5G spectrum supports 15, 30, 60 KHz sub-carrier spacing, it should be one of these values.
+        The distance between two adjacent sub-carriers given in kHz. 
+        As FR1 5G spectrum supports 15, 30, 60 kHz sub-carrier spacing, it should be one of these values.
 parts:
   charm:
     source: .

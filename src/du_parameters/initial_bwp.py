@@ -17,8 +17,8 @@ class CalculateBWPLocationBandwidthError(Exception):
     pass
 
 
-def calculate_initial_bwp(carrier_bandwidth: int) -> int:
-    """Calculate the initial BWP location and bandwidth.
+def get_initial_bwp(carrier_bandwidth: int) -> int:
+    """Get the initial BWP location and bandwidth.
 
     Uses carrier bandwidth and Subcarrier Spacing.
 
