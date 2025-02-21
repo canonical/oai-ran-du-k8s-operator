@@ -206,7 +206,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     @field_validator("sub_carrier_spacing", mode="before")
     @classmethod
     def validate_sub_carrier_spacing(cls, sub_carrier_spacing: int, info: ValidationInfo):
-        """Validate the subcarrier spacing."""
+        """Validate the sub carrier spacing."""
         frequency_band = info.data.get("frequency_band")
         bandwidth = info.data.get("bandwidth")
         if frequency_band is None:

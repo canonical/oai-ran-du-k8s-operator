@@ -287,11 +287,9 @@ class OAIRANDUOperator(CharmBase):
             ul_carrier_bandwidth=self._get_carrier_bandwidth(),
             initial_dl_bwp_location_and_bandwidth=calculate_initial_bwp(
                 self._get_carrier_bandwidth(),
-                Frequency.from_khz(self._charm_config.sub_carrier_spacing),
             ),
             initial_ul_bwp_location_and_bandwidth=calculate_initial_bwp(
                 self._get_carrier_bandwidth(),
-                Frequency.from_khz(self._charm_config.sub_carrier_spacing),
             ),
         ).rstrip()
 

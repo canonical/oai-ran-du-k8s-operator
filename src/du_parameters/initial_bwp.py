@@ -8,8 +8,6 @@ Uses subcarrier spacing and carrier bandwidth as inputs.
 
 import logging
 
-from .frequency import Frequency
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,43 +17,7 @@ class CalculateBWPLocationBandwidthError(Exception):
     pass
 
 
-def get_total_prbs_from_scs(subcarrier_spacing: Frequency) -> int:
-    """Get the number of Physical Resource Blocks (PRBs) based on Subcarrier Spacing (SCS).
-
-    Args:
-        subcarrier_spacing (Frequency): Subcarrier Spacing as Frequency object.
-        Valid values: 15, 30, 60, 120.
-
-    Returns:
-        int: Number of PRBs for given Subcarrier spacing value.
-
-    Raises:
-        ValueError: If the Subcarrier spacing value is not supported.
-        TypeError: If the Subcarrier spacing is not a Frequency object.
-    """
-    # Maximum bandwidth configurations per SCS for NR frequency bands
-    # Reference TS 38.104 Table 5.3.2.-1
-    scs_to_max_prbs = {
-        Frequency.from_khz(15): 275,
-        Frequency.from_khz(30): 275,
-        Frequency.from_khz(60): 135,
-    }
-    try:
-        return scs_to_max_prbs[subcarrier_spacing]
-    except KeyError:
-        supported_subcarrier_spacing = ", ".join(str(freq) for freq in scs_to_max_prbs)
-        logger.error(
-            "Subcarrier spacing value: %s is not supported. Supported values: %s",
-            subcarrier_spacing,
-            supported_subcarrier_spacing,
-        )
-        raise ValueError(
-            f"Subcarrier spacing value {subcarrier_spacing} is not supported."
-            f"Supported values: {supported_subcarrier_spacing}"
-        )
-
-
-def calculate_initial_bwp(carrier_bandwidth: int, subcarrier_spacing: Frequency) -> int:
+def calculate_initial_bwp(carrier_bandwidth: int) -> int:
     """Calculate the initial BWP location and bandwidth.
 
     Uses carrier bandwidth and Subcarrier Spacing.
@@ -70,7 +32,6 @@ def calculate_initial_bwp(carrier_bandwidth: int, subcarrier_spacing: Frequency)
     Args:
         carrier_bandwidth (int): Channel bandwidths of the carrier in terms of Resource Blocks.
                                 Indicated as L in the formula.
-        subcarrier_spacing (Frequency): Subcarrier Spacing in Frequency object.
 
     Returns:
         int: The calculated initialBWP location and bandwidth.
@@ -79,29 +40,15 @@ def calculate_initial_bwp(carrier_bandwidth: int, subcarrier_spacing: Frequency)
         logger.error("Carrier bandwidth must be greater than 0.")
         raise ValueError("Carrier bandwidth must be greater than 0.")
 
-    try:
-        total_prb = get_total_prbs_from_scs(subcarrier_spacing)
-    except (ValueError, TypeError) as err:
-        logger.error(
-            "Error calculating total PRBs using "
-            "carrier_bandwidth: %s and subcarrier spacing: %s: %s",
-            carrier_bandwidth,
-            subcarrier_spacing,
-            str(err),
-        )
-
-        raise CalculateBWPLocationBandwidthError(
-            f"Error calculating total PRBs using"
-            f" {carrier_bandwidth} and {subcarrier_spacing}: {str(err)}"
-        ) from err
-
+    # Maximum bandwidth configurations per SCS for NR frequency bands
+    # Reference TS 38.104 Table 5.3.2.-1
+    # For 15, 30 and 60 KHz sub carrier spacing, total number of PRBs are 275.
+    total_prbs = 275
     rb_start = 0
-    initial_bwp = (total_prb * (carrier_bandwidth - 1)) + rb_start
+    initial_bwp = (total_prbs * (carrier_bandwidth - 1)) + rb_start
     logger.info(
-        "Calculated initial BWP location and bandwidth using"
-        " carrier_bandwidth: %s and subcarrier spacing: %s: %s",
+        "Calculated initial BWP location and bandwidth using" " carrier_bandwidth: %s: %s",
         carrier_bandwidth,
-        subcarrier_spacing,
         initial_bwp,
     )
     return initial_bwp
