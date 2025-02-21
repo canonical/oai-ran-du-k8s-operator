@@ -8,7 +8,7 @@ Uses subcarrier spacing and carrier bandwidth as inputs.
 
 import logging
 
-from du_parameters.frequency import Frequency
+from .frequency import Frequency
 
 logger = logging.getLogger(__name__)
 
@@ -33,16 +33,17 @@ def get_total_prbs_from_scs(subcarrier_spacing: Frequency) -> int:
         ValueError: If the Subcarrier spacing value is not supported.
         TypeError: If the Subcarrier spacing is not a Frequency object.
     """
-    scs_to_prbs = {
+    # Maximum bandwidth configurations per SCS for NR frequency bands
+    # Reference TS 38.104 Table 5.3.2.-1
+    scs_to_max_prbs = {
         Frequency.from_khz(15): 275,
-        Frequency.from_khz(30): 137,
-        Frequency.from_khz(60): 69,
-        Frequency.from_khz(120): 33,
+        Frequency.from_khz(30): 275,
+        Frequency.from_khz(60): 135,
     }
     try:
-        return scs_to_prbs[subcarrier_spacing]
+        return scs_to_max_prbs[subcarrier_spacing]
     except KeyError:
-        supported_subcarrier_spacing = ", ".join(str(freq) for freq in scs_to_prbs)
+        supported_subcarrier_spacing = ", ".join(str(freq) for freq in scs_to_max_prbs)
         logger.error(
             "Subcarrier spacing value: %s is not supported. Supported values: %s",
             subcarrier_spacing,

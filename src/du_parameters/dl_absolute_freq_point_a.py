@@ -7,7 +7,7 @@ import decimal
 import logging
 from decimal import Decimal
 
-from du_parameters.frequency import (
+from .frequency import (
     ARFCN,
     Frequency,
     GetRangeFromFrequencyError,
@@ -26,7 +26,7 @@ class DLAbsoluteFrequencyPointAError(Exception):
 
 def get_dl_absolute_frequency_point_a(
     center_freq: Frequency, bandwidth: Frequency, sub_carrier_spacing: Frequency
-) -> ARFCN:
+) -> "ARFCN":
     """Calculate downlink absolute frequency Point A using center frequency and bandwidth.
 
     Args:

@@ -15,9 +15,8 @@ class TestGetTotalPRBs:
         "scs,expected_prbs",
         [
             (Frequency.from_khz(15), 275),
-            (Frequency.from_khz(30), 137),
-            (Frequency.from_khz(60), 69),
-            (Frequency.from_khz(120), 33),
+            (Frequency.from_khz(30), 275),
+            (Frequency.from_khz(60), 135),
         ],
     )
     def test_get_total_prbs_from_scs_when_valid_inputs_given_then_return_expected_results(
@@ -40,7 +39,7 @@ class TestGetTotalPRBs:
         with pytest.raises(
             ValueError,
             match=f"Subcarrier spacing value {scs} is not supported."
-            f"Supported values: 15000, 30000, 60000, 120000",
+            f"Supported values: 15000, 30000, 60000",
         ):
             get_total_prbs_from_scs(scs)
 
@@ -49,7 +48,7 @@ class TestGetTotalPRBs:
         with pytest.raises(
             ValueError,
             match="Subcarrier spacing value 10000 is not supported."
-            "Supported values: 15000, 30000, 60000, 120000",
+            "Supported values: 15000, 30000, 60000",
         ):
             get_total_prbs_from_scs(invalid_scs)
 
@@ -60,9 +59,8 @@ class TestCalculateInitialBWP:
         [
             (1, Frequency.from_khz(15), 0),
             (2, Frequency.from_khz(15), 275),
-            (3, Frequency.from_khz(30), 274),
+            (3, Frequency.from_khz(30), 550),
             (1, Frequency.from_khz(60), 0),
-            (4, Frequency.from_khz(120), 99),
         ],
     )
     def test_calculate_initial_bwp_when_valid_inputs_given_then_return_expected_results(
@@ -113,6 +111,6 @@ class TestCalculateInitialBWP:
             CalculateBWPLocationBandwidthError,
             match="Error calculating total PRBs using 2 and 10000: "
             "Subcarrier spacing value 10000 is not supported."
-            "Supported values: 15000, 30000, 60000, 120000",
+            "Supported values: 15000, 30000, 60000",
         ):
             calculate_initial_bwp(2, Frequency.from_khz(10))
