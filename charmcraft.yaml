@@ -77,7 +77,7 @@ config:
     center-frequency:
       type: string
       description: |
-        Middle frequency of the band to use for this DU. The frequency needs to be in the 5G FR1 range, from 410 MHz to 7125 MHz.
+        Middle frequency (in MHz) of the band to use for this DU. The frequency needs to be in the 5G FR1 range, from 410 MHz to 7125 MHz.
     bandwidth:
       type: int
       description: |
