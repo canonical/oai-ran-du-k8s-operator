@@ -77,8 +77,7 @@ config:
     center-frequency:
       type: string
       description: |
-        The reference point or middle of an allocated band of frequencies within the 5G FR1 spectrum range.
-        FR1 5G covers potential spectrum offerings from 410 MHz to 7125 MHz.
+        Middle frequency of the band to use for this DU. The frequency needs to be in the 5G FR1 range, from 410 MHz to 7125 MHz.
     bandwidth:
       type: int
       description: |
@@ -87,8 +86,8 @@ config:
     frequency-band:
       type: int
       description: |
-        Prefix of N in FR1. A frequency range which is defined in FR1 5G TDD spectrum.
-        The supported prefixes of N in FR1 5G band is one of the defined values:
+        5G NR frequency band, without the 'N' prefix. The chosen band must be
+        in the FR1 range and use TDD multiplexing. The supported bands are:
         34, 38, 39, 40, 41, 46, 47, 48, 50, 51, 53, 54, 77, 78, 79, 90, 96, 101, 102.
     sub-carrier-spacing:
       type: int

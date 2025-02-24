@@ -6,6 +6,7 @@
 
 import json
 import logging
+from functools import lru_cache
 from ipaddress import IPv4Address
 from subprocess import check_output
 from typing import List, Optional, Tuple
@@ -32,11 +33,14 @@ from ops.charm import CharmBase
 from ops.pebble import Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
-from du_parameters.absolute_freq_ssb import get_absolute_frequency_ssb
-from du_parameters.carrier_bandwidth import get_carrier_bandwidth
-from du_parameters.dl_absolute_freq_point_a import get_dl_absolute_frequency_point_a
-from du_parameters.frequency import ARFCN, Frequency
-from du_parameters.initial_bwp import get_initial_bwp
+from du_parameters import (
+    ARFCN,
+    Frequency,
+    get_absolute_frequency_ssb,
+    get_carrier_bandwidth,
+    get_dl_absolute_frequency_point_a,
+    get_initial_bwp,
+)
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 
 logger = logging.getLogger(__name__)
@@ -289,6 +293,7 @@ class OAIRANDUOperator(CharmBase):
             ),
         ).rstrip()
 
+    @lru_cache
     def _get_carrier_bandwidth(self) -> int:
         """Return the carrier bandwidth."""
         return get_carrier_bandwidth(

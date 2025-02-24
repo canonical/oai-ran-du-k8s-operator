@@ -5,11 +5,12 @@
 
 import pytest
 
-from src.du_parameters.absolute_freq_ssb import (
+from src.du_parameters import (
+    ARFCN,
     AbsoluteFrequencySSBError,
+    Frequency,
     get_absolute_frequency_ssb,
 )
-from src.du_parameters.frequency import ARFCN, Frequency
 
 
 class TestAbsoluteFrequencySSB:

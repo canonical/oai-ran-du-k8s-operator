@@ -4,9 +4,12 @@
 
 import pytest
 
-from src.du_parameters.carrier_bandwidth import get_carrier_bandwidth
-from src.du_parameters.frequency import Frequency
-from src.du_parameters.guard_band import GuardBandError, get_minimum_guard_band
+from src.du_parameters import (
+    Frequency,
+    GuardBandError,
+    get_carrier_bandwidth,
+    get_minimum_guard_band,
+)
 
 
 class TestGetCarrierBandwidth:

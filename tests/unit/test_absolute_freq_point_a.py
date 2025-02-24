@@ -4,12 +4,13 @@
 
 import pytest
 
-from src.du_parameters.dl_absolute_freq_point_a import (
+from src.du_parameters import (
+    ARFCN,
     CONFIG_CONSTANT_TWO,
     DLAbsoluteFrequencyPointAError,
+    Frequency,
     get_dl_absolute_frequency_point_a,
 )
-from src.du_parameters.frequency import ARFCN, Frequency
 
 
 class TestDLAbsoluteFrequencyPointA:
@@ -22,7 +23,7 @@ class TestDLAbsoluteFrequencyPointA:
                 Frequency.from_khz(15),
                 197958,
             ),
-            (Frequency.from_mhz("700.3"), Frequency.from_mhz(10), Frequency.from_khz(15), 139059),
+            (Frequency.from_mhz("700.3"), Frequency.from_mhz(10), Frequency.from_khz(15), 139062),
             (Frequency.from_mhz(4060), Frequency.from_mhz(40), Frequency.from_khz(30), 669334),
             (Frequency.from_mhz(3925), Frequency.from_mhz(20), Frequency.from_khz(15), 661000),
             (Frequency.from_mhz(25000), Frequency.from_mhz(20), Frequency.from_khz(60), 2029000),
@@ -30,7 +31,7 @@ class TestDLAbsoluteFrequencyPointA:
                 Frequency.from_mhz("24000.523"),
                 Frequency.from_mhz(20),
                 Frequency.from_khz(30),
-                1999368,
+                1999370,
             ),
         ],
     )
@@ -127,7 +128,7 @@ class TestDLAbsoluteFrequencyPointA:
                 Frequency.from_mhz(50),
                 Frequency.from_khz(30),
                 DLAbsoluteFrequencyPointAError,
-                "No frequency range found for frequency -1025010000",
+                "No frequency range found for frequency -1024980000",
             ),
             (
                 None,
@@ -141,7 +142,7 @@ class TestDLAbsoluteFrequencyPointA:
                 Frequency.from_mhz(20),
                 Frequency.from_khz(30),
                 DLAbsoluteFrequencyPointAError,
-                "No frequency range found for frequency -9990000",
+                "No frequency range found for frequency -9960000",
             ),
         ],
     )

@@ -7,16 +7,12 @@ Uses subcarrier spacing and carrier bandwidth as inputs.
 """
 
 import logging
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
 
-class CalculateBWPLocationBandwidthError(Exception):
-    """Exception raised when calculation of BWP location and bandwidth fails."""
-
-    pass
-
-
+@lru_cache
 def get_initial_bwp(carrier_bandwidth: int) -> int:
     """Get the initial BWP location and bandwidth.
 
