@@ -6,7 +6,7 @@
 import decimal
 import logging
 
-from src.du_parameters.frequency import (
+from .frequency import (
     ARFCN,
     GSCN,
     Frequency,

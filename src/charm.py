@@ -6,6 +6,7 @@
 
 import json
 import logging
+from functools import lru_cache
 from ipaddress import IPv4Address
 from subprocess import check_output
 from typing import List, Optional, Tuple
@@ -32,6 +33,14 @@ from ops.charm import CharmBase
 from ops.pebble import Layer
 
 from charm_config import CharmConfig, CharmConfigInvalidError, CNIType
+from du_parameters import (
+    ARFCN,
+    Frequency,
+    get_absolute_frequency_ssb,
+    get_carrier_bandwidth,
+    get_dl_absolute_frequency_point_a,
+    get_initial_bwp,
+)
 from oai_ran_du_k8s import DUSecurityContext, DUUSBVolume
 
 logger = logging.getLogger(__name__)
@@ -266,7 +275,31 @@ class OAIRANDUOperator(CharmBase):
             tac=remote_network_config.tac,
             plmns=remote_network_config.plmns,
             simulation_mode=self._charm_config.simulation_mode,
+            frequency_band=self._charm_config.frequency_band,
+            sub_carrier_spacing=_get_numerology(self._charm_config.sub_carrier_spacing),
+            absolute_frequency_ssb=get_absolute_frequency_ssb(self._charm_config.center_frequency),
+            dl_absolute_frequency_point_a=get_dl_absolute_frequency_point_a(
+                self._charm_config.center_frequency,
+                self._charm_config.bandwidth,
+                self._charm_config.sub_carrier_spacing,
+            ),
+            dl_carrier_bandwidth=self._get_carrier_bandwidth(),
+            ul_carrier_bandwidth=self._get_carrier_bandwidth(),
+            initial_dl_bwp_location_and_bandwidth=get_initial_bwp(
+                self._get_carrier_bandwidth(),
+            ),
+            initial_ul_bwp_location_and_bandwidth=get_initial_bwp(
+                self._get_carrier_bandwidth(),
+            ),
         ).rstrip()
+
+    @lru_cache
+    def _get_carrier_bandwidth(self) -> int:
+        """Return the carrier bandwidth."""
+        return get_carrier_bandwidth(
+            self._charm_config.bandwidth,
+            self._charm_config.sub_carrier_spacing,
+        )
 
     def _generate_network_annotations(self) -> List[NetworkAnnotation]:
         """Generate a list of NetworkAnnotations to be used by CU's StatefulSet.
@@ -460,6 +493,14 @@ def _render_config_file(
     tac: int,
     plmns: List[PLMNConfig],
     simulation_mode: bool,
+    frequency_band: int,
+    sub_carrier_spacing: int,
+    absolute_frequency_ssb: ARFCN,
+    dl_absolute_frequency_point_a: ARFCN,
+    dl_carrier_bandwidth: int,
+    ul_carrier_bandwidth: int,
+    initial_dl_bwp_location_and_bandwidth: int,
+    initial_ul_bwp_location_and_bandwidth: int,
 ) -> str:
     """Render DU config file based on parameters.
 
@@ -473,7 +514,14 @@ def _render_config_file(
         tac: Tracking Area Code
         plmns: list of PLMN
         simulation_mode: Run DU in simulation mode
-
+        frequency_band: Frequency band of the DU
+        sub_carrier_spacing: Subcarrier spacing of the DU
+        absolute_frequency_ssb: Absolute frequency of the SSB
+        dl_absolute_frequency_point_a: Absolute frequency of the DL point A
+        dl_carrier_bandwidth: Carrier bandwidth of the DL
+        ul_carrier_bandwidth: Carrier bandwidth of the UL
+        initial_dl_bwp_location_and_bandwidth: Initial DL BWP location and bandwidth
+        initial_ul_bwp_location_and_bandwidth: Initial UL BWP location and bandwidth
     Returns:
         str: Rendered DU configuration file
     """
@@ -489,6 +537,14 @@ def _render_config_file(
         tac=tac,
         plmn_list=plmns,
         simulation_mode=simulation_mode,
+        frequencyBand=frequency_band,
+        subcarrierSpacing=sub_carrier_spacing,
+        absoluteFrequencySSB=absolute_frequency_ssb,
+        dl_absoluteFrequencyPointA=dl_absolute_frequency_point_a,
+        dl_carrierBandwidth=dl_carrier_bandwidth,
+        ul_carrierBandwidth=ul_carrier_bandwidth,
+        initialDLBWPlocationAndBandwidth=initial_dl_bwp_location_and_bandwidth,
+        initialULBWPlocationAndBandwidth=initial_ul_bwp_location_and_bandwidth,
     )
 
 
@@ -500,6 +556,17 @@ def _get_pod_ip() -> Optional[str]:
     """
     ip_address = check_output(["unit-get", "private-address"])
     return str(IPv4Address(ip_address.decode().strip())) if ip_address else None
+
+
+def _get_numerology(sub_carrier_spacing: Frequency) -> int:
+    scs_to_numerology = {
+        Frequency.from_khz(15): 0,
+        Frequency.from_khz(30): 1,
+        Frequency.from_khz(60): 2,
+    }
+    if sub_carrier_spacing in scs_to_numerology:
+        return scs_to_numerology[sub_carrier_spacing]
+    raise ValueError(f"Unsupported sub-carrier spacing: {sub_carrier_spacing}")
 
 
 if __name__ == "__main__":  # pragma: nocover

@@ -91,6 +91,12 @@ async def deploy_charm_under_test(ops_test: OpsTest, request):
         resources=resources,
         application_name=APP_NAME,
         trust=True,
+        config={
+            "bandwidth": 40,
+            "frequency-band": 77,
+            "sub-carrier-spacing": 30,
+            "center-frequency": "4060",
+        },
     )
 
 
