@@ -16,10 +16,10 @@ sudo microk8s addons repo add community https://github.com/canonical/microk8s-co
 sudo microk8s enable multus
 ```
 
-Deploy the charm.
+Deploy the charm with mandatory configuration options.
 
 ```bash
-juju deploy oai-ran-du-k8s --trust --channel=2.2/edge
+juju deploy oai-ran-du-k8s --trust --channel=2.2/edge --config bandwidth=40 --config frequency-band=77 --config sub-carrier-spacing=30 --config center-frequency="4060"
 juju deploy oai-ran-cu-k8s --trust --channel=2.2/edge
 juju integrate oai-ran-du-k8s:fiveg_f1 oai-ran-cu-k8s:fiveg_f1
 ```
