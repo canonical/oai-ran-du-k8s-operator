@@ -440,7 +440,8 @@ class RFSIMRequires(Object):
             return remote_app_relation_data.start_subcarrier
         return None
 
-    def get_provider_rfsim_information(self, relation: Optional[Relation] = None
+    def get_provider_rfsim_information(
+        self, relation: Optional[Relation] = None
     ) -> Optional[ProviderAppData]:
         """Get relation data for the remote application.
 
