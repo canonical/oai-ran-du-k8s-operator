@@ -14,6 +14,7 @@ from src.du_parameters.frequency import (
     Frequency,
     GetRangeFromFrequencyError,
     GetRangeFromGSCNError,
+    get_range_from_arfcn,
     get_range_from_frequency,
     get_range_from_gscn,
 )
@@ -206,6 +207,34 @@ class TestARFCN:
             ARFCN.from_frequency(invalid_freq_mhz)
 
     @pytest.mark.parametrize(
+        "arfcn, expected_freq",
+        [
+            (ARFCN(600000), Frequency.from_mhz("3000")),
+            (ARFCN(661632), Frequency.from_mhz("3924.48")),
+            (ARFCN(2016666), Frequency.from_mhz("24249.99")),
+        ],
+    )
+    def test_arfcn_to_frequency_when_arfcn_is_given_then_correct_frequency_is_returned(
+        self, arfcn, expected_freq
+    ):
+        assert arfcn.to_frequency() == expected_freq
+
+    @pytest.mark.parametrize(
+        "invalid_arfcn, expected_error",
+        [
+            (1500000000, ValueError),
+            (-1, ValueError),
+            ("invalid", TypeError),
+            (None, TypeError),
+        ],
+    )
+    def test_arfcn_to_frequency_when_invalid_arfcn_is_given_then_value_error_is_raised(
+        self, invalid_arfcn, expected_error
+    ):
+        with pytest.raises(expected_error):
+            ARFCN(invalid_arfcn).to_frequency()
+
+    @pytest.mark.parametrize(
         "channel, expected_error",
         [
             (-1, ValueError),
@@ -223,11 +252,159 @@ class TestARFCN:
         with pytest.raises(NotImplementedError):
             arfcn + "invalid"
 
-    def test_arfcn_addition_when_compatible_types_are_given_then_return_expected_result(self):
-        arfcn1 = ARFCN(100)
-        arfcn2 = ARFCN(50)
-        result = arfcn1 + arfcn2
-        assert result._channel == 150
+    def test_arfcn_subtraction_when_incompatible_type_is_given_then_raise_error(self):
+        arfcn = ARFCN(100)
+        with pytest.raises(NotImplementedError):
+            arfcn - "invalid"
+
+    def test_arfcn_multiplication_when_incompatible_type_is_given_then_raise_error(self):
+        arfcn = ARFCN(100)
+        with pytest.raises(NotImplementedError):
+            arfcn * "invalid"
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(10), ARFCN(20), ARFCN(30)),
+            (ARFCN(100), 50, ARFCN(150)),
+            (ARFCN(100), decimal.Decimal(50), ARFCN(150)),
+        ],
+    )
+    def test_arfcn_addition_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert arfcn + other == result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(10), ARFCN(20), ARFCN(200)),
+            (ARFCN(100), 50, ARFCN(5000)),
+            (ARFCN(100), decimal.Decimal(50), ARFCN(5000)),
+        ],
+    )
+    def test_arfcn_multiplication_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert arfcn * other == result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(100), ARFCN(20), ARFCN(80)),
+            (ARFCN(100), 50, ARFCN(50)),
+            (ARFCN(100), decimal.Decimal(50), ARFCN(50)),
+        ],
+    )
+    def test_arfcn_subtraction_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert arfcn - other == result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(100), ARFCN(50), True),
+            (ARFCN(50), ARFCN(100), False),
+            (ARFCN(100), 50, True),
+            (ARFCN(50), 100, False),
+            (ARFCN(100), decimal.Decimal(50), True),
+            (ARFCN(50), decimal.Decimal(100), False),
+            (ARFCN(100), ARFCN(100), False),
+            (ARFCN(100), "invalid type", False),
+        ],
+    )
+    def test_arfcn_greater_than_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert (arfcn > other) is result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(100), ARFCN(50), True),
+            (ARFCN(50), 100, False),
+            (ARFCN(100), decimal.Decimal(50), True),
+            (ARFCN(100), ARFCN(100), True),
+            (ARFCN(100), 100, True),
+            (ARFCN(100), decimal.Decimal(100), True),
+            (ARFCN(100), "invalid type", False),
+        ],
+    )
+    def test_arfcn_greater_or_equal_then_when_compatible_types_are_given_then_return_expected_result(  # noqa: E501
+        self, arfcn, other, result
+    ):
+        assert (arfcn >= other) is result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(100), ARFCN(50), False),
+            (ARFCN(50), ARFCN(100), True),
+            (ARFCN(100), 50, False),
+            (ARFCN(50), 100, True),
+            (ARFCN(100), decimal.Decimal(50), False),
+            (ARFCN(50), decimal.Decimal(100), True),
+            (ARFCN(100), ARFCN(100), False),
+            (ARFCN(100), "invalid type", False),
+        ],
+    )
+    def test_arfcn_lower_than_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert (arfcn < other) is result
+
+    @pytest.mark.parametrize(
+        "arfcn, other, result",
+        [
+            (ARFCN(100), ARFCN(50), False),
+            (ARFCN(50), 100, True),
+            (ARFCN(100), decimal.Decimal(50), False),
+            (ARFCN(100), ARFCN(100), True),
+            (ARFCN(100), 100, True),
+            (ARFCN(100), decimal.Decimal(100), True),
+            (ARFCN(100), "invalid type", False),
+        ],
+    )
+    def test_arfcn_lower_or_equal_then_when_compatible_types_are_given_then_return_expected_result(
+        self, arfcn, other, result
+    ):
+        assert (arfcn <= other) is result
+
+
+class TestGetRangeFromARFCN:
+    @pytest.mark.parametrize(
+        "arfcn_input, expected_output",
+        [
+            (ARFCN(0), LOW_FREQUENCY),
+            (ARFCN(300000), LOW_FREQUENCY),
+            (ARFCN(599999), LOW_FREQUENCY),
+            (ARFCN(600000), MID_FREQUENCY),
+            (ARFCN(1000000), MID_FREQUENCY),
+            (ARFCN(2016666), MID_FREQUENCY),
+            (ARFCN(2016667), HIGH_FREQUENCY),
+            (ARFCN(2500000), HIGH_FREQUENCY),
+            (ARFCN(3279165), HIGH_FREQUENCY),
+        ],
+    )
+    def test_get_range_from_arfcn_when_valid_input_given_then_return_expected_result(
+        self, arfcn_input, expected_output
+    ):
+        assert get_range_from_arfcn(arfcn_input) == expected_output
+
+    @pytest.mark.parametrize(
+        "invalid_arfcn_input, exception_type, exception_message",
+        [
+            (None, TypeError, "Expected ARFCN, got NoneType"),
+            ("invalid", TypeError, "Expected ARFCN, got str"),
+        ],
+    )
+    def test_get_range_from_arfcn_when_invalid_inputs_given_then_raise_error(
+        self, invalid_arfcn_input, exception_type, exception_message
+    ):
+        with pytest.raises(exception_type) as excinfo:
+            get_range_from_arfcn(invalid_arfcn_input)
+        assert exception_message in str(excinfo.value)
 
 
 class TestGSCN:

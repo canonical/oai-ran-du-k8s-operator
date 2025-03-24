@@ -25,20 +25,20 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
         rfsim_address = event.params.get("rfsim_address", "")
         sst = event.params.get("sst", "")
         sd = event.params.get("sd", "")
+        band = event.params.get("band", "")
+        dl_freq = event.params.get("dl_freq", "")
+        carrier_bandwidth = event.params.get("carrier_bandwidth", "")
+        numerology = event.params.get("numerology", "")
+        start_subcarrier = event.params.get("start_subcarrier", "")
         self.rfsim_provider.set_rfsim_information(
             rfsim_address=rfsim_address,
             sst=int(sst),
             sd=int(sd) if sd else None,
-        )
-
-    def _on_set_rfsim_information_as_string_action(self, event: ActionEvent):
-        rfsim_address = event.params.get("rfsim_address", "")
-        sst = event.params.get("sst", "")
-        sd = event.params.get("sd", "")
-        self.rfsim_provider.set_rfsim_information(
-            rfsim_address=rfsim_address,
-            sst=sst,
-            sd=sd if sd else None,
+            band=int(band),
+            dl_freq=int(dl_freq),
+            carrier_bandwidth=int(carrier_bandwidth),
+            numerology=int(numerology),
+            start_subcarrier=int(start_subcarrier),
         )
 
 
