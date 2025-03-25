@@ -309,13 +309,13 @@ class ARFCN:
         return False
 
     def __ge__(self, other: Any) -> bool:
-        """Check if ARFCN is grater than or equal to other ARFCN or integer.
+        """Check if ARFCN is greater than or equal to other ARFCN or integer.
 
         Args:
             other (Any): The value to compare with.
 
         Returns:
-            bool: If the ARFCN instance is grater than or equal to other ARFCN or integer
+            bool: If the ARFCN instance is greater than or equal to other ARFCN or integer
                   return True, else False.
         """
         if isinstance(other, int | Decimal):
@@ -325,13 +325,13 @@ class ARFCN:
         return False
 
     def __gt__(self, other: Any) -> bool:
-        """Check if ARFCN is grater than other ARFCN or integer.
+        """Check if ARFCN is greater than other ARFCN or integer.
 
         Args:
             other (Any): The value to compare with.
 
         Returns:
-            bool: If the ARFCN instance is grater than other ARFCN or integer return True,
+            bool: If the ARFCN instance is greater than other ARFCN or integer return True,
                   else False.
         """
         if isinstance(other, int | Decimal):

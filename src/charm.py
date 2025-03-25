@@ -618,24 +618,28 @@ def _get_first_usable_subcarrier(
         absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
         dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
         numerology (int): Numerology
+
+    Returns:
+        int: Index of the first subcarrier of the SSB block assuming 15 kHz subcarrier spacing
+             in relation to PointA.
     """
-    ssb_offset_point_a = _get_ssb_offset_pointa(
+    offset_to_point_a = _get_offset_to_point_a(
         absolute_frequency_ssb, dl_absolute_frequency_point_a, numerology
     )
-    prb_offset = ssb_offset_point_a >> numerology
-    ssb_subcarrier_offset = _get_ssb_subcarrier_offset(
+    prb_offset = offset_to_point_a >> numerology
+    kssb = _get_kssb(
         absolute_frequency_ssb,
         dl_absolute_frequency_point_a,
         numerology,
     )
-    sc_offset = ssb_subcarrier_offset >> numerology
+    sc_offset = kssb >> numerology
     return 12 * prb_offset + sc_offset
 
 
-def _get_ssb_offset_pointa(
+def _get_offset_to_point_a(
     absolute_frequency_ssb: ARFCN, dl_absolute_frequency_point_a: ARFCN, numerology: int
 ) -> int:
-    """Calculate ssbOffsetPointA.
+    """Calculate OffsetToPointA.
 
     In this implementation only FR1 is supported.
 
@@ -643,6 +647,11 @@ def _get_ssb_offset_pointa(
         absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
         dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
         numerology (int): Numerology
+
+    Returns:
+        int: Frequency-domain difference between the PointA and the first Resource Block (RB)
+             overlapping with the SSB block expressed as a number RBs with 15 kHz subcarrier
+             spacing.
     """
     absolute_diff_int = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
     scaling_5khz = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
@@ -651,10 +660,10 @@ def _get_ssb_offset_pointa(
     return int(((scaled_absolute_diff / 12) - 10) * scaling)
 
 
-def _get_ssb_subcarrier_offset(
+def _get_kssb(
     absolute_frequency_ssb: ARFCN, dl_absolute_frequency_point_a: ARFCN, numerology: int
 ) -> int:
-    """Calculate ssbSubcarrierOffset.
+    """Calculate kSSB.
 
     In this implementation only FR1 is supported.
 
@@ -662,6 +671,10 @@ def _get_ssb_subcarrier_offset(
         absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
         dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
         numerology (int): Numerology
+
+    Returns:
+        int: Index of the first subcarrier of an SSB block within the first Resource Block
+             overlapping with the SSB block.
     """
     absolute_diff = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
     scaling = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1

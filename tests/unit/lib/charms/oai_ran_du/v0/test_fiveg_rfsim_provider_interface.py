@@ -199,7 +199,7 @@ class TestFivegRFSIMProvides:
     @pytest.mark.parametrize(
         "band",
         [
-            pytest.param("-1", id="rf_band_negative_numer"),
+            pytest.param("-1", id="rf_band_negative_number"),
             pytest.param("0", id="rf_band_is_0"),
         ],
     )
@@ -231,9 +231,10 @@ class TestFivegRFSIMProvides:
     @pytest.mark.parametrize(
         "dl_freq",
         [
-            pytest.param("-1", id="dl_freq_negative_numer"),
+            pytest.param("-1", id="dl_freq_negative_number"),
             pytest.param("0", id="dl_freq_is_0"),
             pytest.param("1234567", id="dl_freq_below_410_mhz"),
+            pytest.param("409999999", id="dl_freq_upper_edge"),
         ],
     )
     def test_given_invalid_dl_freq_when_set_rfsim_information_then_error_is_raised(self, dl_freq):
@@ -264,7 +265,7 @@ class TestFivegRFSIMProvides:
     @pytest.mark.parametrize(
         "carrier_bandwidth",
         [
-            pytest.param("-1", id="carrier_bandwidth_negative_numer"),
+            pytest.param("-1", id="carrier_bandwidth_negative_number"),
             pytest.param("10", id="carrier_bandwidth_below_11"),
             pytest.param("274", id="carrier_bandwidth_above_273"),
         ],
@@ -299,7 +300,7 @@ class TestFivegRFSIMProvides:
     @pytest.mark.parametrize(
         "numerology",
         [
-            pytest.param("-1", id="numerology_negative_numer"),
+            pytest.param("-1", id="numerology_negative_number"),
             pytest.param("7", id="numerology_above_6"),
         ],
     )

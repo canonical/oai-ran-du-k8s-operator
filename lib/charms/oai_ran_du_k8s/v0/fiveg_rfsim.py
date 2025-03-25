@@ -6,7 +6,7 @@
 This library contains the Requires and Provides classes for handling the `fiveg_rfsim` interface.
 
 The purpose of this library is to relate two charms to pass the network configuration data required to start the RF simulation.
-In particular the RF SIM address, Network Slice Type (SST), Slice Differentiator (SD), RF band, downlink frequency, carrier bandwidth, numerology and the numer of the first usable subcarrier will be passed through the interface.
+In particular the RF SIM address, Network Slice Type (SST), Slice Differentiator (SD), RF band, downlink frequency, carrier bandwidth, numerology and the number of the first usable subcarrier will be passed through the interface.
 In the Telco world this will typically be charms implementing the DU (Distributed Unit) and the UE (User equipment).
 
 ## Getting Started
@@ -62,7 +62,7 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
                 dl_freq=self.DL_FREQ,
                 carrier_bandwidth=self.CARRIER_BANDWIDTH,
                 numerology=self.NUMEROLOGY,
-                NUMEROLOGY=self.START_SUBCARRIER
+                start_subcarrier=self.START_SUBCARRIER
             )
 
 
@@ -387,10 +387,10 @@ class RFSIMRequires(Object):
 
     @property
     def band(self) -> Optional[int]:
-        """Return the RF Band numer.
+        """Return the RF Band number.
 
         Returns:
-           Optional[int] : band (RF Band numer)
+           Optional[int] : band (RF Band number)
         """
         if remote_app_relation_data := self.get_provider_rfsim_information():
             return remote_app_relation_data.band
