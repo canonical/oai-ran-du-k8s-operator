@@ -673,8 +673,9 @@ def _get_kssb(
         numerology (int): Numerology
 
     Returns:
-        int: Index of the first subcarrier of an SSB block within the first Resource Block
-             overlapping with the SSB block.
+        int: Offset to the first subcarrier of an SSB block within the first Resource Block
+             overlapping with the SSB block. Parameter expressed as a number of subcarriers
+             assuming 15 kHz subcarrier spacing.
     """
     absolute_diff = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
     scaling = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
