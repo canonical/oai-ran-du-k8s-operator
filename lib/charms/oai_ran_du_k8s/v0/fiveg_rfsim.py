@@ -21,7 +21,7 @@ Add the following libraries to the charm's `requirements.txt` file:
 - pytest-interface-tester
 
 ### Provider charm
-The provider charm is the one providing the information about RF SIM address, SST, SD, RF band, downlink frequency, carrier bandwidth, numerology and the numer of the first usable subcarrier.
+The provider charm is the one providing the information about RF SIM address, SST, SD, RF band, downlink frequency, carrier bandwidth, numerology and the number of the first usable subcarrier.
 Typically, this will be the DU charm.
 
 Example:
@@ -97,7 +97,7 @@ class DummyFivegRFSIMRequires(CharmBase):
     def _on_fiveg_rfsim_relation_changed(self, event: RelationChangedEvent):
         provider_rfsim_address = event.rfsim_address
         provider_sst = event.sst
-        provider_st = event.sd
+        provider_sd = event.sd
         provider_band = event.band
         provider_dl_freq = event.dl_freq
         provider_carrier_bandwidth = event.carrier_bandwidth
