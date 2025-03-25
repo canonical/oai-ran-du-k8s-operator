@@ -650,8 +650,8 @@ def _get_offset_to_point_a(
 
     Returns:
         int: Frequency-domain difference between the PointA and the first Resource Block (RB)
-             overlapping with the SSB block expressed as a number RBs with 15 kHz subcarrier
-             spacing.
+             overlapping with the SSB block. Parameter is expressed as a number RBs with 15 kHz
+             subcarrier spacing.
     """
     absolute_diff_int = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
     scaling_5khz = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
