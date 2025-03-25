@@ -349,8 +349,15 @@ class RFSIMRequires(Object):
         self.relation_name = relation_name
 
     @property
-    def interface_version(self):
-        return LIBAPI
+    def provider_interface_version(self) -> Optional[int]:
+        """Return interface version used by the provider.
+
+        Returns:
+            Optional[int]: The `fiveg_rfsim` interface version used by the provider.
+        """
+        if remote_app_relation_data := self.get_provider_rfsim_information():
+            return remote_app_relation_data.version
+        return None
 
     @property
     def rfsim_address(self) -> Optional[IPvAnyAddress]:
@@ -462,6 +469,7 @@ class RFSIMRequires(Object):
         remote_app_relation_data: Dict[str, Any] = dict(relation.data[relation.app])
 
         try:
+            remote_app_relation_data["version"] = int(remote_app_relation_data.get("version", ""))
             remote_app_relation_data["sst"] = int(remote_app_relation_data.get("sst", ""))
             remote_app_relation_data["band"] = int(remote_app_relation_data.get("band", ""))
             remote_app_relation_data["dl_freq"] = int(remote_app_relation_data.get("dl_freq", ""))
