@@ -355,9 +355,7 @@ class RFSIMRequires(Object):
         Returns:
             Optional[int]: The `fiveg_rfsim` interface version used by the provider.
         """
-        if remote_app_relation_data := self.get_provider_rfsim_information():
-            return remote_app_relation_data.version
-        return None
+        return self._get_provider_interface_version()
 
     @property
     def rfsim_address(self) -> Optional[IPvAnyAddress]:
@@ -447,6 +445,21 @@ class RFSIMRequires(Object):
             return remote_app_relation_data.start_subcarrier
         return None
 
+    def _get_provider_interface_version(self) -> Optional[int]:
+        """Get provider interface version.
+
+        Returns:
+            Optional[int]: The `fiveg_rfsim` interface version used by the provider.
+        """
+        relation = self.model.get_relation(self.relation_name)
+        if not relation:
+            logger.error("No relation: %s", self.relation_name)
+            return None
+        if not relation.app:
+            logger.warning("No remote application in relation: %s", self.relation_name)
+            return None
+        return int(dict(relation.data[relation.app]).get("version", ""))
+
     def get_provider_rfsim_information(
         self, relation: Optional[Relation] = None
     ) -> Optional[ProviderAppData]:
@@ -469,7 +482,6 @@ class RFSIMRequires(Object):
         remote_app_relation_data: Dict[str, Any] = dict(relation.data[relation.app])
 
         try:
-            remote_app_relation_data["version"] = int(remote_app_relation_data.get("version", ""))
             remote_app_relation_data["sst"] = int(remote_app_relation_data.get("sst", ""))
             remote_app_relation_data["band"] = int(remote_app_relation_data.get("band", ""))
             remote_app_relation_data["dl_freq"] = int(remote_app_relation_data.get("dl_freq", ""))
