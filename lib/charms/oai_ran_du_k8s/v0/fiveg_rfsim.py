@@ -131,7 +131,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 5
+LIBPATCH = 6
 
 
 logger = logging.getLogger(__name__)
@@ -458,7 +458,11 @@ class RFSIMRequires(Object):
         if not relation.app:
             logger.warning("No remote application in relation: %s", self.relation_name)
             return None
-        return int(dict(relation.data[relation.app]).get("version", ""))
+        try:
+            return int(dict(relation.data[relation.app]).get("version", ""))
+        except ValueError:
+            logger.error("Invalid or missing `fiveg_rfsim` provider interface version.")
+            return None
 
     def get_provider_rfsim_information(
         self, relation: Optional[Relation] = None
