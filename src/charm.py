@@ -9,7 +9,7 @@ import logging
 from functools import lru_cache
 from ipaddress import IPv4Address
 from subprocess import check_output
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from charms.kubernetes_charm_libraries.v0.multus import (
     KubernetesMultusCharmLib,
@@ -215,6 +215,15 @@ class OAIRANDUOperator(CharmBase):
             return
         if not self._relation_created(RFSIM_RELATION_NAME):
             return
+        if (
+            self._get_fiveg_rfsim_requirer_interface_version()
+            != self.rfsim_provider.interface_version
+        ):
+            logger.error(
+                "Can't establish communication over the `fiveg_rfsim` interface "
+                "due to version mismatch!"
+            )
+            return
         if not self._du_service_is_running():
             return
         if not self._get_rfsim_address():
@@ -229,10 +238,39 @@ class OAIRANDUOperator(CharmBase):
         if not remote_network_information.plmns:
             return
         self.rfsim_provider.set_rfsim_information(
-            self._get_rfsim_address(),
-            remote_network_information.plmns[0].sst,
-            remote_network_information.plmns[0].sd,
+            rfsim_address=self._get_rfsim_address(),
+            sst=remote_network_information.plmns[0].sst,
+            sd=remote_network_information.plmns[0].sd,
+            band=self._charm_config.frequency_band,
+            dl_freq=int(
+                get_dl_absolute_frequency_point_a(
+                    self._charm_config.center_frequency,
+                    self._charm_config.bandwidth,
+                    self._charm_config.sub_carrier_spacing,
+                ).to_frequency()
+            ),
+            carrier_bandwidth=self._get_carrier_bandwidth(),
+            numerology=_get_numerology(self._charm_config.sub_carrier_spacing),
+            start_subcarrier=_get_first_usable_subcarrier(
+                get_absolute_frequency_ssb(self._charm_config.center_frequency),
+                get_dl_absolute_frequency_point_a(
+                    self._charm_config.center_frequency,
+                    self._charm_config.bandwidth,
+                    self._charm_config.sub_carrier_spacing,
+                ),
+                _get_numerology(self._charm_config.sub_carrier_spacing),
+            ),
         )
+
+    def _get_fiveg_rfsim_requirer_interface_version(self) -> Optional[int]:
+        relation = self.model.get_relation(RFSIM_RELATION_NAME)
+        if not relation:
+            return None
+        fiveg_rfsim_requirer_app_data: Dict[str, Any] = dict(relation.data[relation.app])
+        try:
+            return int(fiveg_rfsim_requirer_app_data.get("version", ""))
+        except ValueError:
+            return None
 
     @staticmethod
     def _get_rfsim_address() -> str:
@@ -567,6 +605,82 @@ def _get_numerology(sub_carrier_spacing: Frequency) -> int:
     if sub_carrier_spacing in scs_to_numerology:
         return scs_to_numerology[sub_carrier_spacing]
     raise ValueError(f"Unsupported sub-carrier spacing: {sub_carrier_spacing}")
+
+
+def _get_first_usable_subcarrier(
+    absolute_frequency_ssb: ARFCN, dl_absolute_frequency_point_a: ARFCN, numerology: int
+) -> int:
+    """Calculate first usable subcarrier.
+
+    In this implementation only FR1 is supported.
+
+    Args:
+        absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
+        dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
+        numerology (int): Numerology
+
+    Returns:
+        int: Index of the first subcarrier of the SSB block assuming 15 kHz subcarrier spacing
+             in relation to PointA.
+    """
+    offset_to_point_a = _get_offset_to_point_a(
+        absolute_frequency_ssb, dl_absolute_frequency_point_a, numerology
+    )
+    prb_offset = offset_to_point_a >> numerology
+    kssb = _get_kssb(
+        absolute_frequency_ssb,
+        dl_absolute_frequency_point_a,
+        numerology,
+    )
+    sc_offset = kssb >> numerology
+    return 12 * prb_offset + sc_offset
+
+
+def _get_offset_to_point_a(
+    absolute_frequency_ssb: ARFCN, dl_absolute_frequency_point_a: ARFCN, numerology: int
+) -> int:
+    """Calculate OffsetToPointA.
+
+    In this implementation only FR1 is supported.
+
+    Args:
+        absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
+        dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
+        numerology (int): Numerology
+
+    Returns:
+        int: Frequency-domain difference between the PointA and the first Resource Block (RB)
+             overlapping with the SSB block. Parameter is expressed as a number RBs with 15 kHz
+             subcarrier spacing.
+    """
+    absolute_diff_int = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
+    scaling_5khz = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
+    scaling = 1 << numerology
+    scaled_absolute_diff = absolute_diff_int / (scaling_5khz * scaling)
+    return int(((scaled_absolute_diff / 12) - 10) * scaling)
+
+
+def _get_kssb(
+    absolute_frequency_ssb: ARFCN, dl_absolute_frequency_point_a: ARFCN, numerology: int
+) -> int:
+    """Calculate kSSB.
+
+    In this implementation only FR1 is supported.
+
+    Args:
+        absolute_frequency_ssb (ARFCN): Frequency-domain position of the SSB
+        dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
+        numerology (int): Numerology
+
+    Returns:
+        int: Offset to the first subcarrier of an SSB block within the first Resource Block
+             overlapping with the SSB block. Parameter expressed as a number of subcarriers
+             assuming 15 kHz subcarrier spacing.
+    """
+    absolute_diff = int(absolute_frequency_ssb - dl_absolute_frequency_point_a)
+    scaling = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
+    sco_limit = 24 if numerology == 1 else 12
+    return int((absolute_diff / scaling) % sco_limit)
 
 
 if __name__ == "__main__":  # pragma: nocover

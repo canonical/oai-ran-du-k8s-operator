@@ -4,10 +4,18 @@
 
 import tempfile
 
+from charms.oai_ran_du_k8s.v0.fiveg_rfsim import LIBAPI
 from ops import testing
 from ops.pebble import Layer, ServiceStatus
 
 from tests.unit.fixtures import F1_PROVIDER_DATA_WITH_SD, DUFixtures
+
+SAMPLE_CONFIG = {
+    "bandwidth": 20,
+    "frequency-band": 77,
+    "sub-carrier-spacing": 15,
+    "center-frequency": "3500",
+}
 
 
 class TestCharmFivegRFSIMRelationChanged(DUFixtures):
@@ -29,9 +37,10 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
         relation = state_out.get_relation(fiveg_rfsim_relation.id)
         assert relation.local_app_data == {}
 
-    def test_given_given_service_is_running_and_f1_relation_joined_and_remote_network_information_exists_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_in_relation_databag(  # noqa: E501
+    def test_given_service_is_running_and_f1_relation_joined_and_remote_network_information_exists_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_in_relation_databag(  # noqa: E501
         self,
     ):
+        DUFixtures.patcher_rfsim_provides_set_rfsim_information.stop()
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
@@ -44,7 +53,7 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
             fiveg_rfsim_relation = testing.Relation(
                 endpoint="fiveg_rfsim",
                 interface="fiveg_rfsim",
-                local_app_data={"rfsim_address": "1.2.3.4", "sst": "1", "sd": "1"},
+                remote_app_data={"version": str(LIBAPI)},
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -77,22 +86,34 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
                 relations=[f1_relation, fiveg_rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             state_out = self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)
             relation = state_out.get_relation(fiveg_rfsim_relation.id)
-            assert relation.local_app_data == {"rfsim_address": "1.2.3.4", "sst": "1", "sd": "1"}
+            assert relation.local_app_data == {
+                "version": str(LIBAPI),
+                "rfsim_address": "1.2.3.4",
+                "sst": "1",
+                "sd": "1",
+                "band": "77",
+                "dl_freq": "3490005000",
+                "carrier_bandwidth": "106",
+                "numerology": "0",
+                "start_subcarrier": "525",
+            }
 
     def test_given_given_service_is_running_and_f1_relation_does_not_exist_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
         self,
     ):
+        DUFixtures.patcher_rfsim_provides_set_rfsim_information.stop()
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_check_output.return_value = b"1.2.3.4"
             fiveg_rfsim_relation = testing.Relation(
                 endpoint="fiveg_rfsim",
                 interface="fiveg_rfsim",
+                remote_app_data={"version": str(LIBAPI)},
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -125,7 +146,7 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
                 relations=[fiveg_rfsim_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
-                config={"simulation-mode": True},
+                config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
 
             state_out = self.ctx.run(self.ctx.on.relation_changed(fiveg_rfsim_relation), state_in)

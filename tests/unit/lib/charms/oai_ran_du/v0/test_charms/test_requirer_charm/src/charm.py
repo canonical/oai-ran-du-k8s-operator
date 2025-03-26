@@ -23,12 +23,24 @@ class DummyFivegRFSIMRequires(CharmBase):
         )
 
     def _on_get_rfsim_information_action(self, event: ActionEvent):
+        version = event.params.get("expected_version", "")
         rfsim_address = event.params.get("expected_rfsim_address", "")
         sst = event.params.get("expected_sst", "")
         sd = event.params.get("expected_sd", "")
+        band = event.params.get("expected_band", "")
+        dl_freq = event.params.get("expected_dl_freq", "")
+        carrier_bandwidth = event.params.get("expected_carrier_bandwidth", "")
+        numerology = event.params.get("expected_numerology", "")
+        start_subcarrier = event.params.get("expected_start_subcarrier", "")
         data = {
+            "version": version,
             "rfsim_address": rfsim_address,
             "sst": int(sst),
+            "band": int(band),
+            "dl_freq": int(dl_freq),
+            "carrier_bandwidth": int(carrier_bandwidth),
+            "numerology": int(numerology),
+            "start_subcarrier": int(start_subcarrier),
         }
         if sd:
             data["sd"] = int(sd)

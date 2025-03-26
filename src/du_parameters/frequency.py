@@ -6,11 +6,10 @@
 Handle arithmetic operations with different types of objects.
 """
 
-import decimal
 import logging
 from dataclasses import dataclass
-from decimal import Decimal
-from typing import Any
+from decimal import Decimal, InvalidOperation
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +25,12 @@ class GetRangeFromFrequencyError(Exception):
 
 class GetRangeFromGSCNError(Exception):
     """Exception raised when GSCN is not appropriate for any frequency range."""
+
+    pass
+
+
+class ARFCNError(Exception):
+    """Exception raised when a ARFCN to Frequency conversion fails."""
 
     pass
 
@@ -72,7 +77,7 @@ class Frequency(Decimal):
             raise TypeError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__add__(Decimal(other)))
-        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for addition: {type(other)}") from e
 
     def __sub__(self, other: Any) -> "Frequency":
@@ -92,7 +97,7 @@ class Frequency(Decimal):
             raise TypeError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__sub__(Decimal(other)))
-        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
     def __rsub__(self, other: Any) -> "Frequency":
@@ -112,7 +117,7 @@ class Frequency(Decimal):
             raise TypeError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__rsub__(Decimal(other)))
-        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for subtraction: {type(other)}") from e
 
     def __mul__(self, other: Any) -> "Frequency":
@@ -132,7 +137,7 @@ class Frequency(Decimal):
             raise TypeError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__mul__(Decimal(other)))
-        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for multiplication: {type(other)}") from e
 
     def __truediv__(self, other: Any) -> "Frequency":
@@ -152,7 +157,7 @@ class Frequency(Decimal):
             raise TypeError("Float values are not supported, please use str instead.")
         try:
             return Frequency(super().__truediv__(Decimal(other)))
-        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+        except (ValueError, TypeError, InvalidOperation) as e:
             raise NotImplementedError(f"Unsupported type for division: {type(other)}") from e
 
     def __repr__(self) -> str:
@@ -198,6 +203,28 @@ class ARFCN:
         """Return the ARFCN as a string."""
         return str(self._channel)
 
+    def __int__(self) -> int:
+        """Return the ARFCN as an integer."""
+        return self._channel
+
+    def __mul__(self, other: Any) -> "ARFCN":
+        """Multiply ARFCN by other ARFCN or integer.
+
+        Args:
+            other (Any): The value to multiply by.
+
+        Returns:
+            ARFCN: A new ARFCN instance with the updated channel.
+
+        Raises:
+            NotImplementedError: If the other value is not an ARFCN or int or Decimal.
+        """
+        if isinstance(other, ARFCN):
+            return ARFCN(self._channel * other._channel)  # type: ignore[operator]
+        if isinstance(other, int | Decimal):
+            return ARFCN(round(self._channel * other))  # type: ignore[operator]
+        raise NotImplementedError(f"Unsupported type for multiplication: {type(other).__name__}")
+
     def __add__(self, other: Any) -> "ARFCN":
         """Add another ARFCN or integer to this ARFCN.
 
@@ -216,6 +243,24 @@ class ARFCN:
             return ARFCN(round(self._channel + other))  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for addition: {type(other).__name__}")
 
+    def __sub__(self, other: Any) -> "ARFCN":
+        """Subtract another ARFCN or integer from this ARFCN.
+
+        Args:
+            other (Any): The value to subtract.
+
+        Returns:
+            ARFCN: A new ARFCN instance with the updated channel.
+
+        Raises:
+            NotImplementedError: If the other value is not an ARFCN or int or Decimal.
+        """
+        if isinstance(other, ARFCN):
+            return ARFCN(self._channel - other._channel)  # type: ignore[operator]
+        if isinstance(other, int | Decimal):
+            return ARFCN(round(self._channel - other))  # type: ignore[operator]
+        raise NotImplementedError(f"Unsupported type for subtraction: {type(other).__name__}")
+
     def __eq__(self, other: Any) -> bool:
         """Check if ARFCN instance and other are equal.
 
@@ -229,6 +274,70 @@ class ARFCN:
             return other == self._channel
         if isinstance(other, ARFCN):
             return other._channel == self._channel
+        return False
+
+    def __le__(self, other: Any) -> bool:
+        """Check if ARFCN is lower than or equal to other ARFCN or integer.
+
+        Args:
+            other (Any): The value to compare with.
+
+        Returns:
+            bool: If the ARFCN instance is lower than or equal to other ARFCN or integer
+                  return True, else False.
+        """
+        if isinstance(other, int | Decimal):
+            return self._channel <= other
+        if isinstance(other, ARFCN):
+            return self._channel <= other._channel
+        return False
+
+    def __lt__(self, other: Any) -> bool:
+        """Check if ARFCN is lower than other ARFCN or integer.
+
+        Args:
+            other (Any): The value to compare with.
+
+        Returns:
+            bool: If the ARFCN instance is lower than other ARFCN or integer return True,
+                  else False.
+        """
+        if isinstance(other, int | Decimal):
+            return self._channel < other
+        if isinstance(other, ARFCN):
+            return self._channel < other._channel
+        return False
+
+    def __ge__(self, other: Any) -> bool:
+        """Check if ARFCN is greater than or equal to other ARFCN or integer.
+
+        Args:
+            other (Any): The value to compare with.
+
+        Returns:
+            bool: If the ARFCN instance is greater than or equal to other ARFCN or integer
+                  return True, else False.
+        """
+        if isinstance(other, int | Decimal):
+            return self._channel >= other
+        if isinstance(other, ARFCN):
+            return self._channel >= other._channel
+        return False
+
+    def __gt__(self, other: Any) -> bool:
+        """Check if ARFCN is greater than other ARFCN or integer.
+
+        Args:
+            other (Any): The value to compare with.
+
+        Returns:
+            bool: If the ARFCN instance is greater than other ARFCN or integer return True,
+                  else False.
+        """
+        if isinstance(other, int | Decimal):
+            return self._channel > other
+        if isinstance(other, ARFCN):
+            return self._channel > other._channel
         return False
 
     @classmethod
@@ -260,6 +369,18 @@ class ARFCN:
         logger.debug("Found ARFCN: %s for frequency: %s.", result, frequency)
         return result
 
+    def to_frequency(self) -> Frequency:
+        """Calculate the frequency based on ARFCN.
+
+        Returns:
+            frequency (Frequency): The closest frequency.
+        """
+        if config := get_range_from_arfcn(self):
+            return config.base_freq + config.freq_grid * int(self - config.arfcn_offset)
+
+        logger.error("Unable to calculate frequency for ARFCN %s", self)
+        raise ARFCNError(f"Unable to calculate frequency for ARFCN %s {self}")
+
 
 class GSCN:
     """Represent a Global Synchronization Channel Number (GSCN) used in 5G.
@@ -274,6 +395,8 @@ class GSCN:
         TypeError: If the channel is not an integer.
     """
 
+    # Fixme: According to the TS 38.101-1, the MIN_VALUE of GSCN is 2.
+    #  Changing the value here breaks the GSCN offset (base_gscn) for LOW_FREQUENCY though.
     MIN_VALUE = 0
     MAX_VALUE = 26639
 
@@ -397,17 +520,13 @@ class GSCN:
         raise NotImplementedError(f"Unsupported type for division: {type(other).__name__}")
 
     def to_frequency(self) -> Frequency:
-        """Calculate the frequency using input GSCN.
-
-        Args:
-           gscn (GSCN): The input GSCN.
+        """Calculate the frequency based on GSCN.
 
         Returns:
             frequency (Frequency): The closest frequency.
 
         Raises:
             ValueError: If the GSCN is out of supported range or n is out of range.
-            TypeError: If the input is not a GSCN.
         """
         try:
             config = get_range_from_gscn(self)
@@ -448,8 +567,8 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
-        logger.error("Given configuration: %s is not supported.", config.name)
-        raise GSCNError(f"Unsupported configuration name: {config.name}")
+        logger.error("Given frequency range name: %s is not supported.", config.name)
+        raise GSCNError(f"Unsupported frequency range name: {config.name}")
 
     @classmethod
     def from_frequency(cls, frequency: Frequency) -> "GSCN":
@@ -504,8 +623,8 @@ class GSCN:
                 f"Value of N: {n} is out of supported range ({config.min_n}-{config.max_n})."
             )
 
-        logger.error("Given configuration: %s is not supported.", config.name)
-        raise GSCNError(f"Unsupported configuration name: {config.name}")
+        logger.error("Given frequency range name: %s is not supported.", config.name)
+        raise GSCNError(f"Unsupported frequency range name: {config.name}")
 
 
 @dataclass
@@ -598,6 +717,35 @@ def get_range_from_frequency(frequency: Frequency) -> FrequencyRange:
 
     logger.error("Frequency: %s is out of supported range.", frequency)
     raise GetRangeFromFrequencyError(f"Frequency {frequency} is out of supported range.")
+
+
+def get_range_from_arfcn(arfcn: ARFCN) -> Optional[FrequencyRange]:
+    """Return the appropriate frequency range configuration based on ARFCN.
+
+    Args:
+        arfcn: ARFCN instance
+
+    Returns:
+        FrequencyRange: Frequency range configuration if ARFCN is within the range.
+
+    Raises:
+        TypeError: If arfcn argument is not an instance of ARFCN.
+    """
+    if not isinstance(arfcn, ARFCN):
+        logger.error("Expected ARFCN but got: %s.", type(arfcn).__name__)
+        raise TypeError(f"Expected ARFCN, got {type(arfcn).__name__}")
+
+    if ARFCN(ARFCN.MIN_VALUE) <= arfcn <= ARFCN(599999):
+        logger.debug("Found frequency range configuration: LowFrequency.")
+        return LOW_FREQUENCY
+
+    if ARFCN(600000) <= arfcn <= ARFCN(2016666):
+        logger.debug("Found frequency range configuration: MidFrequency.")
+        return MID_FREQUENCY
+
+    if ARFCN(2016667) <= arfcn <= ARFCN(ARFCN.MAX_VALUE):
+        logger.debug("Found frequency range configuration: HighFrequency.")
+        return HIGH_FREQUENCY
 
 
 def get_range_from_gscn(gscn: GSCN) -> FrequencyRange:
