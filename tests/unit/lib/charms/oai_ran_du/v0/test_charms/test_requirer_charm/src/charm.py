@@ -57,6 +57,8 @@ class DummyFivegRFSIMRequires(CharmBase):
     def _on_set_rfsim_information_action(self, event: ActionEvent):
         self.rfsim_requirer.set_rfsim_information()
         relation = self.model.get_relation(self.rfsim_requirer.relation_name)
+        if not relation:
+            assert False
         assert int(relation.data[self.app].get("version", "")) == LIBAPI
 
 

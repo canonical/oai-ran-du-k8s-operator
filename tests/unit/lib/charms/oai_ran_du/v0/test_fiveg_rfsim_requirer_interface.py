@@ -250,7 +250,7 @@ class TestFivegRFSIMRequires:
             ),
         ],
     )
-    def test_given_invalid_remote_databag_when_get_rfsim_information_is_called_then_none_is_retrieved(
+    def test_given_invalid_remote_databag_when_get_rfsim_information_is_called_then_none_is_retrieved(  # noqa: E501
         self, remote_data
     ):
         fiveg_rfsim_relation = testing.Relation(
@@ -264,7 +264,9 @@ class TestFivegRFSIMRequires:
         )
         self.ctx.run(self.ctx.on.action("get-rfsim-information-invalid", params={}), state_in)
 
-    def test_given_rfsim_relation_does_not_exist_when_get_rfsim_information_then_none_is_retrieved(self):
+    def test_given_rfsim_relation_does_not_exist_when_get_rfsim_information_then_none_is_retrieved(
+        self,
+    ):
         state_in = testing.State(relations=[], leader=True)
 
         self.ctx.run(self.ctx.on.action("get-rfsim-information-invalid", params={}), state_in)
@@ -274,7 +276,9 @@ class TestFivegRFSIMRequires:
 
         self.ctx.run(self.ctx.on.action("get-rfsim-information-invalid", params={}), state_in)
 
-    def test_given_fiveg_rfsim_relation_created_when_set_rfsim_information_then_correct_api_version_is_set(self):
+    def test_given_fiveg_rfsim_relation_created_when_set_rfsim_information_then_correct_api_version_is_set(  # noqa: E501
+        self,
+    ):
         fiveg_rfsim_relation = testing.Relation(
             endpoint="fiveg_rfsim",
             interface="fiveg_rfsim",
