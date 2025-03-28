@@ -5,7 +5,7 @@
 from ops import main
 from ops.charm import ActionEvent, CharmBase
 
-from lib.charms.oai_ran_du_k8s.v0.fiveg_rfsim import ProviderAppData, RFSIMRequires
+from lib.charms.oai_ran_du_k8s.v0.fiveg_rfsim import LIBAPI, ProviderAppData, RFSIMRequires
 
 
 class DummyFivegRFSIMRequires(CharmBase):
@@ -20,6 +20,10 @@ class DummyFivegRFSIMRequires(CharmBase):
         self.framework.observe(
             self.on.get_rfsim_information_invalid_action,
             self._on_get_rfsim_information_invalid_action,
+        )
+        self.framework.observe(
+            self.on.set_rfsim_information_action,
+            self._on_set_rfsim_information_action,
         )
 
     def _on_get_rfsim_information_action(self, event: ActionEvent):
@@ -49,6 +53,11 @@ class DummyFivegRFSIMRequires(CharmBase):
 
     def _on_get_rfsim_information_invalid_action(self, event: ActionEvent):
         assert self.rfsim_requirer.get_provider_rfsim_information() is None
+
+    def _on_set_rfsim_information_action(self, event: ActionEvent):
+        self.rfsim_requirer.set_rfsim_information()
+        relation = self.model.get_relation(self.rfsim_requirer.relation_name)
+        assert int(relation.data[self.app].get("version", "")) == LIBAPI
 
 
 if __name__ == "__main__":
