@@ -44,6 +44,7 @@ class TestFivegRFSIMRequires:
                     }
                 },
                 "get-rfsim-information-invalid": {"params": {}},
+                "set-rfsim-information": {"params": {}},
             },
         )
 
@@ -265,7 +266,7 @@ class TestFivegRFSIMRequires:
 
     def test_given_rfsim_relation_does_not_exist_when_get_rfsim_information_then_none_is_retrieved(
         self,
-    ):  # noqa: E501
+    ):
         state_in = testing.State(relations=[], leader=True)
 
         self.ctx.run(self.ctx.on.action("get-rfsim-information-invalid", params={}), state_in)
@@ -274,3 +275,16 @@ class TestFivegRFSIMRequires:
         state_in = testing.State(relations=[], leader=False)
 
         self.ctx.run(self.ctx.on.action("get-rfsim-information-invalid", params={}), state_in)
+
+    def test_given_fiveg_rfsim_relation_created_when_set_rfsim_information_then_correct_api_version_is_set(  # noqa: E501
+        self,
+    ):
+        fiveg_rfsim_relation = testing.Relation(
+            endpoint="fiveg_rfsim",
+            interface="fiveg_rfsim",
+        )
+        state_in = testing.State(
+            leader=True,
+            relations=[fiveg_rfsim_relation],
+        )
+        self.ctx.run(self.ctx.on.action("set-rfsim-information", params={}), state_in)
