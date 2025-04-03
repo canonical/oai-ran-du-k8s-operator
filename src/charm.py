@@ -243,11 +243,15 @@ class OAIRANDUOperator(CharmBase):
             sd=remote_network_information.plmns[0].sd,
             band=self._charm_config.frequency_band,
             dl_freq=int(
-                get_dl_absolute_frequency_point_a(
-                    self._charm_config.center_frequency,
-                    self._charm_config.bandwidth,
+                _get_dl_freq(
+                    self._get_carrier_bandwidth(),
                     self._charm_config.sub_carrier_spacing,
-                ).to_frequency()
+                    get_dl_absolute_frequency_point_a(
+                        self._charm_config.center_frequency,
+                        self._charm_config.bandwidth,
+                        self._charm_config.sub_carrier_spacing,
+                    ),
+                )
             ),
             carrier_bandwidth=self._get_carrier_bandwidth(),
             numerology=_get_numerology(self._charm_config.sub_carrier_spacing),
@@ -681,6 +685,26 @@ def _get_kssb(
     scaling = 3 if dl_absolute_frequency_point_a < ARFCN(600000) else 1
     sco_limit = 24 if numerology == 1 else 12
     return int((absolute_diff / scaling) % sco_limit)
+
+
+def _get_dl_freq(
+    carrier_bandwidth: int, subcarrier_spacing: Frequency, dl_absolute_frequency_point_a: ARFCN
+) -> Frequency:
+    """Calculate downlink frequency.
+
+    In this implementation only FR1 is supported.
+
+    Args:
+        carrier_bandwidth (int): Carrier bandwidth expressed in the number of Resource Blocks (RBs)
+        subcarrier_spacing (Frequency): Subcarrier spacing
+        dl_absolute_frequency_point_a (ARFCN): Frequency-domain position of Point A in Downlink
+
+    Returns:
+        Frequency: Downlink frequency for given RF configuration in Hz
+    """
+    downlink_bandwidth_khz = 12 * carrier_bandwidth * subcarrier_spacing / 1000
+    dl_freq_offset = int(downlink_bandwidth_khz) >> 1
+    return Frequency.from_khz(dl_freq_offset) + dl_absolute_frequency_point_a.to_frequency()
 
 
 if __name__ == "__main__":  # pragma: nocover
