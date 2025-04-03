@@ -51,6 +51,7 @@ class TestAbsoluteFrequencySSB:
             (20, 4110),
             (1000, 199950),
             (25000, 2029052),
+            (4900, 726432),
         ],
     )
     def test_get_absolute_frequency_ssb_when_center_frequency_given_then_return_expected_result(

@@ -519,6 +519,24 @@ class GSCN:
             return GSCN(round(self._channel / other))  # type: ignore[operator]
         raise NotImplementedError(f"Unsupported type for division: {type(other).__name__}")
 
+    def __mod__(self, other: Any) -> int:
+        """Calculate modulo between GSCN and other GSCN or integer.
+
+        Args:
+            other (Any): The value to divide by.
+
+        Returns:
+            int: Remainder of the division
+
+        Raises:
+            NotImplementedError: If the other value is not an GSCN or int.
+        """
+        if isinstance(other, GSCN):
+            return self._channel % other._channel
+        if isinstance(other, int):
+            return self._channel % other
+        raise NotImplementedError(f"Unsupported type for modulo: {type(other).__name__}")
+
     def to_frequency(self) -> Frequency:
         """Calculate the frequency based on GSCN.
 
