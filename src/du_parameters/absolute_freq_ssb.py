@@ -35,6 +35,19 @@ def get_absolute_frequency_ssb(center_freq: Frequency) -> ARFCN:
     """
     try:
         gscn = GSCN.from_frequency(center_freq)
+
+        # TODO: This is a workaround for n79, it will requires future redesign
+        # n79 needs the GSCN on a raster of 16, so we take the remainder of the
+        # division with 16, and if it is lower than 8, subtract it from the GSCN.
+        # Otherwise, we add its difference from 16 to the GSCN. This will give
+        # a GSCN that is divisible by 16.
+        if center_freq >= Frequency.from_mhz(4400) and center_freq <= Frequency.from_mhz(5000):
+            modulo = gscn % 16
+            if modulo < 8:
+                gscn = gscn - modulo
+            else:
+                gscn = gscn + (16 - modulo)
+
         adjusted_frequency = gscn.to_frequency()
         afrcn = ARFCN.from_frequency(adjusted_frequency)
         logger.info(
