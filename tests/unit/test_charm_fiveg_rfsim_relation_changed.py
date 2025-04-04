@@ -13,7 +13,7 @@ from tests.unit.fixtures import F1_PROVIDER_DATA_WITH_SD, DUFixtures
 SAMPLE_CONFIG = {
     "bandwidth": 20,
     "frequency-band": 77,
-    "sub-carrier-spacing": 15,
+    "sub-carrier-spacing": 30,
     "center-frequency": "3500",
 }
 
@@ -97,10 +97,10 @@ class TestCharmFivegRFSIMRelationChanged(DUFixtures):
                 "sst": "1",
                 "sd": "1",
                 "band": "77",
-                "dl_freq": "3490005000",
-                "carrier_bandwidth": "106",
-                "numerology": "0",
-                "start_subcarrier": "525",
+                "dl_freq": "3499200000",
+                "carrier_bandwidth": "51",
+                "numerology": "1",
+                "start_subcarrier": "202",
             }
 
     def test_given_given_service_is_running_and_f1_relation_does_not_exist_when_fiveg_rfsim_relation_changed_then_rfsim_information_is_not_in_relation_databag(  # noqa: E501
