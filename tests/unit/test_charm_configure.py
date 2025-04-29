@@ -190,6 +190,49 @@ class TestCharmConfigure(DUFixtures):
 
             assert generated_config.strip() == expected_config.strip()
 
+    def test_given_mimo_mode_when_configure_then_du_config_file_contains_mimo_config(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={**SAMPLE_CONFIG, "use-mimo": True},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            with open(
+                    "tests/unit/resources/expected_mimo_config.conf"
+            ) as expected_config_file:
+                expected_config = expected_config_file.read()
+
+            with open(f"{temp_dir}/du.conf") as generated_config_file:
+                generated_config = generated_config_file.read()
+
+            assert generated_config.strip() == expected_config.strip()
+
     def test_given_cu_config_file_is_up_to_date_when_configure_then_cu_config_file_is_not_pushed_to_the_workload_container(  # noqa: E501
         self,
     ):
