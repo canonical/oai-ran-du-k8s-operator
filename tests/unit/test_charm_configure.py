@@ -223,9 +223,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            with open(
-                    "tests/unit/resources/expected_mimo_config.conf"
-            ) as expected_config_file:
+            with open("tests/unit/resources/expected_mimo_config.conf") as expected_config_file:
                 expected_config = expected_config_file.read()
 
             with open(f"{temp_dir}/du.conf") as generated_config_file:
