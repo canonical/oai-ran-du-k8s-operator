@@ -98,7 +98,7 @@ config:
       type: boolean
       default: false
       description: |
-        When set to true enabled support for 2x2 MIMO.
+        When set to true enables support for 2x2 MIMO.
 parts:
   charm:
     source: .
