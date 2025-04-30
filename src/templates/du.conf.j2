@@ -34,13 +34,15 @@ gNBs =
         );
         nr_cellid        = 12345678L;
         min_rxtxtime     = 6;
-
-        # do_CSIRS: 1= active if 2x2 MIMO, otherwise not considered. Suggestion, let it active
+        {%- if use_mimo %}
+        pdsch_AntennaPorts_XP                                     = 2;
+        pusch_AntennaPorts                                        = 2;
+        do_CSIRS                                                  = 1;
+        do_SRS                                                    = 1;
+        {%- else %}
         do_CSIRS                                                  = 0;
         do_SRS                                                    = 0;
-
-        # force_256qam_off: disable 256 QAM
-        force_256qam_off = 1;
+        {%- endif %}
 
     pdcch_ConfigSIB1 = (
       {
@@ -280,10 +282,10 @@ RUs =
         local_rf                      = "yes"
 
         # nb_tx: 1 means SISO, 2 means MIMO
-        nb_tx                         = 1
+        nb_tx                         = {% if use_mimo %}2{% else %}1{% endif %}
 
         # nb_rx: 1 means SISO, 2 means MIMO
-        nb_rx                         = 1
+        nb_rx                         = {% if use_mimo %}2{% else %}1{% endif %}
 
         # att_tx: ranges 6-10 if the UE is close to the B210 antennas. Leave 0 otherwise
         att_tx                        = 12;
@@ -296,7 +298,6 @@ RUs =
         max_pdschReferenceSignalPower = -27;
         max_rxgain                    = 114;
         eNB_instances                 = [0];
-        bf_weights                    = [0x00007fff, 0x0000, 0x0000, 0x0000];
         clock_src                     = "internal";
     }
 );

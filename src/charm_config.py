@@ -195,6 +195,7 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     center_frequency: str = Field(
         description="Center frequency as an integer or a float wrapped as str."
     )
+    use_mimo: bool = False
 
     @field_validator("f1_ip_address", mode="before")
     @classmethod
@@ -369,6 +370,7 @@ class CharmConfig:
     sub_carrier_spacing: Frequency
     bandwidth: Frequency
     center_frequency: Frequency
+    use_mimo: bool
 
     def __init__(self, *, du_config: DUConfig):
         """Initialize a new instance of the CharmConfig class.
@@ -386,6 +388,7 @@ class CharmConfig:
         self.sub_carrier_spacing = Frequency.from_khz(du_config.sub_carrier_spacing)
         self.bandwidth = Frequency.from_mhz(du_config.bandwidth)
         self.center_frequency = Frequency.from_mhz(du_config.center_frequency)
+        self.use_mimo = du_config.use_mimo
 
     @classmethod
     def from_charm(

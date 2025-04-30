@@ -317,6 +317,7 @@ class OAIRANDUOperator(CharmBase):
             tac=remote_network_config.tac,
             plmns=remote_network_config.plmns,
             simulation_mode=self._charm_config.simulation_mode,
+            use_mimo=self._charm_config.use_mimo,
             frequency_band=self._charm_config.frequency_band,
             sub_carrier_spacing=_get_numerology(self._charm_config.sub_carrier_spacing),
             absolute_frequency_ssb=get_absolute_frequency_ssb(self._charm_config.center_frequency),
@@ -535,6 +536,7 @@ def _render_config_file(
     tac: int,
     plmns: List[PLMNConfig],
     simulation_mode: bool,
+    use_mimo: bool,
     frequency_band: int,
     sub_carrier_spacing: int,
     absolute_frequency_ssb: ARFCN,
@@ -556,6 +558,7 @@ def _render_config_file(
         tac: Tracking Area Code
         plmns: list of PLMN
         simulation_mode: Run DU in simulation mode
+        use_mimo: When True enables 2x2 MIMO
         frequency_band: Frequency band of the DU
         sub_carrier_spacing: Subcarrier spacing of the DU
         absolute_frequency_ssb: Absolute frequency of the SSB
@@ -579,6 +582,7 @@ def _render_config_file(
         tac=tac,
         plmn_list=plmns,
         simulation_mode=simulation_mode,
+        use_mimo=use_mimo,
         frequencyBand=frequency_band,
         subcarrierSpacing=sub_carrier_spacing,
         absoluteFrequencySSB=absolute_frequency_ssb,
