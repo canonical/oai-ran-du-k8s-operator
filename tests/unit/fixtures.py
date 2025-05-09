@@ -35,8 +35,8 @@ class DUFixtures:
         "charm.F1Requires.get_provider_f1_information",
     )
     patcher_f1_requires_set_f1_information = patch("charm.F1Requires.set_f1_information")
-    patcher_rfsim_provides_set_rfsim_information = patch(
-        "charm.RFSIMProvides.set_rfsim_information"
+    patcher_rf_config_provides_set_rf_config_information = patch(
+        "charm.RFConfigProvides.set_rf_config_information"
     )
 
     @pytest.fixture(autouse=True)
@@ -47,8 +47,8 @@ class DUFixtures:
         self.mock_k8s_multus = DUFixtures.patcher_k8s_multus.start().return_value
         self.mock_f1_get_remote_data = DUFixtures.patcher_f1_get_remote_data.start()
         self.mock_f1_set_information = DUFixtures.patcher_f1_requires_set_f1_information.start()
-        self.mock_rfsim_set_information = (
-            DUFixtures.patcher_rfsim_provides_set_rfsim_information.start()
+        self.mock_rf_config_set_information = (
+            DUFixtures.patcher_rf_config_provides_set_rf_config_information.start()
         )
         yield
         request.addfinalizer(self.tearDown)

@@ -8,7 +8,7 @@ output "app_name" {
 
 output "provides" {
   value = {
-    "fiveg_rfsim" = "fiveg_rfsim"
+    "fiveg_rf_config" = "fiveg_rf_config"
   }
 }
 

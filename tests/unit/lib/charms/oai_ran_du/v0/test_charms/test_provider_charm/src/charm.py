@@ -6,22 +6,22 @@ import logging
 from ops import main
 from ops.charm import ActionEvent, CharmBase
 
-from lib.charms.oai_ran_du_k8s.v0.fiveg_rfsim import RFSIMProvides
+from lib.charms.oai_ran_du_k8s.v0.fiveg_rf_config import RFConfigProvides
 
 logger = logging.getLogger(__name__)
 
 
-class DummyFivegRFSIMProviderCharm(CharmBase):
-    """Dummy charm implementing the provider side of the fiveg_rfsim interface."""
+class DummyFivegRFConfigProviderCharm(CharmBase):
+    """Dummy charm implementing the provider side of the fiveg_rf_config relation."""
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.rfsim_provider = RFSIMProvides(self, "fiveg_rfsim")
+        self.rf_config_provider = RFConfigProvides(self, "fiveg_rf_config")
         self.framework.observe(
-            self.on.set_rfsim_information_action, self._on_set_rfsim_information_action
+            self.on.set_rf_config_information_action, self._on_set_rf_config_information_action
         )
 
-    def _on_set_rfsim_information_action(self, event: ActionEvent):
+    def _on_set_rf_config_information_action(self, event: ActionEvent):
         rfsim_address = event.params.get("rfsim_address", "")
         sst = event.params.get("sst", "")
         sd = event.params.get("sd", "")
@@ -30,8 +30,8 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
         carrier_bandwidth = event.params.get("carrier_bandwidth", "")
         numerology = event.params.get("numerology", "")
         start_subcarrier = event.params.get("start_subcarrier", "")
-        self.rfsim_provider.set_rfsim_information(
-            rfsim_address=rfsim_address,
+        self.rf_config_provider.set_rf_config_information(
+            rfsim_address=rfsim_address if rfsim_address else None,
             sst=int(sst),
             sd=int(sd) if sd else None,
             band=int(band),
@@ -43,4 +43,4 @@ class DummyFivegRFSIMProviderCharm(CharmBase):
 
 
 if __name__ == "__main__":
-    main(DummyFivegRFSIMProviderCharm)
+    main(DummyFivegRFConfigProviderCharm)
