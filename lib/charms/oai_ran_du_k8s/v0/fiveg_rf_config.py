@@ -324,17 +324,17 @@ class RFConfigProvides(Object):
         if not relations:
             raise FivegRFConfigError(f"Relation {self.relation_name} not created yet.")
         if not provider_data_is_valid(
-                {
-                    "version": str(LIBAPI),
-                    "rfsim_address": rfsim_address,
-                    "sst": sst,
-                    "sd": sd,
-                    "band": band,
-                    "dl_freq": dl_freq,
-                    "carrier_bandwidth": carrier_bandwidth,
-                    "numerology": numerology,
-                    "start_subcarrier": start_subcarrier,
-                }
+            {
+                "version": str(LIBAPI),
+                "rfsim_address": rfsim_address,
+                "sst": sst,
+                "sd": sd,
+                "band": band,
+                "dl_freq": dl_freq,
+                "carrier_bandwidth": carrier_bandwidth,
+                "numerology": numerology,
+                "start_subcarrier": start_subcarrier,
+            }
         ):
             raise FivegRFConfigError("Invalid relation data")
         for relation in relations:
