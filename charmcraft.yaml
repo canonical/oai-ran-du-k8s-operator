@@ -34,8 +34,8 @@ resources:
     upstream-source: ghcr.io/canonical/oai-ran-du:2.2.0
 
 provides:
-  fiveg_rfsim:
-    interface: fiveg_rfsim
+  fiveg_rf_config:
+    interface: fiveg_rf_config
 
 requires:
   fiveg_f1:

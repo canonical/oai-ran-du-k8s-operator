@@ -59,27 +59,27 @@ jobs:
     secrets:
       CHARMCRAFT_AUTH: ${{ secrets.CHARMCRAFT_AUTH }}
 
-  fiveg-rfsim-lib-needs-publishing:
+  fiveg-rf-config-lib-needs-publishing:
     runs-on: ubuntu-22.04
     outputs:
-      needs-publishing: ${{ steps.changes.outputs.fiveg_rfsim }}
+      needs-publishing: ${{ steps.changes.outputs.fiveg_rf_config }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
-            fiveg_rfsim:
-              - 'lib/charms/oai_ran_du_k8s/v0/fiveg_rfsim.py'
+            fiveg_rf_config:
+              - 'lib/charms/oai_ran_du_k8s/v0/fiveg_rf_config.py'
 
-  publish-fiveg-rfsim-lib:
+  publish-fiveg-rf-config-lib:
     name: Publish Lib
     needs:
       - publish-charm
-      - fiveg-rfsim-lib-needs-publishing
+      - fiveg-rf-config-lib-needs-publishing
     if: ${{ github.ref_name == 'main' }}
     uses: canonical/sdcore-github-workflows/.github/workflows/publish-lib.yaml@v2.3.2
     with:
-      lib-name: "charms.oai_ran_du_k8s.v0.fiveg_rfsim"
+      lib-name: "charms.oai_ran_du_k8s.v0.fiveg_rf_config"
     secrets:
       CHARMCRAFT_AUTH: ${{ secrets.CHARMCRAFT_AUTH }}

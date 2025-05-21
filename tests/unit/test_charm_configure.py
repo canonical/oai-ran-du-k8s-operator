@@ -8,10 +8,11 @@ from ipaddress import IPv4Address
 
 import pytest
 from charms.oai_ran_cu_k8s.v0.fiveg_f1 import PLMNConfig, ProviderAppData
-from charms.oai_ran_du_k8s.v0.fiveg_rfsim import LIBAPI
+from charms.oai_ran_du_k8s.v0.fiveg_rf_config import LIBAPI
 from ops import testing
 from ops.pebble import Layer
 
+from charm import RF_CONFIG_RELATION_NAME
 from tests.unit.fixtures import F1_PROVIDER_DATA, F1_PROVIDER_DATA_WITH_SD, DUFixtures
 
 F1_PROVIDER_DATA_MULTIPLE_PLMNS = ProviderAppData(
@@ -29,7 +30,7 @@ SAMPLE_CONFIG = {
     "sub-carrier-spacing": 15,
     "center-frequency": "3500",
 }
-INVALID_FIVEG_RFSIM_API_VERSION = str(LIBAPI + 1)
+INVALID_FIVEG_RF_CONFIG_API_VERSION = str(LIBAPI + 1)
 
 
 class TestCharmConfigure(DUFixtures):
@@ -422,7 +423,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.mock_f1_set_information.assert_called_once_with(port=2152)
 
-    def test_given_charm_is_configured_rfsim_address_is_not_available_and_f1_provider_data_is_available_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
+    def test_given_charm_is_configured_rfsim_address_is_not_available_and_f1_provider_data_is_available_when_rf_config_relation_is_joined_then_rf_config_information_is_not_published(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -434,9 +435,9 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -451,7 +452,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -459,9 +460,9 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_not_called()
+            self.mock_rf_config_set_information.assert_not_called()
 
-    def test_given_charm_is_configured_running_and_f1_provider_data_is_not_available_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_not_available_when_rf_config_relation_is_joined_then_rf_config_information_is_not_published(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -473,9 +474,9 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -490,7 +491,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -498,9 +499,9 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_not_called()
+            self.mock_rf_config_set_information.assert_not_called()
 
-    def test_given_charm_is_configured_running_and_f1_provider_data_includes_multiple_plmns_when_rfsim_relation_is_joined_then_rfsim_information_is_published_with_first_plmn_info(  # noqa: E501
+    def test_given_charm_is_configured_running_and_f1_provider_data_includes_multiple_plmns_when_rf_config_relation_is_joined_then_rf_config_information_is_published_with_first_plmn_info(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -512,9 +513,9 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
                 remote_app_data={"version": str(LIBAPI)},
             )
             config_mount = testing.Mount(
@@ -530,7 +531,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -538,7 +539,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_called_once_with(
+            self.mock_rf_config_set_information.assert_called_once_with(
                 rfsim_address="1.2.3.4",
                 sst=12,
                 sd=None,
@@ -549,16 +550,16 @@ class TestCharmConfigure(DUFixtures):
                 start_subcarrier=525,
             )
 
-    def test_given_charm_is_configured_running_and_f1_relation_is_not_created_when_rfsim_relation_is_joined_then_rfsim_information_is_not_published(  # noqa: E501
+    def test_given_charm_is_configured_running_and_f1_relation_is_not_created_when_rf_config_relation_is_joined_then_rf_config_information_is_not_published(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.mock_du_security_context.is_privileged.return_value = True
             self.mock_du_usb_volume.is_mounted.return_value = True
             self.mock_check_output.return_value = b"1.2.3.4"
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -573,7 +574,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[rfsim_relation],
+                relations=[rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -581,9 +582,9 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_not_called()
+            self.mock_rf_config_set_information.assert_not_called()
 
-    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rfsim_relation_is_joined_then_rfsim_information_is_published_including_sd(  # noqa: E501
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rf_config_relation_is_joined_then_rf_config_information_is_published_including_sd(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -595,9 +596,9 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
                 remote_app_data={"version": str(LIBAPI)},
             )
             config_mount = testing.Mount(
@@ -613,7 +614,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -621,7 +622,7 @@ class TestCharmConfigure(DUFixtures):
 
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_called_once_with(
+            self.mock_rf_config_set_information.assert_called_once_with(
                 rfsim_address="1.2.3.4",
                 sst=1,
                 sd=1,
@@ -632,7 +633,7 @@ class TestCharmConfigure(DUFixtures):
                 start_subcarrier=525,
             )
 
-    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rfsim_relation_joins_and_requirer_uses_different_api_version_then_rfsim_information_is_not_published(  # noqa: E501
+    def test_given_charm_simulation_mode_is_false_when_rf_config_relation_joined_then_rf_config_information_is_published_without_rfsim_address(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -644,10 +645,10 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
-                remote_app_data={"version": INVALID_FIVEG_RFSIM_API_VERSION},
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
+                remote_app_data={"version": str(LIBAPI)},
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -662,16 +663,65 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
+                containers=[container],
+                model=testing.Model(name="whatever"),
+                config={**SAMPLE_CONFIG, "simulation-mode": False},
+            )
+
+            self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
+
+            self.mock_rf_config_set_information.assert_called_once_with(
+                rfsim_address=None,
+                sst=1,
+                sd=1,
+                band=77,
+                dl_freq=3499545000,
+                carrier_bandwidth=106,
+                numerology=0,
+                start_subcarrier=525,
+            )
+
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rf_config_relation_joins_and_requirer_uses_different_api_version_then_rf_config_information_is_not_published(  # noqa: E501
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            self.mock_du_security_context.is_privileged.return_value = True
+            self.mock_du_usb_volume.is_mounted.return_value = True
+            self.mock_f1_get_remote_data.return_value = F1_PROVIDER_DATA_WITH_SD
+            self.mock_check_output.return_value = b"1.2.3.4"
+            f1_relation = testing.Relation(
+                endpoint="fiveg_f1",
+                interface="fiveg_f1",
+            )
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
+                remote_app_data={"version": INVALID_FIVEG_RF_CONFIG_API_VERSION},
+            )
+            config_mount = testing.Mount(
+                source=temp_dir,
+                location="/tmp/conf",
+            )
+            container = testing.Container(
+                name="du",
+                can_connect=True,
+                mounts={
+                    "config": config_mount,
+                },
+            )
+            state_in = testing.State(
+                leader=True,
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
             )
             self.ctx.run(self.ctx.on.pebble_ready(container), state_in)
 
-            self.mock_rfsim_set_information.assert_not_called()
+            self.mock_rf_config_set_information.assert_not_called()
 
-    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rfsim_relation_joins_and_requirer_uses_different_api_version_then_relevant_error_message_is_logged(  # noqa: E501
+    def test_given_charm_is_configured_running_and_f1_provider_data_is_available_with_sd_when_rf_config_relation_joins_and_requirer_uses_different_api_version_then_relevant_error_message_is_logged(  # noqa: E501
         self,
     ):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -683,10 +733,10 @@ class TestCharmConfigure(DUFixtures):
                 endpoint="fiveg_f1",
                 interface="fiveg_f1",
             )
-            rfsim_relation = testing.Relation(
-                endpoint="fiveg_rfsim",
-                interface="fiveg_rfsim",
-                remote_app_data={"version": INVALID_FIVEG_RFSIM_API_VERSION},
+            rf_config_relation = testing.Relation(
+                endpoint=RF_CONFIG_RELATION_NAME,
+                interface=RF_CONFIG_RELATION_NAME,
+                remote_app_data={"version": INVALID_FIVEG_RF_CONFIG_API_VERSION},
             )
             config_mount = testing.Mount(
                 source=temp_dir,
@@ -701,7 +751,7 @@ class TestCharmConfigure(DUFixtures):
             )
             state_in = testing.State(
                 leader=True,
-                relations=[f1_relation, rfsim_relation],
+                relations=[f1_relation, rf_config_relation],
                 containers=[container],
                 model=testing.Model(name="whatever"),
                 config={**SAMPLE_CONFIG, "simulation-mode": True},
@@ -711,7 +761,7 @@ class TestCharmConfigure(DUFixtures):
             assert (
                 testing.JujuLogLine(
                     level="ERROR",
-                    message="Can't establish communication over the `fiveg_rfsim` "
+                    message="Can't establish communication over the `fiveg_rf_config` "
                     "interface due to version mismatch!",
                 )
                 in self.ctx.juju_log
