@@ -38,6 +38,7 @@ from du_parameters import (
     Frequency,
     get_absolute_frequency_ssb,
     get_carrier_bandwidth,
+    get_coreset_zero_configuration_index,
     get_dl_absolute_frequency_point_a,
     get_initial_bwp,
 )
@@ -335,6 +336,20 @@ class OAIRANDUOperator(CharmBase):
             initial_ul_bwp_location_and_bandwidth=get_initial_bwp(
                 self._get_carrier_bandwidth(),
             ),
+            coreset_zero_configuration_index=get_coreset_zero_configuration_index(
+                band=self._charm_config.frequency_band,
+                bandwidth=self._get_carrier_bandwidth(),
+                subcarrier_spacing=self._charm_config.sub_carrier_spacing,
+                offset_to_point_a=_get_offset_to_point_a(
+                    get_absolute_frequency_ssb(self._charm_config.center_frequency),
+                    get_dl_absolute_frequency_point_a(
+                        self._charm_config.center_frequency,
+                        self._charm_config.bandwidth,
+                        self._charm_config.sub_carrier_spacing,
+                    ),
+                    _get_numerology(self._charm_config.sub_carrier_spacing),
+                ),
+            ),
         ).rstrip()
 
     @lru_cache
@@ -546,6 +561,7 @@ def _render_config_file(
     ul_carrier_bandwidth: int,
     initial_dl_bwp_location_and_bandwidth: int,
     initial_ul_bwp_location_and_bandwidth: int,
+    coreset_zero_configuration_index: int,
 ) -> str:
     """Render DU config file based on parameters.
 
@@ -568,6 +584,7 @@ def _render_config_file(
         ul_carrier_bandwidth: Carrier bandwidth of the UL
         initial_dl_bwp_location_and_bandwidth: Initial DL BWP location and bandwidth
         initial_ul_bwp_location_and_bandwidth: Initial UL BWP location and bandwidth
+        coreset_zero_configuration_index: Configuration index of CORESET 0
     Returns:
         str: Rendered DU configuration file
     """
@@ -592,6 +609,7 @@ def _render_config_file(
         ul_carrierBandwidth=ul_carrier_bandwidth,
         initialDLBWPlocationAndBandwidth=initial_dl_bwp_location_and_bandwidth,
         initialULBWPlocationAndBandwidth=initial_ul_bwp_location_and_bandwidth,
+        coresetZeroConfigurationIndex=coreset_zero_configuration_index,
     )
 
 

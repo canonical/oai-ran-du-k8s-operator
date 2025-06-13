@@ -44,12 +44,6 @@ gNBs =
         do_SRS                                                    = 0;
         {%- endif %}
 
-    pdcch_ConfigSIB1 = (
-      {
-        controlResourceSetZero = 5;
-        searchSpaceZero = 0;
-      }
-    );
     servingCellConfigCommon = (
     {
       physCellId                                                    = 0;
@@ -85,7 +79,7 @@ gNBs =
       # pdcch-ConfigCommon
       # initialDLBWPcontrolResourceSetZero:BWP that contains all NR channels that are necessary
       # to conclude the initial access procedure
-      initialDLBWPcontrolResourceSetZero                              = 5;
+      initialDLBWPcontrolResourceSetZero                              = {{ coresetZeroConfigurationIndex }};
       initialDLBWPsearchSpaceZero                                     = 0;
 
       # uplinkConfigCommon

@@ -11,7 +11,7 @@ class TestFrequencyBandValidation:
             (48, "3590.33"),
             (77, "3500"),
             (38, "2590.5"),
-            (102, "5940"),
+            (90, "2530"),
         ],
     )
     def test_frequency_band_validation_when_valid_values_given_then_return_expected_results(
@@ -54,7 +54,7 @@ class TestBandwidthValidation:
         [
             (20, 38, 30, "2590"),
             (15, 77, 15, "3700"),
-            (100, 77, 60, "3700"),
+            (100, 77, 30, "3700"),
             (40, 79, 30, "4520"),
         ],
     )
@@ -76,7 +76,7 @@ class TestBandwidthValidation:
             (200, 77, 30),
             (3, 38, 15),
             (50, 103, 15),
-            (60, 40, 25),
+            (60, 40, 30),
         ],
     )
     def test_bandwidth_validation_when_invalid_values_given_then_raise_error(
@@ -98,10 +98,9 @@ class TestCenterFrequencyValidation:
         "center_frequency, frequency_band, bandwidth, subcarrier_spacing",
         [
             ("3750", 77, 40, 30),
-            ("6025.11", 96, 40, 30),
+            ("4900", 79, 40, 30),
             ("1429.5", 51, 5, 15),
             ("3330", 78, 50, 15),
-            ("6100", 96, 60, 30),
         ],
     )
     def test_center_frequency_validation_when_valid_inputs_given_then_return_expected_result(
@@ -148,7 +147,7 @@ class TestSubCarrierSpacingValidation:
         [
             (30, 38, 40, "2599"),
             (15, 34, 10, "2016"),
-            (60, 77, 100, "3360"),
+            (30, 77, 100, "3360"),
             (30, 90, 80, "2540"),
         ],
     )
@@ -192,7 +191,7 @@ class TestFullDUConfigValidation:
         "frequency_band, bandwidth, sub_carrier_spacing, center_frequency",
         [
             (38, 40, 30, "2592"),
-            (77, 100, 60, "3700"),
+            (77, 25, 15, "3700"),
             (78, 20, 30, "3400"),
         ],
     )

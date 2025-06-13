@@ -9,6 +9,7 @@ resource "juju_application" "du" {
     name     = "oai-ran-du-k8s"
     channel  = var.channel
     revision = var.revision
+    base     = var.base
   }
 
   config      = var.config

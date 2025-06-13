@@ -317,7 +317,7 @@ class TestCharmCollectStatus(DUFixtures):
         [
             pytest.param(34, "2020.21", 15, 5, id="minimum_valid_frequency_band"),
             pytest.param(77, "3500.002", 15, 30, id="midrange_valid_frequency_band"),
-            pytest.param(102, "6000", 60, 40, id="maximum_valid_frequency_band"),
+            pytest.param(101, "1905", 30, 10, id="maximum_valid_frequency_band"),
         ],
     )
     def test_given_all_prerequisites_met_when_collect_status_then_status_is_active(

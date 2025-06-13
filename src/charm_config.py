@@ -21,6 +21,7 @@ from pydantic import (  # pylint: disable=no-name-in-module,import-error
 )
 from pydantic_core.core_schema import ValidationInfo
 
+from du_parameters.fr1_bands import ALLOWED_CHANNEL_BANDWIDTHS, TDD_FR1_BANDS
 from du_parameters.frequency import Frequency
 
 logger = logging.getLogger(__name__)
@@ -54,104 +55,6 @@ class CNIType(str, Enum):
 def to_kebab(name: str) -> str:
     """Convert a snake_case string to kebab-case."""
     return name.replace("_", "-")
-
-
-# The reference of TDD FR1 bands: https://en.wikipedia.org/wiki/5G_NR_frequency_bands
-TDD_FR1_BANDS = {
-    # band_number: ( frequency range in MHz)
-    34: (2010, 2025),
-    38: (2570, 2620),
-    39: (1880, 1920),
-    40: (2300, 2400),
-    41: (2496, 2690),
-    48: (3550, 3700),
-    50: (1432, 1517),
-    51: (1427, 1432),
-    77: (3300, 4200),
-    78: (3300, 3800),
-    79: (4400, 5000),
-    90: (2496, 2690),
-    96: (5925, 7125),
-    101: (1900, 1910),
-    102: (5925, 6425),
-}
-
-# The reference of channel bandwidths for each NR band:
-# 3GPP TS 38.101-1 version 17.5.0 Table 5.3.5-1
-ALLOWED_CHANNEL_BANDWIDTHS = {
-    # frequency_band: {sub_carrier_spacing (KHz): {allowed_bandwidths (MHz)}}
-    34: {
-        15: {5, 10, 15},
-        30: {10, 15},
-        60: {10, 15},
-    },
-    38: {
-        15: {5, 10, 15, 20, 25, 30, 40},
-        30: {10, 15, 20, 25, 30, 40},
-        60: {10, 15, 20, 25, 30, 40},
-    },
-    39: {
-        15: {5, 10, 15, 20, 25, 30, 40},
-        30: {10, 15, 20, 25, 30, 40},
-        60: {10, 15, 20, 25, 30, 40},
-    },
-    40: {
-        15: {5, 10, 15, 20, 25, 30, 40, 50},
-        30: {10, 15, 20, 25, 30, 40, 50, 60, 80},
-        60: {10, 15, 20, 25, 30, 40, 50, 60, 80},
-    },
-    41: {
-        15: {10, 15, 20, 30, 40, 50},
-        30: {10, 15, 20, 30, 40, 50, 60, 80, 90, 100},
-        60: {10, 15, 20, 30, 40, 50, 60, 80, 90, 100},
-    },
-    48: {
-        15: {5, 10, 15, 20, 40, 50},
-        30: {10, 15, 20, 40, 50, 60, 80, 90, 100},
-        60: {10, 15, 20, 40, 50, 60, 80, 90, 100},
-    },
-    50: {
-        15: {5, 10, 15, 20, 30, 40, 50},
-        30: {10, 15, 20, 30, 40, 50, 60, 80},
-        60: {10, 15, 20, 30, 40, 50, 60, 80},
-    },
-    51: {
-        15: {5},
-    },
-    77: {
-        15: {10, 15, 20, 25, 30, 40, 50},
-        30: {10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100},
-        60: {10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100},
-    },
-    78: {
-        15: {10, 15, 20, 25, 30, 40, 50},
-        30: {10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100},
-        60: {10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100},
-    },
-    79: {
-        15: {40, 50},
-        30: {40, 50, 60, 80, 100},
-        60: {40, 50, 60, 80, 100},
-    },
-    90: {
-        15: {10, 15, 20, 30, 40, 50},
-        30: {10, 15, 20, 30, 40, 50, 60, 80, 90, 100},
-        60: {10, 15, 20, 30, 40, 50, 60, 80, 90, 100},
-    },
-    96: {
-        15: {20, 40},
-        30: {20, 40, 60, 80},
-    },
-    101: {
-        15: {5, 10},
-        30: {10},
-    },
-    102: {
-        15: {20, 40},
-        30: {20, 40, 60, 80, 100},
-        60: {20, 40, 60, 80, 100},
-    },
-}
 
 
 def _get_tdd_uplink_downlink(band: int) -> Tuple[int, int]:
@@ -190,8 +93,8 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     simulation_mode: bool = False
     use_three_quarter_sampling: bool = False
     bandwidth: int = Field(ge=5, le=100)
-    frequency_band: int = Field(ge=34, le=102)
-    sub_carrier_spacing: int = Field(ge=15, le=60)
+    frequency_band: int = Field(ge=34, le=101)
+    sub_carrier_spacing: int = Field(ge=15, le=30)
     center_frequency: str = Field(
         description="Center frequency as an integer or a float wrapped as str."
     )
@@ -208,6 +111,9 @@ class DUConfig(BaseModel):  # pylint: disable=too-few-public-methods
     @classmethod
     def validate_sub_carrier_spacing(cls, sub_carrier_spacing: int, info: ValidationInfo):
         """Validate the sub carrier spacing."""
+        if sub_carrier_spacing not in {15, 30}:
+            logger.error("Subcarrier spacing must be one of 15 kHz or 30 kHz.")
+            raise ValueError("Subcarrier spacing must be one of 15 kHz or 30 kHz.")
         frequency_band = info.data.get("frequency_band")
         bandwidth = info.data.get("bandwidth")
         if frequency_band is None:

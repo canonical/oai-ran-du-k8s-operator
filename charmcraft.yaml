@@ -93,7 +93,7 @@ config:
       type: int
       description: | 
         The distance between two adjacent sub-carriers given in kHz. 
-        As FR1 5G spectrum supports 15, 30, 60 kHz sub-carrier spacing, it should be one of these values.
+        Currently supported values for FR1 are 15 kHz and 30 kHz.
     use-mimo:
       type: boolean
       default: false
