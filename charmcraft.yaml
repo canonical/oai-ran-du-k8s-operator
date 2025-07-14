@@ -31,7 +31,7 @@ resources:
   du-image:
     type: oci-image
     description: Container image for the OAI RAN Distributed Unit (DU).
-    upstream-source: ghcr.io/canonical/oai-ran-du:2.2.0
+    upstream-source: ghcr.io/canonical/oai-ran-du:2.3.0
 
 provides:
   fiveg_rf_config:
